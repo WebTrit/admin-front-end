@@ -73,7 +73,6 @@ const Login = () => {
 
                 try {
                     const {data: currentUserData} = await api.get(`/tenants/${tenant_id}`)
-                    console.log(123, !!currentUserData.is_super_tenant)
                     setIsSuperTenant(!!currentUserData.is_super_tenant)
 
                     if (currentUserData.is_super_tenant) {

@@ -15,6 +15,7 @@ const userSchema = z.object({
     ext_number: z.string().optional(),
     main_number: z.string().optional(),
     sip_username: z.string().optional(),
+    sip_password: z.string().min(1, "First name is required"),
     use_phone_as_username: z.boolean().default(true),
 })
 
@@ -25,6 +26,7 @@ type UserFormData = {
     ext_number: string
     main_number: string
     sip_username: string
+    sip_password: "",
     use_phone_as_username: boolean
 }
 
@@ -48,6 +50,7 @@ const AddUser = () => {
             ext_number: "",
             main_number: "",
             sip_username: "",
+            sip_password: "",
             use_phone_as_username: true,
         },
     })
@@ -151,7 +154,21 @@ const AddUser = () => {
                         {validationErrors.email &&
                             <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
                     </div>
-
+                    <div className="space-y-2">
+                        <label htmlFor="sip_password" className="block text-sm font-medium text-gray-700">
+                            SIP Password *
+                        </label>
+                        <Input
+                            id="sip_password"
+                            type="password"
+                            {...register("sip_password")}
+                            error={!!validationErrors.sip_password}
+                            placeholder="Enter SIP password"
+                        />
+                        {validationErrors.sip_password && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors.sip_password}</p>
+                        )}
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label htmlFor="main_number" className="block text-sm font-medium text-gray-700">

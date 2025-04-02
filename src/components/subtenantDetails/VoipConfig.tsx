@@ -14,7 +14,10 @@ import Select from "@/components/ui/Select.tsx";
 // Define the schema for VoIP configuration validation
 const voipConfigSchema = z.object({
     voip_system_type: z.string().min(1, "VoIP system type is required"),
-    host: z.string().min(1, "SIP hostname is required"),
+    host: z.string().min(1, "SIP hostname is required").regex(
+        /^(?:\d{1,3}\.){3}\d{1,3}$|^(?!-)([a-zA-Z0-9-]{1,63})(?<!-)(\.[a-zA-Z]{2,})+$/,
+        "Invalid SIP hostname"
+    ),
     port: z.string().refine((val) => {
         const port = Number.parseInt(val);
         return !isNaN(port) && port >= 1 && port <= 65535;

@@ -12,7 +12,6 @@ function SubtenantDetails() {
     const {data: tenantInfo, isLoading, error} = useQuery({
         queryKey: ["tenant", tenantId],
         queryFn: async () => {
-            console.log(143212, tenantId)
             if (!tenantId) throw new Error("No tenant ID found")
             const response = await api.get(`/tenants/${tenantId}`)
             return response.data
