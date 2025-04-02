@@ -14,7 +14,9 @@ const queryClient = new QueryClient({
             refetchOnWindowFocus: false,
         },
     },
-})
+});
+
+
 const AppRoutes = () => {
     return useRoutes(routes)
 }
@@ -26,6 +28,7 @@ function App() {
     useEffect(() => {
         checkAuth()
     }, [checkAuth])
+
 
     return (
         <QueryClientProvider client={queryClient}>

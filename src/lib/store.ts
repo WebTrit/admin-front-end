@@ -6,10 +6,11 @@ import {jwtDecode} from "jwt-decode"
 interface AppState {
     // Auth state
     isAuthenticated: boolean
-    usersList: any[],
+    usersList: any[]
     tenantId: string | null
     token: string | null
-    
+    isSuperTenant: boolean
+
     // Actions
     setAuthenticated: (isAuthenticated: boolean) => void
     setUsersList: (user: AppState["usersList"]) => void
@@ -17,6 +18,7 @@ interface AppState {
     setToken: (token: string) => void
     clearAuth: () => void
     checkAuth: () => boolean
+    setIsSuperTenant: (isSuperTenant: boolean) => void
 }
 
 // Helper function to check if token is expired
@@ -39,11 +41,15 @@ export const useAppStore = create<AppState>()(
             usersList: [],
             tenantId: localStorage.getItem("tenantId"),
             token: localStorage.getItem("token"),
-            sidebarOpen: true,
+            isSuperTenant: localStorage.getItem("isSuperTenant") === "true",
 
             // Actions
             setAuthenticated: (isAuthenticated) => set({isAuthenticated}),
             setUsersList: (usersList) => set({usersList}),
+            setIsSuperTenant: (isSuperTenant: boolean) => {
+                localStorage.setItem("isSuperTenant", isSuperTenant.toString())
+                set({isSuperTenant})
+            },
             setTenantId: (tenantId) => {
                 localStorage.setItem("tenantId", tenantId)
                 set({tenantId})
@@ -55,7 +61,8 @@ export const useAppStore = create<AppState>()(
             clearAuth: () => {
                 localStorage.removeItem("token")
                 localStorage.removeItem("tenantId")
-                set({isAuthenticated: false, tenantId: null, token: null})
+                localStorage.removeItem("isSuperTenant")
+                set({isAuthenticated: false, tenantId: null, token: null, isSuperTenant: false})
             },
             checkAuth: () => {
                 const {token} = get()
@@ -80,7 +87,8 @@ export const useAppStore = create<AppState>()(
                 usersList: state.usersList,
                 tenantId: state.tenantId,
                 token: state.token,
-            }), // only persist these fields
+                isSuperTenant: state.isSuperTenant,
+            }), // also persist isSuperTenant
         },
     ),
 )

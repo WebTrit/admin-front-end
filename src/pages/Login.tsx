@@ -10,7 +10,7 @@ import Input from "@/components/ui/Input.tsx";
 
 // Define the form schema with Zod
 const loginSchema = z.object({
-    login: z.string().email("Invalid email address"),
+    login: z.string(),
     password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
@@ -22,12 +22,11 @@ const Login = () => {
     const navigate = useNavigate()
 
     // Get store actions
-    const {setTenantId, setToken} = useAppStore()
+    const {setTenantId, setToken, setIsSuperTenant} = useAppStore()
 
     const {
         register,
         handleSubmit,
-        formState: {errors},
     } = useForm<LoginFormData>({
         defaultValues: {
             login: "",
@@ -59,31 +58,44 @@ const Login = () => {
         try {
             setIsSubmitting(true)
 
-            // Replace with your actual API endpoint
-            const response = await api.post("/tenants/login", data)
+            const response = await api.post('/tenants/login', data)
+            const {access_token, tenant_id} = response.data
 
-            const token = response.data.access_token
-
-            // Save token to store
-            setToken(token)
-
-            // Decode token to get user info if available
-
-            // Set tenant ID
-            if (response.data.tenant_id) {
-                setTenantId(response.data.tenant_id)
+            if (!access_token) {
+                throw new Error("No access token received")
             }
 
+            setToken(access_token)
             toast.success("Login successful!")
-            navigate("/dashboard")
+
+            if (tenant_id) {
+                setTenantId(tenant_id)
+
+                try {
+                    const {data: currentUserData} = await api.get(`/tenants/${tenant_id}`)
+                    console.log(123, !!currentUserData.is_super_tenant)
+                    setIsSuperTenant(!!currentUserData.is_super_tenant)
+
+                    if (currentUserData.is_super_tenant) {
+                        navigate("/subtenants")
+                    } else {
+                        navigate(`/subtenants/${tenant_id}`)
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch tenant details:", err)
+                    toast.error("Failed to verify tenant status.")
+                    navigate(`/subtenants/${tenant_id}`) // Фолбэк-редирект
+                }
+            } else {
+                navigate(`/subtenants/${tenant_id}`) // Фолбэк-редирект
+            }
         } catch (error) {
             console.error("Login error:", error)
-            toast.error("Invalid email or password. Please try again.")
+            toast.error("Invalid login or password. Please try again.")
         } finally {
             setIsSubmitting(false)
         }
     }
-
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8">
@@ -147,4 +159,3 @@ const Login = () => {
 }
 
 export default Login
-

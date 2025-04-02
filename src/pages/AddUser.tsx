@@ -3,10 +3,9 @@ import {useForm} from "react-hook-form"
 import {z} from "zod"
 import {toast} from "react-toastify"
 import {ArrowLeft, Loader2} from "lucide-react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useParams} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx";
 import api from "@/lib/axios.ts";
-import {useAppStore} from "@/lib/store.ts";
 
 // Define the form schema with Zod
 const userSchema = z.object({
@@ -30,7 +29,7 @@ type UserFormData = {
 }
 
 const AddUser = () => {
-    const tenantId = useAppStore((state) => state.tenantId)
+    const {tenantId} = useParams()
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
@@ -39,7 +38,6 @@ const AddUser = () => {
     const {
         register,
         handleSubmit,
-        formState: {errors},
         watch,
         setValue,
     } = useForm<UserFormData>({
@@ -87,7 +85,7 @@ const AddUser = () => {
             await api.post(`/tenants/${tenantId}/users`, data);
 
             toast.success("User added successfully!")
-            navigate("/dashboard") // Assuming you have a users list page
+            navigate(`/subtenants/${tenantId}`) // Assuming you have a users list page
         } catch (error) {
             console.error("Error adding user:", error)
             toast.error("Failed to add user. Please try again.")
