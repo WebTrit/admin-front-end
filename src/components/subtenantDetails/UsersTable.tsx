@@ -123,7 +123,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                     </p>
                 </div>
                 {canAddUsers && (
-                    <Button onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}>
+                    <Button className='sm:w-auto w-52' onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}>
                         <Plus className="h-4 w-4 mr-2"/>
                         Add User
                     </Button>
@@ -250,7 +250,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             <h3 className="text-sm font-medium text-gray-900">
                                                 {user.first_name} {user.last_name}
                                             </h3>
-                                            <p className="text-sm text-gray-500 truncate mt-1">
+                                            <p className="text-sm max-w-48 text-gray-500 truncate mt-1">
                                                 {user.email}
                                             </p>
                                         </div>
