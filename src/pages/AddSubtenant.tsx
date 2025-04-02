@@ -133,7 +133,7 @@ export default function AddSubtenant() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md">
+            <form autoComplete="off" onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md">
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
