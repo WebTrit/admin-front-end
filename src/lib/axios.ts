@@ -3,7 +3,7 @@ import {toast} from 'react-toastify';
 import {jwtDecode} from 'jwt-decode';
 import {useAppStore} from './store';
 
-const API_BASE_URL = "https://rest-api-84689730896.europe-west3.run.app/api/v1.0";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const api = axios.create({
     baseURL: API_BASE_URL,

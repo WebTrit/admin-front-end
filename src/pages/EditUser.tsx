@@ -17,6 +17,7 @@ const userSchema = z.object({
     ext_number: z.string().optional(),
     main_number: z.string().optional(),
     sip_username: z.string().optional(),
+    sip_password: z.string().min(8, "Password length must be at least 8 characters"),
     use_phone_as_username: z.boolean().default(true),
 })
 
@@ -27,6 +28,7 @@ type UserFormData = {
     ext_number: string
     main_number: string
     sip_username: string
+    sip_password: string
     use_phone_as_username: boolean
 }
 
@@ -51,6 +53,7 @@ const EditUser = () => {
             ext_number: "",
             main_number: "",
             sip_username: "",
+            sip_password: "",
             use_phone_as_username: true,
         },
     })
@@ -88,6 +91,7 @@ const EditUser = () => {
                 ext_number: userData.ext_number || "",
                 main_number: userData.main_number || "",
                 sip_username: userData.sip_username || "",
+                sip_password: userData.sip_password || "",
                 use_phone_as_username: userData.use_phone_as_username !== false, // Default to true if not specified
             })
         }
@@ -295,7 +299,21 @@ const EditUser = () => {
                             )}
                         </div>
                     )}
-
+                    <div className="space-y-2">
+                        <label htmlFor="sip_password" className="block text-sm font-medium text-gray-700">
+                            SIP Password *
+                        </label>
+                        <Input
+                            id="sip_password"
+                            type="password"
+                            {...register("sip_password")}
+                            error={!!validationErrors.sip_password}
+                            placeholder="Enter SIP password"
+                        />
+                        {validationErrors.sip_password && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors.sip_password}</p>
+                        )}
+                    </div>
                     <div className="flex justify-end space-x-4 pt-4">
                         <button
                             type="button"
