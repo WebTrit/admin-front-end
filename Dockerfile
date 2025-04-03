@@ -1,8 +1,13 @@
-FROM nginx
+# build environment
+FROM node:alpine AS build
+WORKDIR /app
+COPY . .
+RUN npm install --legacy-peer-deps
+RUN npm run build
 
-RUN rm -drf /usr/share/nginx/html/50x.html
-RUN rm -drf /etc/nginx/conf.d/default.conf
-
-# Pre copy the build files if you want, or else (by default) use -v (volumes)
-#COPY dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d
+# production environment
+FROM nginx:stable-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
