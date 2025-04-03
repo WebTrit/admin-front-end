@@ -44,6 +44,7 @@ api.interceptors.request.use((config) => {
     }
 
     console.log('🚀 API Request:', {
+        backendURL: API_BASE_URL,
         method: config.method?.toUpperCase(),
         url: config.url,
         headers: {
