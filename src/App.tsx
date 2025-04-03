@@ -6,7 +6,6 @@ import {useEffect} from "react"
 import {useAppStore} from "./lib/store"
 import routes from "@/routes";
 
-
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -14,7 +13,8 @@ const queryClient = new QueryClient({
             refetchOnWindowFocus: false,
         },
     },
-})
+});
+
 const AppRoutes = () => {
     return useRoutes(routes)
 }

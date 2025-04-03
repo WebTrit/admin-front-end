@@ -6,8 +6,8 @@ import {toast} from "react-toastify"
 import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate, useParams} from "react-router-dom"
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
-import axios from "axios"
 import Input from "@/components/ui/Input.tsx";
+import api from "@/lib/axios.ts";
 
 // Define the form schema with Zod
 const userSchema = z.object({
@@ -33,14 +33,13 @@ type UserFormData = {
 const EditUser = () => {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const navigate = useNavigate()
-    const {userId} = useParams<{ userId: string }>()
+    const {userId, tenantId} = useParams<{ userId: string, tenantId: string }>()
+
     const queryClient = useQueryClient()
-    const tenantId = localStorage.getItem("tenantId")
 
     const {
         register,
         handleSubmit,
-        formState: {errors},
         watch,
         setValue,
         reset,
@@ -70,7 +69,8 @@ const EditUser = () => {
                 throw new Error("Tenant ID not found. Please log in again.")
             }
 
-            const response = await axios.get(`/tenants/${tenantId}/users/${userId}`)
+            const response = await api.get(`/tenants/${tenantId}/users/${userId}`)
+
             return response.data
         },
         enabled: !!tenantId && !!userId,
@@ -100,7 +100,7 @@ const EditUser = () => {
                 throw new Error("Tenant ID not found. Please log in again.")
             }
 
-            return axios.put(`/tenants/${tenantId}/users/${userId}`, data)
+            return api.put(`/tenants/${tenantId}/users/${userId}`, data)
         },
         onSuccess: () => {
             // Invalidate and refetch
@@ -108,7 +108,7 @@ const EditUser = () => {
             queryClient.invalidateQueries({queryKey: ["user", tenantId, userId]})
 
             toast.success("User updated successfully!")
-            navigate("/users") // Assuming you have a users list page
+            navigate(`/subtenants/${tenantId}`) // Assuming you have a users list page
         },
         onError: (error) => {
             console.error("Error updating user:", error)

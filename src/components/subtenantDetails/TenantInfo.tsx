@@ -1,51 +1,42 @@
-import React from "react"
+import {useEffect, useState} from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
+import {Building2, Loader2} from "lucide-react";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {toast} from "react-toastify";
+import api from "@/lib/axios";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import {useParams} from "react-router-dom";
 
-import {useForm} from "react-hook-form"
-import {zodResolver} from "@hookform/resolvers/zod"
-import {z} from "zod"
-import {Building2, Loader2} from "lucide-react"
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
-import {toast} from "react-toastify"
-import api from "@/lib/axios"
-import Button from "@/components/ui/Button"
-import Input from "@/components/ui/Input"
-import {useAppStore} from "@/lib/store"
-import {useState} from "react"
-
-// Define the schema for tenant data validation
+// Define the schema for validation
 const tenantSchema = z.object({
     company_name: z.string().min(1, "Company name is required"),
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email format").optional(),
-})
+    email: z.string().optional(),
+});
 
-// Define the type based on the schema
-type TenantFormData = z.infer<typeof tenantSchema>
+// Define type based on the schema
+type TenantFormData = z.infer<typeof tenantSchema>;
 
-export function TenantInfo() {
-    const queryClient = useQueryClient()
-    const {tenantId} = useAppStore()
-    const [isEditing, setIsEditing] = useState(false)
+// Define props type
+interface TenantInfoProps {
+    tenantData: Partial<TenantFormData> | null;
+}
 
-    // Fetch tenant data
-    const {data: tenantData, isLoading} = useQuery({
-        queryKey: ["tenant", tenantId],
-        queryFn: async () => {
-            if (!tenantId) throw new Error("No tenant ID found")
-            const response = await api.get(`/tenants/${tenantId}`)
-            return response.data
-        },
-        enabled: !!tenantId,
-    })
+export function TenantInfo({tenantData}: TenantInfoProps) {
+    const queryClient = useQueryClient();
+    const {tenantId} = useParams();
+    const [isEditing, setIsEditing] = useState(false);
 
-    // Setup form with react-hook-form and zod validation
+    // Form setup
     const {
         register,
         handleSubmit,
         reset,
-        formState: {errors, isDirty, isValid},
-        watch,
+        formState: {errors},
     } = useForm<TenantFormData>({
         resolver: zodResolver(tenantSchema),
         defaultValues: {
@@ -54,82 +45,65 @@ export function TenantInfo() {
             last_name: "",
             email: "",
         },
-    })
+    });
 
     // Update form values when tenant data is loaded
-    React.useEffect(() => {
+    useEffect(() => {
         if (tenantData) {
             reset({
                 company_name: tenantData.company_name || "",
                 first_name: tenantData.first_name || "",
                 last_name: tenantData.last_name || "",
                 email: tenantData.email || "",
-            })
+            });
         }
-    }, [tenantData, reset])
+    }, [tenantData, reset]);
 
-    // Update mutation
+    // Mutation to update tenant
     const updateMutation = useMutation({
         mutationFn: async (updatedData: Partial<TenantFormData>) => {
-            if (!tenantId) throw new Error("No tenant ID found")
-            const response = await api.patch(`/tenants/${tenantId}`, updatedData)
-            return response.data
+            if (!tenantId) throw new Error("No tenant ID found");
+            const response = await api.patch(`/tenants/${tenantId}`, updatedData);
+            return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["tenant", tenantId]})
-            setIsEditing(false)
-            toast.success("Tenant information updated successfully")
+            queryClient.invalidateQueries({queryKey: ["tenant", tenantId]});
+            setIsEditing(false);
+            toast.success("Tenant information updated successfully");
         },
         onError: (error) => {
-            toast.error(error instanceof Error ? error.message : "Failed to update tenant information")
+            toast.error(error instanceof Error ? error.message : "Failed to update tenant information");
         },
-    })
+    });
 
-    // Form submission handler
+    // Handle form submission
     const onSubmit = (data: TenantFormData) => {
-        // Only send changed fields to the API
-        const changes: Partial<TenantFormData> = {}
+        if (!tenantData) return;
 
-        if (tenantData) {
-            if (data.company_name !== tenantData.company_name) {
-                changes.company_name = data.company_name
-            }
-            if (data.first_name !== tenantData.first_name) {
-                changes.first_name = data.first_name
-            }
-            if (data.last_name !== tenantData.last_name) {
-                changes.last_name = data.last_name
-            }
-        }
+        const changes: Partial<TenantFormData> = {};
+        if (data.company_name !== tenantData.company_name) changes.company_name = data.company_name;
+        if (data.first_name !== tenantData.first_name) changes.first_name = data.first_name;
+        if (data.last_name !== tenantData.last_name) changes.last_name = data.last_name;
 
         if (Object.keys(changes).length > 0) {
-            updateMutation.mutate(changes)
+            updateMutation.mutate(changes);
         } else {
-            setIsEditing(false)
+            setIsEditing(false);
         }
-    }
+    };
 
-    // Cancel editing handler
+    // Cancel editing
     const handleCancel = () => {
-        setIsEditing(false)
-        // Reset form to original values
+        setIsEditing(false);
         if (tenantData) {
             reset({
                 company_name: tenantData.company_name || "",
                 first_name: tenantData.first_name || "",
                 last_name: tenantData.last_name || "",
                 email: tenantData.email || "",
-            })
+            });
         }
-    }
-
-    if (isLoading) {
-        return (
-            <div className="bg-white shadow rounded-lg p-6 flex justify-center items-center h-48">
-                <Loader2 className="h-8 w-8 text-primary-600 animate-spin"/>
-            </div>
-        )
-    }
+    };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white shadow rounded-lg p-6">
@@ -144,7 +118,7 @@ export function TenantInfo() {
                             <Button type="button" variant="outline" onClick={handleCancel}>
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={!isDirty || !isValid || updateMutation.isPending}>
+                            <Button type="submit" disabled={updateMutation.isPending}>
                                 {updateMutation.isPending ? (
                                     <>
                                         <Loader2 size={16} className="mr-2 animate-spin"/>
@@ -196,6 +170,5 @@ export function TenantInfo() {
                 </div>
             </div>
         </form>
-    )
+    );
 }
-

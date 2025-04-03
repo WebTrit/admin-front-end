@@ -3,10 +3,9 @@ import {useForm} from "react-hook-form"
 import {z} from "zod"
 import {toast} from "react-toastify"
 import {ArrowLeft, Loader2} from "lucide-react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, useParams} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx";
 import api from "@/lib/axios.ts";
-import {useAppStore} from "@/lib/store.ts";
 
 // Define the form schema with Zod
 const userSchema = z.object({
@@ -16,6 +15,7 @@ const userSchema = z.object({
     ext_number: z.string().optional(),
     main_number: z.string().optional(),
     sip_username: z.string().optional(),
+    sip_password: z.string().min(1, "First name is required"),
     use_phone_as_username: z.boolean().default(true),
 })
 
@@ -26,11 +26,12 @@ type UserFormData = {
     ext_number: string
     main_number: string
     sip_username: string
+    sip_password: "",
     use_phone_as_username: boolean
 }
 
 const AddUser = () => {
-    const tenantId = useAppStore((state) => state.tenantId)
+    const {tenantId} = useParams()
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
@@ -39,7 +40,6 @@ const AddUser = () => {
     const {
         register,
         handleSubmit,
-        formState: {errors},
         watch,
         setValue,
     } = useForm<UserFormData>({
@@ -50,6 +50,7 @@ const AddUser = () => {
             ext_number: "",
             main_number: "",
             sip_username: "",
+            sip_password: "",
             use_phone_as_username: true,
         },
     })
@@ -87,7 +88,7 @@ const AddUser = () => {
             await api.post(`/tenants/${tenantId}/users`, data);
 
             toast.success("User added successfully!")
-            navigate("/dashboard") // Assuming you have a users list page
+            navigate(`/subtenants/${tenantId}`) // Assuming you have a users list page
         } catch (error) {
             console.error("Error adding user:", error)
             toast.error("Failed to add user. Please try again.")
@@ -153,7 +154,21 @@ const AddUser = () => {
                         {validationErrors.email &&
                             <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>}
                     </div>
-
+                    <div className="space-y-2">
+                        <label htmlFor="sip_password" className="block text-sm font-medium text-gray-700">
+                            SIP Password *
+                        </label>
+                        <Input
+                            id="sip_password"
+                            type="password"
+                            {...register("sip_password")}
+                            error={!!validationErrors.sip_password}
+                            placeholder="Enter SIP password"
+                        />
+                        {validationErrors.sip_password && (
+                            <p className="text-red-500 text-xs mt-1">{validationErrors.sip_password}</p>
+                        )}
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label htmlFor="main_number" className="block text-sm font-medium text-gray-700">
