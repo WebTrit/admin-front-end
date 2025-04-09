@@ -3,15 +3,11 @@ import {Copy, CheckCircle2} from 'lucide-react';
 
 interface CopyableTextProps {
     tooltip: string;
-    className?: string;
-    maxWidth?: string;
 }
 
 export const CopyableText: React.FC<CopyableTextProps> = (
     {
         tooltip = '',
-        className = '',
-        maxWidth = 'max-w-[200px]',
     }) => {
     const [showCopied, setShowCopied] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
@@ -28,13 +24,13 @@ export const CopyableText: React.FC<CopyableTextProps> = (
 
     return (
         <div
-            className={`group relative inline-flex items-center gap-1 ${maxWidth} ${className}`}
+            className={`group relative inline-flex items-center gap-1 max-w-[200px]  lg:max-w-[400px] ${showTooltip ? 'cursor-pointer' : ''}`}
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
         >
             <button
                 onClick={handleCopy}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                className="opacity-0  group-hover:opacity-100 transition-opacity"
                 aria-label="Copy to clipboard"
             >
                 {showCopied ? (
