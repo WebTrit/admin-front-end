@@ -167,7 +167,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white shadow rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4">
                 <div className="flex items-center">
                     <Server className="h-6 w-6 text-primary-600 mr-2"/>
                     <h3 className="text-lg font-medium">VoIP PBX Configuration</h3>
@@ -175,10 +175,11 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                 <div className="flex space-x-2">
                     {isEditing ? (
                         <>
-                            <Button type="button" variant="outline" onClick={handleCancel}>
+                            <Button type="button" variant="outline" onClick={handleCancel}
+                                    className="flex-1 sm:flex-none">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={updateMutation.isPending}>
+                            <Button type="submit" disabled={updateMutation.isPending} className="flex-1 sm:flex-none">
                                 {updateMutation.isPending ? (
                                     <>
                                         <Loader2 size={16} className="mr-2 animate-spin"/>
@@ -190,7 +191,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                             </Button>
                         </>
                     ) : (
-                        <Button type="button" onClick={() => setIsEditing(true)}>
+                        <Button type="button" onClick={() => setIsEditing(true)} className="sm:w-auto">
                             Edit
                         </Button>
                     )}
@@ -200,7 +201,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
             <div className="space-y-4">
                 <div>
                     <label htmlFor="voip_system_type" className="block text-sm font-medium text-gray-700">
-                        VoIP System Type
+                        VoIP System Type <span>*</span>
                     </label>
                     <Select
                         id="voip_system_type"
@@ -222,16 +223,14 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label htmlFor="host" className="block text-sm font-medium text-gray-700">
-                            SIP Hostname
+                            SIP Hostname <span>*</span>
                         </label>
-                        <Input id="host" {...register("host")} disabled={!isEditing}
-                               error={!!validationErrors.host}/>
-                        {validationErrors.host &&
-                            <p className="mt-1 text-sm text-red-600">{validationErrors.host}</p>}
+                        <Input id="host" {...register("host")} disabled={!isEditing} error={!!validationErrors.host}/>
+                        {validationErrors.host && <p className="mt-1 text-sm text-red-600">{validationErrors.host}</p>}
                     </div>
                     <div>
                         <label htmlFor="port" className="block text-sm font-medium text-gray-700">
-                            SIP Port
+                            SIP Port <span>*</span>
                         </label>
                         <Input
                             id="port"
@@ -242,12 +241,11 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                             disabled={!isEditing}
                             error={!!validationErrors.port}
                         />
-                        {validationErrors.port &&
-                            <p className="mt-1 text-sm text-red-600">{validationErrors.port}</p>}
+                        {validationErrors.port && <p className="mt-1 text-sm text-red-600">{validationErrors.port}</p>}
                     </div>
                     <div>
                         <label htmlFor="transport_protocol" className="block text-sm font-medium text-gray-700">
-                            SIP Protocol
+                            SIP Protocol <span>*</span>
                         </label>
                         <Select
                             id="transport_protocol"

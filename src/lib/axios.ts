@@ -34,7 +34,6 @@ const isTokenExpired = (token: string) => {
 // 🔹 Интерцептор запросов
 api.interceptors.request.use((config) => {
     const token = useAppStore.getState().token;
-    //const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbjp3ZWJ0cml0IiwiZXhwIjoxNzQzODUxNDgyfQ.8atJ_Y4ymD3KFWpXbXxFjq46-1zUkLrTHlLwEJ-Lrfc';
     if (token) {
         if (isTokenExpired(token)) {
             useAppStore.getState().clearAuth();
