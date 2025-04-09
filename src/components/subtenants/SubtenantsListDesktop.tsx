@@ -1,6 +1,9 @@
-import React from "react"
+import type React from "react"
+import {useState} from "react"
 import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
+import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
+import {CopyableText} from "@/components/ui/CopyableText.tsx";
 
 interface Subtenant {
     tenant_id: string
@@ -24,28 +27,49 @@ interface SubtenantsListDesktopProps {
     onClearFilters: () => void
 }
 
-export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> =
-    ({
-         subtenants,
-         deletingTenantId,
-         onDelete,
-         onCancelDelete,
-         onDeleteClick,
-         appliedFilters,
-         onClearFilters,
-     }) => {
-        const navigate = useNavigate()
+export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> = (
+    {
+        subtenants,
+        deletingTenantId,
+        onDelete,
+        onCancelDelete,
+        appliedFilters,
+        onClearFilters,
+    }) => {
+    const navigate = useNavigate()
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [tenantToDelete, setTenantToDelete] = useState<Subtenant | null>(null)
 
-        return (
+    const handleDeleteClick = (tenant: Subtenant) => {
+        setTenantToDelete(tenant)
+        setIsModalOpen(true)
+    }
+
+    const handleConfirmDelete = () => {
+        if (tenantToDelete) {
+            onDelete(tenantToDelete.tenant_id)
+            setIsModalOpen(false)
+            setTenantToDelete(null)
+        }
+    }
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false)
+        setTenantToDelete(null)
+        onCancelDelete()
+    }
+
+    return (
+        <>
             <div className="hidden md:block bg-white shadow rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                         <tr>
-                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
+                            <th scope="col" className="pl-8 py-3 text-left text-sm font-medium text-gray-900">
                                 Tenant ID
                             </th>
-                            <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
+                            <th scope="col" className="pl-8 py-3 text-left text-sm font-medium text-gray-900">
                                 Email
                             </th>
                             <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
@@ -77,26 +101,28 @@ export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> =
                         ) : (
                             subtenants.map((tenant) => (
                                 <tr key={tenant.tenant_id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm text-gray-900 font-medium truncate max-w-[200px]">
-                                        {tenant.tenant_id}
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-gray-500 truncate max-w-[200px]">
-                                        {tenant.email}
+                                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                                        <CopyableText
+                                            tooltip={tenant.tenant_id}
+                                        />
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-500">
-                                        {tenant.company_name}
+                                        <CopyableText
+                                            tooltip={`${tenant.email}`}
+                                        />
                                     </td>
+                                    <td className="px-4 py-3 text-sm text-gray-500">{tenant.company_name}</td>
                                     <td className="px-4 py-3 text-sm text-gray-500">
                                         {tenant.basic_demo ? (
                                             <span
                                                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Yes
-                                            </span>
+                                                    Yes
+                                                </span>
                                         ) : (
                                             <span
                                                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                No
-                                            </span>
+                                                    No
+                                                </span>
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-500">
@@ -112,36 +138,19 @@ export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> =
                                         )}
                                     </td>
                                     <td className="px-4 py-3 text-right">
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-between gap-2">
                                             <button
                                                 onClick={() => navigate(`/subtenants/${tenant.tenant_id}`)}
                                                 className="text-gray-500 hover:text-gray-700"
                                             >
                                                 <Pencil className="w-4 h-4"/>
                                             </button>
-                                            {deletingTenantId === tenant.tenant_id ? (
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                                        onClick={() => onDelete(tenant.tenant_id)}
-                                                    >
-                                                        Yes
-                                                    </button>
-                                                    <button
-                                                        className="text-gray-600 hover:text-gray-800 text-sm font-medium"
-                                                        onClick={onCancelDelete}
-                                                    >
-                                                        No
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <button
-                                                    onClick={() => onDeleteClick(tenant.tenant_id)}
-                                                    className="text-gray-500 hover:text-red-600"
-                                                >
-                                                    <Trash2 className="w-4 h-4"/>
-                                                </button>
-                                            )}
+                                            <button
+                                                onClick={() => handleDeleteClick(tenant)}
+                                                className="text-red-600"
+                                            >
+                                                <Trash2 className="w-4 h-4"/>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -151,5 +160,20 @@ export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> =
                     </table>
                 </div>
             </div>
-        )
-    }
+
+            <ConfirmationModal
+                title="Delete Subtenant"
+                description={
+                    tenantToDelete
+                        ? `Are you sure you want to delete tenant ${tenantToDelete.company_name} (${tenantToDelete.tenant_id})? This action cannot be undone.`
+                        : ""
+                }
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onConfirm={handleConfirmDelete}
+                isProcessing={deletingTenantId === tenantToDelete?.tenant_id}
+                confirmText="Delete"
+            />
+        </>
+    )
+}

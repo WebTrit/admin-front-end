@@ -89,14 +89,6 @@ const Subtenants = () => {
         refetch()
     }
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[50vh]">
-                <Loader2 className="w-6 h-6 animate-spin"/>
-            </div>
-        )
-    }
-
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-[50vh] text-red-500 p-4 text-center">
@@ -127,25 +119,32 @@ const Subtenants = () => {
                 onRemoveFilter={handleRemoveFilter}
             />
 
-            <SubtenantsListDesktop
-                subtenants={subtenants || []}
-                deletingTenantId={deletingTenantId}
-                onDelete={handleDelete}
-                onCancelDelete={() => setDeletingTenantId(null)}
-                onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
-                appliedFilters={appliedFilters}
-                onClearFilters={clearFilters}
-            />
-
-            <SubtenantsListMobile
-                subtenants={subtenants || []}
-                deletingTenantId={deletingTenantId}
-                onDelete={handleDelete}
-                onCancelDelete={() => setDeletingTenantId(null)}
-                onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
-                appliedFilters={appliedFilters}
-                onClearFilters={clearFilters}
-            />
+            {isLoading ? (
+                <div className="flex items-center justify-center min-h-[50vh]">
+                    <Loader2 className="w-6 h-6 animate-spin"/>
+                </div>
+            ) : (
+                <>
+                    <SubtenantsListDesktop
+                        subtenants={subtenants || []}
+                        deletingTenantId={deletingTenantId}
+                        onDelete={handleDelete}
+                        onCancelDelete={() => setDeletingTenantId(null)}
+                        onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
+                        appliedFilters={appliedFilters}
+                        onClearFilters={clearFilters}
+                    />
+                    <SubtenantsListMobile
+                        subtenants={subtenants || []}
+                        deletingTenantId={deletingTenantId}
+                        onDelete={handleDelete}
+                        onCancelDelete={() => setDeletingTenantId(null)}
+                        onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
+                        appliedFilters={appliedFilters}
+                        onClearFilters={clearFilters}
+                    />
+                </>
+            )}
         </div>
     )
 }

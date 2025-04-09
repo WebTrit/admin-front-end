@@ -58,7 +58,7 @@ const Login = () => {
         try {
             setIsSubmitting(true)
 
-            const response = await api.post('/tenants/login', data)
+            const response = await api.post("/tenants/login", data)
             const {access_token, tenant_id} = response.data
 
             if (!access_token) {
@@ -76,17 +76,17 @@ const Login = () => {
                     setIsSuperTenant(!!currentUserData.is_super_tenant)
 
                     if (currentUserData.is_super_tenant) {
-                        navigate("/subtenants")
+                        navigate("/subtenants", {replace: true})
                     } else {
-                        navigate(`/subtenants/${tenant_id}`)
+                        navigate(`/subtenants/${tenant_id}`, {replace: true})
                     }
                 } catch (err) {
                     console.error("Failed to fetch tenant details:", err)
                     toast.error("Failed to verify tenant status.")
-                    navigate(`/subtenants/${tenant_id}`) // Фолбэк-редирект
+                    navigate(`/subtenants/${tenant_id}`, {replace: true})
                 }
             } else {
-                navigate(`/subtenants/${tenant_id}`) // Фолбэк-редирект
+                navigate(`/subtenants/${tenant_id}`, {replace: true})
             }
         } catch (error) {
             console.error("Login error:", error)
@@ -156,5 +156,4 @@ const Login = () => {
         </div>
     )
 }
-
 export default Login

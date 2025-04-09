@@ -6,8 +6,9 @@ import {Users, Plus, Pencil, Trash2, Loader2} from "lucide-react"
 import api from "@/lib/axios"
 import type {User} from "@/types"
 import Button from "@/components/ui/Button"
-import DeleteUserModal from "@/components/DeleteUserModal"
 import {useAppStore} from "@/lib/store"
+import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
+import {CopyableText} from "@/components/ui/CopyableText.tsx";
 
 interface UsersTableProps {
     maxUsers: number
@@ -110,8 +111,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
 
     return (
         <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-                <div className="mb-4 sm:mb-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+                <div>
                     <div className="flex items-center">
                         <Users className="h-5 w-5 text-primary-600 mr-2"/>
                         <h3 className="text-lg font-medium">Users Overview</h3>
@@ -123,7 +124,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                     </p>
                 </div>
                 {canAddUsers && (
-                    <Button className='sm:w-auto w-52' onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}>
+                    <Button className="w-full sm:w-auto mt-2 sm:mt-0"
+                            onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}>
                         <Plus className="h-4 w-4 mr-2"/>
                         Add User
                     </Button>
@@ -145,10 +147,10 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
                                     Name
                                 </th>
-                                <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
+                                <th scope="col" className="pl-8 py-3 text-left text-sm font-medium text-gray-900">
                                     Email
                                 </th>
-                                <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
+                                <th scope="col" className="pl-8 py-3 text-left text-sm font-medium text-gray-900">
                                     SIP Username
                                 </th>
                                 <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
@@ -184,11 +186,11 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                             {user.first_name} {user.last_name}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate">
-                                            {user.email}
+                                        <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px]">
+                                            <CopyableText tooltip={user.email}/>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500">
-                                            {user.sip_username}
+                                            <CopyableText tooltip={user.sip_username}/>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500">
                                             {user.ext_number ? (
@@ -250,7 +252,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             <h3 className="text-sm font-medium text-gray-900">
                                                 {user.first_name} {user.last_name}
                                             </h3>
-                                            <p className="text-sm max-w-48 text-gray-500 truncate mt-1">
+                                            <p className="text-sm max-w-48 text-gray-500 mt-1">
                                                 {user.email}
                                             </p>
                                         </div>
@@ -296,15 +298,17 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                 </>
             )}
 
-            <DeleteUserModal
-                user={userToDelete}
+            <ConfirmationModal
+                title="Delete User"
+                description={userToDelete ? `Are you sure you want to delete ${userToDelete.first_name} ${userToDelete.last_name}? This action cannot be undone.` : ""}
                 isOpen={deleteModalOpen}
                 onClose={() => {
                     setDeleteModalOpen(false)
                     setUserToDelete(null)
                 }}
                 onConfirm={handleDeleteConfirm}
-                isDeleting={isDeleting}
+                isProcessing={isDeleting}
+                confirmText="Delete"
             />
         </div>
     )

@@ -1,6 +1,8 @@
-import React from "react"
+import React, {useState} from "react"
 import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
+import {CopyableText} from "@/components/ui/CopyableText.tsx";
+import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
 
 interface Subtenant {
     tenant_id: string
@@ -34,8 +36,26 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
          appliedFilters,
          onClearFilters,
      }) => {
-        const navigate = useNavigate()
+        const navigate = useNavigate();
+        const [tenantToDelete, setTenantToDelete] = useState<Subtenant | null>(null);
+        const [isModalOpen, setIsModalOpen] = useState(false);
 
+        const handleDeleteClick = (tenant: Subtenant) => {
+            setTenantToDelete(tenant);
+            setIsModalOpen(true);
+        };
+
+        const handleCloseModal = () => {
+            setIsModalOpen(false);
+            setTenantToDelete(null);
+            onCancelDelete();
+        };
+
+        const handleConfirmDelete = () => {
+            if (tenantToDelete) {
+                onDelete(tenantToDelete.tenant_id);
+            }
+        };
         return (
             <div className="md:hidden space-y-4">
                 {subtenants.length === 0 ? (
@@ -57,60 +77,45 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
                                 >
                                     <Pencil className="w-4 h-4"/>
                                 </button>
-                                {deletingTenantId === tenant.tenant_id ? (
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                            onClick={() => onDelete(tenant.tenant_id)}
-                                        >
-                                            Yes
-                                        </button>
-                                        <button
-                                            className="text-gray-600 hover:text-gray-800 text-sm font-medium"
-                                            onClick={onCancelDelete}
-                                        >
-                                            No
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button
-                                        className="text-gray-500 hover:text-red-600"
-                                        onClick={() => onDeleteClick(tenant.tenant_id)}
-                                    >
-                                        <Trash2 className="w-4 h-4"/>
-                                    </button>
-                                )}
+                                <button
+                                    className="text-gray-500 hover:text-red-600"
+                                    onClick={() => handleDeleteClick(tenant)}
+                                >
+                                    <Trash2 className="w-4 h-4"/>
+                                </button>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="text-xs font-medium text-gray-500">Tenant ID</div>
-                                <div className="text-sm font-medium text-gray-900 truncate">
-                                    {tenant.tenant_id}
+                            <div className="grid grid-cols-3 gap-2">
+                                <div className="text-xs font-medium text-gray-500 col-span-1">Tenant ID</div>
+                                <div className="text-sm font-medium text-gray-900 col-span-2">
+                                    <CopyableText tooltip={tenant.tenant_id}/>
                                 </div>
 
-                                <div className="text-xs font-medium text-gray-500">Email</div>
-                                <div className="text-sm text-gray-700 truncate">{tenant.email}</div>
+                                <div className="text-xs font-medium text-gray-500 col-span-1">Email</div>
+                                <div className="text-sm text-gray-700 col-span-2">
+                                    <CopyableText tooltip={tenant.email}/>
+                                </div>
 
-                                <div className="text-xs font-medium text-gray-500">Company</div>
-                                <div className="text-sm text-gray-700">{tenant.company_name}</div>
+                                <div className="text-xs font-medium text-gray-500 col-span-1">Company</div>
+                                <div className="text-sm pl-5 text-gray-700 col-span-2">{tenant.company_name}</div>
 
-                                <div className="text-xs font-medium text-gray-500">Demo</div>
-                                <div className="text-sm text-gray-700">
+                                <div className="text-xs font-medium text-gray-500 col-span-1">Demo</div>
+                                <div className="text-sm pl-5 text-gray-700 col-span-2">
                                     {tenant.basic_demo ? (
                                         <span
                                             className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Yes
-                                    </span>
+                Yes
+            </span>
                                     ) : (
                                         <span
                                             className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        No
-                                    </span>
+                No
+            </span>
                                     )}
                                 </div>
 
-                                <div className="text-xs font-medium text-gray-500">PBX Info</div>
-                                <div className="text-sm text-gray-700">
+                                <div className="text-xs font-medium text-gray-500 col-span-1">PBX Info</div>
+                                <div className="text-sm pl-5 text-gray-700 col-span-2">
                                     {tenant?.voip_system ? (
                                         <>
                                             <div className="font-medium">{tenant.voip_system.type}</div>
@@ -126,6 +131,20 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
                         </div>
                     ))
                 )}
+
+                <ConfirmationModal
+                    title="Delete Subtenant"
+                    description={
+                        tenantToDelete
+                            ? `Are you sure you want to delete tenant ${tenantToDelete.company_name} (${tenantToDelete.tenant_id})? This action cannot be undone.`
+                            : ""
+                    }
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onConfirm={handleConfirmDelete}
+                    isProcessing={deletingTenantId === tenantToDelete?.tenant_id}
+                    confirmText="Delete"
+                />
             </div>
         )
     }
