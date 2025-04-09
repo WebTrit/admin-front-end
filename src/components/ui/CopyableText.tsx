@@ -22,6 +22,10 @@ export const CopyableText: React.FC<CopyableTextProps> = (
         }
     };
 
+    if (!tooltip) {
+        return null;
+    }
+
     return (
         <div
             className={`group relative inline-flex items-center gap-1 max-w-[200px]  lg:max-w-[400px] ${showTooltip ? 'cursor-pointer' : ''}`}
