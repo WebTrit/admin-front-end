@@ -15,7 +15,6 @@ const api = axios.create({
     timeout: 10000
 });
 
-// 🔹 Проверка истечения токена
 const isTokenExpired = (token: string) => {
     try {
         const decoded = jwtDecode(token);
@@ -31,12 +30,10 @@ const isTokenExpired = (token: string) => {
     }
 };
 
-// 🔹 Интерцептор запросов
 api.interceptors.request.use((config) => {
     const token = useAppStore.getState().token;
     if (token) {
         if (isTokenExpired(token)) {
-            useAppStore.getState().clearAuth();
             throw new Error('Session expired. Please log in again.');
         }
         config.headers.Authorization = `Bearer ${token}`;
@@ -54,7 +51,6 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// 🔹 Интерцептор ответов
 api.interceptors.response.use(
     (response) => {
         console.log('✅ API Response:', response.status, response.data);
@@ -65,7 +61,6 @@ api.interceptors.response.use(
         console.error(`❌ API Error ${status}:`, error.message);
 
         if (status === 401) {
-            useAppStore.getState().clearAuth();
             toast.error('Session expired. Please log in again.');
         } else {
             toast.error(`Request failed: ${error.message}`);

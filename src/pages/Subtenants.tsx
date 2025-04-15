@@ -103,7 +103,7 @@ const Subtenants = () => {
                 <h1 className="text-xl font-bold">Subtenants</h1>
                 <button
                     onClick={() => navigate("/add-subtenant")}
-                    className="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1"
+                    className="bg-primary-500 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-primary-600"
                 >
                     <Plus className="w-4 h-4"/>
                     Add Tenant
