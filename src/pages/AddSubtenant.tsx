@@ -137,7 +137,7 @@ export default function AddSubtenant() {
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Company Name
+                            Company Name *
                         </label>
                         <Input
                             id="company_name"
@@ -151,7 +151,7 @@ export default function AddSubtenant() {
 
                     <div>
                         <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
-                            First Name
+                            First Name *
                         </label>
                         <Input
                             id="first_name"
@@ -165,7 +165,7 @@ export default function AddSubtenant() {
 
                     <div>
                         <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
-                            Last Name
+                            Last Name *
                         </label>
                         <Input
                             id="last_name"
@@ -179,7 +179,7 @@ export default function AddSubtenant() {
 
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                            Email
+                            Email *
                         </label>
                         <Input
                             id="email"
@@ -194,7 +194,7 @@ export default function AddSubtenant() {
 
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password
+                            Password *
                         </label>
                         <Input
                             id="password"

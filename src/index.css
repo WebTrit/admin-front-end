@@ -98,3 +98,6 @@ select {
     -webkit-appearance: none;
 }
 
+body {
+    font-family: 'Inter', sans-serif;
+}
