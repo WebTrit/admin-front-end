@@ -9,7 +9,7 @@ const Signup = () => {
             <div className="max-w-md w-full space-y-6">
                 <div className="hidden lg:block">
                     <div className="flex justify-center">
-                        <Building2 className="h-12 w-12 text-blue-500"/>
+                        <Building2 className="h-12 w-12 text-primary-500"/>
                     </div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
                 </div>
@@ -17,7 +17,7 @@ const Signup = () => {
                     <div>If you already have an account click here to {' '}
                         <span
                             onClick={() => navigate('/login', {replace: true})}
-                            className="text-blue-400 underline cursor-pointer"
+                            className="text-primary-500 underline cursor-pointer"
                         >
                             login
                         </span>
