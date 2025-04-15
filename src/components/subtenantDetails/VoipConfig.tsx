@@ -36,6 +36,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
     const {tenantId} = useParams();
     const [isEditing, setIsEditing] = useState(false);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [isValidatingHost, setIsValidatingHost] = useState(false);
 
     // Setup form with react-hook-form
     const {
@@ -46,7 +47,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
         defaultValues: {
             voip_system_type: "",
             host: "",
-            port: "",
+            port: "5060",
             transport_protocol: "",
         },
     });
@@ -67,7 +68,6 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
     const updateMutation = useMutation({
         mutationFn: async (updatedData: any) => {
             if (!tenantId) throw new Error("No tenant ID found");
-            console.log(updatedData)
             const response = await api.patch(`/tenants/${tenantId}`, {
                 ...updatedData,
                 sip: {...tenantData.sip, ...updatedData.sip}
@@ -103,36 +103,36 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
     };
 
     // Form submission handler
-    const onSubmit = (data: VoipFormData) => {
-        // Validate form data
-        if (!validateForm(data)) {
+    const onSubmit = async (data: VoipFormData) => {
+        if (!validateForm(data)) return;
+
+        const port = Number.parseInt(data.port);
+        const use_tcp = data.transport_protocol.toLowerCase() === "tcp";
+
+        setIsValidatingHost(true); // начинаем валидацию
+        const isValidHost = await validateSipHostname(data.host, port, use_tcp);
+        setIsValidatingHost(false); // валидация завершена
+
+        if (!isValidHost.data.status.toLowerCase().includes('ok')) {
+            setValidationErrors((prev) => ({
+                ...prev,
+                host: "SIP host is not reachable or invalid",
+            }));
             return;
         }
 
-        const port = Number.parseInt(data.port);
-
         const changes: Record<string, any> = {};
-
-        // Only include changed fields
         if (tenantData) {
             if (data.voip_system_type !== tenantData.voip_system?.type) {
                 changes.voip_system = {type: data.voip_system_type};
             }
 
             const sipChanges: Record<string, any> = {};
-            if (data.host !== tenantData.sip?.host) {
-                sipChanges.host = data.host;
-            }
-            if (String(port) !== String(tenantData.sip?.port)) {
-                sipChanges.port = port;
-            }
-            if (data.transport_protocol !== tenantData.sip?.transport_protocol) {
-                sipChanges.transport_protocol = data.transport_protocol;
-            }
+            if (data.host !== tenantData.sip?.host) sipChanges.host = data.host;
+            if (String(port) !== String(tenantData.sip?.port)) sipChanges.port = port;
+            if (data.transport_protocol !== tenantData.sip?.transport_protocol) sipChanges.transport_protocol = data.transport_protocol;
 
-            if (Object.keys(sipChanges).length > 0) {
-                changes.sip = sipChanges;
-            }
+            if (Object.keys(sipChanges).length > 0) changes.sip = sipChanges;
         }
 
         if (Object.keys(changes).length > 0) {
@@ -165,6 +165,22 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
         );
     }
 
+    const validateSipHostname = async (host: string, port: number, use_tcp: boolean) => {
+        try {
+            const response = await api.post(
+                "/info/hostname",
+                {host, port, use_tcp},
+                {timeout: 30000}
+            );
+
+            toast(response.data.message);
+
+            return response.data.status.toLowerCase() === "ok";
+        } catch (error) {
+            return false;
+        }
+    };
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white shadow rounded-lg p-6">
             <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-4">
@@ -179,8 +195,9 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                                     className="flex-1 sm:flex-none">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={updateMutation.isPending} className="flex-1 sm:flex-none">
-                                {updateMutation.isPending ? (
+                            <Button type="submit" disabled={updateMutation.isPending || isValidatingHost}
+                                    className="flex-1 sm:flex-none">
+                                {(updateMutation.isPending || isValidatingHost) ? (
                                     <>
                                         <Loader2 size={16} className="mr-2 animate-spin"/>
                                         Saving...

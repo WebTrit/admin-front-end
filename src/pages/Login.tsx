@@ -22,7 +22,7 @@ const Login = () => {
     const navigate = useNavigate()
 
     // Get store actions
-    const {setTenantId, setToken, setIsSuperTenant} = useAppStore()
+    const {setTenantId, setToken, setIsSuperTenant, setIsBasicDemo} = useAppStore()
 
     const {
         register,
@@ -73,7 +73,14 @@ const Login = () => {
 
                 try {
                     const {data: currentUserData} = await api.get(`/tenants/${tenant_id}`)
-                    setIsSuperTenant(!!currentUserData.is_super_tenant)
+                    console.log("Current user data:", currentUserData)
+                    setIsSuperTenant(currentUserData.is_super_tenant)
+                    setIsBasicDemo(currentUserData.basic_demo)
+      
+                    if (currentUserData.basic_demo) {
+                        navigate('/dashboard', {replace: true})
+                        return
+                    }
 
                     if (currentUserData.is_super_tenant) {
                         navigate("/subtenants", {replace: true})
@@ -100,6 +107,16 @@ const Login = () => {
             <div className="max-w-md w-full space-y-8">
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+                </div>
+                <div>
+                    <div>If you don't have an account click here to {' '}
+                        <span
+                            onClick={() => navigate('/signup', {replace: true})}
+                            className="text-blue-400 underline cursor-pointer"
+                        >
+                            sign up
+                        </span>
+                    </div>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div className="rounded-md shadow-sm -space-y-px">
@@ -139,7 +156,7 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? (
                                 <>

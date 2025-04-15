@@ -1,0 +1,31 @@
+import {Building2} from "lucide-react"
+import {SignupForm} from "@/components/signup/SignupForm.tsx";
+import {useNavigate} from "react-router-dom";
+
+const Signup = () => {
+    const navigate = useNavigate()
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-0 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-6">
+                <div className="hidden lg:block">
+                    <div className="flex justify-center">
+                        <Building2 className="h-12 w-12 text-blue-500"/>
+                    </div>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
+                </div>
+                <div>
+                    <div>If you already have an account click here to {' '}
+                        <span
+                            onClick={() => navigate('/login', {replace: true})}
+                            className="text-blue-400 underline cursor-pointer"
+                        >
+                            login
+                        </span>
+                    </div>
+                </div>
+                <SignupForm/>
+            </div>
+        </div>
+    )
+}
+export default Signup

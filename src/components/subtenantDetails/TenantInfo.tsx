@@ -10,9 +10,8 @@ import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import {useParams} from "react-router-dom"
 
-// Define the schema for validation
 const tenantSchema = z.object({
-    company_name: z.string().min(1, "Company name is required"),
+    company_name: z.string().optional(),
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
     email: z.string().optional(),
@@ -141,7 +140,7 @@ export function TenantInfo({tenantData}: TenantInfoProps) {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                     <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">
-                        Company Name <span>*</span>
+                        Company Name
                     </label>
                     <Input id="company_name" {...register("company_name")} disabled={!isEditing}
                            error={!!errors.company_name}/>

@@ -1,34 +1,50 @@
 import {Navigate, type RouteObject} from "react-router-dom";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import SubtenantDetails from "@/pages/SubtenantDetails.tsx";
 import AddUser from "@/pages/AddUser";
 import EditUser from "@/pages/EditUser";
 import Subtenants from "@/pages/Subtenants";
 import Layout from "@/components/Layout";
-import PrivateRoute from "@/components/PrivateRoute";
 import AddSubtenant from "@/pages/AddSubtenant.tsx";
+import Dashboard from "@/pages/Dashboard";
 import {useAppStore} from "@/lib/store.ts";
+import PrivateRouteGuard from "@/components/guards/PrivateRouteGuard.tsx";
+import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
     {
         path: "/login",
-        element: <Login/>,
+        element: <Login/>
+    },
+    {
+        path: "/signup",
+        element: <Signup/>
     },
 ];
+//TODO same supertenant and subtenant email??
 
 // Protected routes (require authentication)
 export const protectedRoutes: RouteObject[] = [
     {
         element: (
-            <PrivateRoute>
+            <PrivateRouteGuard>
                 <Layout/>
-            </PrivateRoute>
+            </PrivateRouteGuard>
         ),
         children: [
             {
+                path: "/dashboard",
+                element: <Dashboard/>,
+            },
+            {
                 path: "/subtenants",
-                element: <Subtenants/>,
+                element: (
+                    <SuperTenantGuard>
+                        <Subtenants/>
+                    </SuperTenantGuard>
+                ),
             },
             {
                 path: "/subtenants/:tenantId",
@@ -55,7 +71,12 @@ export const redirectRoutes: RouteObject[] = [
     {
         path: "/",
         element: (() => {
-            const {isSuperTenant, tenantId} = useAppStore.getState();
+            const {isSuperTenant, tenantId, isBasicDemo} = useAppStore.getState();
+
+            if (isBasicDemo) {
+                return <Navigate to="/dashboard" replace/>
+            }
+
             return isSuperTenant ? (
                 <Navigate to="/subtenants" replace/>
             ) : (
@@ -65,14 +86,7 @@ export const redirectRoutes: RouteObject[] = [
     },
     {
         path: "*",
-        element: (() => {
-            const {isSuperTenant, tenantId} = useAppStore.getState();
-            return isSuperTenant ? (
-                <Navigate to="/subtenants" replace/>
-            ) : (
-                <Navigate to={`/subtenants/${tenantId}`} replace/>
-            );
-        })(),
+        element: <Navigate to={'/dashboard'} replace/>
     },
 ];
 

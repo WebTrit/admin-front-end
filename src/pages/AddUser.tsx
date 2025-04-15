@@ -32,7 +32,6 @@ const AddUser = () => {
     if (!tenantId) {
         return null
     }
-
     return (
         <UserForm
             onSubmit={handleSubmit}
