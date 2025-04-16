@@ -95,7 +95,7 @@ $viteVars = $envVars | Where-Object { $_.name -like "VITE_*" }
 
 
 #cd app
-docker build --env-file .env.build -t $tag .
+docker build -t $tag .
 
 if (-not $repo_region) {
     $repo_region = "europe"
