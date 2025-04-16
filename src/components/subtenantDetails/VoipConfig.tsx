@@ -109,11 +109,10 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
         const port = Number.parseInt(data.port);
         const use_tcp = data.transport_protocol.toLowerCase() === "tcp";
 
-        setIsValidatingHost(true); // начинаем валидацию
+        setIsValidatingHost(true);
         const isValidHost = await validateSipHostname(data.host, port, use_tcp);
-        setIsValidatingHost(false); // валидация завершена
-
-        if (!isValidHost.data.status.toLowerCase().includes('ok')) {
+        setIsValidatingHost(false);
+        if (!isValidHost) {
             setValidationErrors((prev) => ({
                 ...prev,
                 host: "SIP host is not reachable or invalid",
