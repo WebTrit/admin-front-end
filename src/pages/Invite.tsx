@@ -1,196 +1,287 @@
-import {useForm} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
-import {z} from 'zod';
-import Input from "@/components/ui/Input.tsx";
-import Button from "@/components/ui/Button.tsx";
-import {useEffect, useState} from "react";
-import {useAppStore} from "@/lib/store.ts";
+import React, {useEffect, useState} from 'react';
+import {ArrowLeft, ArrowRight, Check, User, UserPlus} from 'lucide-react';
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
 import api from "@/lib/axios.ts";
 import {toast} from "react-toastify";
+import {useAppStore} from "@/lib/store.ts";
 import {useNavigate} from "react-router-dom";
-import {ArrowLeft} from "lucide-react";
 
-const inviteSchema = z.object({
-    current_user: z.object({
-        first_name: z.string().min(1, 'First name is required'),
-        last_name: z.string().min(1, 'Last name is required'),
-    }),
-    invited_user: z.object({
-        first_name: z.string().min(1, 'First name is required'),
-        last_name: z.string().min(1, 'Last name is required'),
-        email: z.string().email('Invalid email address'),
-    }),
-});
-
-type InviteFormData = z.infer<typeof inviteSchema>;
+type UserDetails = {
+    first_name: string;
+    last_name: string;
+    email?: string;
+};
 
 function Invite() {
-    const {currentUser, tenantId} = useAppStore();
+    const {currentUser: currentUserData, tenantId} = useAppStore(); // Get currentUser from the store
     const navigate = useNavigate();
-    const [invited, setInvited] = useState(false);
 
-    const {
-        register,
-        handleSubmit,
-        formState: {errors},
-        setValue,
-        resetField
-    } = useForm<InviteFormData>({
-        resolver: zodResolver(inviteSchema),
-        defaultValues: {
-            current_user: {
-                first_name: currentUser?.first_name || '',
-                last_name: currentUser?.last_name || '',
-            },
-        },
+    const [step, setStep] = useState(1);
+    const [currentUser, setCurrentUser] = useState<UserDetails>({
+        first_name: currentUserData?.first_name || '',
+        last_name: currentUserData?.last_name || '',
     });
+    const [invitedUser, setInvitedUser] = useState<UserDetails>({
+        first_name: '',
+        last_name: '',
+        email: '',
+    });
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (currentUser) {
-            setValue('current_user.first_name', currentUser.first_name);
-            setValue('current_user.last_name', currentUser.last_name);
+        setCurrentUser({first_name: currentUserData?.first_name || '', last_name: currentUserData?.last_name || ''});
+    }, [currentUserData]);
+
+    const validateStep = (stepNumber: number) => {
+
+        const newErrors: Record<string, string> = {};
+
+        if (stepNumber === 1) {
+            if (!currentUser.first_name) newErrors.current_first_name = 'First name is required';
+            if (!currentUser.last_name) newErrors.current_last_name = 'Last name is required';
+        } else if (stepNumber === 2) {
+            if (!invitedUser.first_name) newErrors.invited_first_name = 'First name is required';
+            if (!invitedUser.last_name) newErrors.invited_last_name = 'Last name is required';
+            if (!invitedUser.email) {
+                newErrors.email = 'Email is required';
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invitedUser.email)) {
+                newErrors.email = 'Invalid email address';
+            }
         }
-    }, [currentUser, setValue]);
 
-    const onSubmit = async (data: InviteFormData) => {
-        const fullName = `${data.current_user.first_name} ${data.current_user.last_name}`;
+        console.log('Step:', stepNumber, 'Errors:', newErrors);
 
-        const invite_msg = `Hello ${data.invited_user.first_name},
-        You've received an invitation from ${fullName} to make free voice and video calls with WebTrit.
-        Don't miss out! Download the WebTrit app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`;
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-        try {
-            await api.post(`/tenants/${tenantId}/invite`, {
-                ...data,
-                invite_msg,
-            });
-            toast.success(`Invitation sent successfully to ${data.invited_user.email}!`);
-            setInvited(true);
-            resetField('invited_user.first_name');
-            resetField('invited_user.last_name');
-            resetField('invited_user.email');
-        } catch (error: any) {
-            if (error?.response?.status === 409) {
-                toast.info(`The user with email ${data.invited_user.email} already uses WebTrit.`);
-            } else {
-                toast.error(`Failed to send invitation to ${data.invited_user.email}. Please try again.`);
+    const handleNext = () => {
+        if (validateStep(step)) {
+            setStep(step + 1);
+        }
+    };
+
+    const handleBack = () => {
+        setStep(step - 1);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (validateStep(2)) {
+            const fullName = `${currentUser.first_name} ${currentUser.last_name}`;
+            const data = {
+                current_user: currentUser,
+                invited_user: invitedUser,
+                invite_msg: `Hello ${invitedUser.first_name},
+          You've received an invitation from ${fullName} to make free voice and video calls with WebTrit.
+          Don't miss out! Download the WebTrit app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`
+            };
+
+            try {
+                await api.post(`/tenants/${tenantId}/invite`, data);
+                toast.success(`Invitation sent successfully to ${invitedUser.email}!`);
+                setStep(3);
+            } catch (error: any) {
+                if (error?.response?.status === 409) {
+                    toast.info(`The user with email ${invitedUser.email} already uses WebTrit.`);
+                } else {
+                    toast.error(`Failed to send invitation to ${invitedUser.email}. Please try again.`);
+                }
             }
         }
     };
 
-    return (
-        <div className="max-w-2xl mx-auto p-6">
-            <div className="flex items-center  mb-6">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="flex"
-                >
-                    <ArrowLeft className="w-6 h-6 mr-1"/>
-
-                </button>
-                <h1 className="text-2xl ml-2 font-bold">Invite User</h1>
-
+    const renderStepIndicator = () => (
+        <div className="flex items-center justify-center mb-8">
+            <div className="flex items-center">
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                    step >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}>
+                    <User className="w-4 h-4"/>
+                </div>
+                <div className={`w-20 h-1 ${step >= 2 ? 'bg-blue-500' : 'bg-gray-200'}`}/>
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                    step >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}>
+                    <UserPlus className="w-4 h-4"/>
+                </div>
+                <div className={`w-20 h-1 ${step === 3 ? 'bg-blue-500' : 'bg-gray-200'}`}/>
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                    step === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}>
+                    <Check className="w-4 h-4"/>
+                </div>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-semibold mb-4">Current User Details</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                First Name <span>*</span>
-                            </label>
-                            <Input
-                                {...register('current_user.first_name')}
-                                error={!!errors.current_user?.first_name}
-                            />
-                            {errors.current_user?.first_name && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.current_user.first_name.message}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Last Name <span>*</span>
-                            </label>
-                            <Input
-                                {...register('current_user.last_name')}
-                                error={!!errors.current_user?.last_name}
-                            />
-                            {errors.current_user?.last_name && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.current_user.last_name.message}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
+        </div>
+    );
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-semibold mb-4">Invited User Details</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                First Name <span>*</span>
-                            </label>
-                            <Input
-                                {...register('invited_user.first_name')}
-                                error={!!errors.invited_user?.first_name}
-                            />
-                            {errors.invited_user?.first_name && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.invited_user.first_name.message}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Last Name <span>*</span>
-                            </label>
-                            <Input
-                                {...register('invited_user.last_name')}
-                                error={!!errors.invited_user?.last_name}
-                            />
-                            {errors.invited_user?.last_name && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.invited_user.last_name.message}
-                                </p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Email <span>*</span>
-                            </label>
-                            <Input
-                                type="email"
-                                {...register('invited_user.email')}
-                                error={!!errors.invited_user?.email}
-                            />
-                            {errors.invited_user?.email && (
-                                <p className="text-red-500 text-sm mt-1">
-                                    {errors.invited_user.email.message}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex justify-end items-center">
-                    {invited && (
-                        <Button
-                            type="button"
-                            onClick={() => navigate('/dashboard')}
-                            className="mr-4"
-                        >
-                            I’m Done
-                        </Button>
+    const renderStep1 = () => (
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 className="text-lg font-semibold mb-4">Your Details</h2>
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                        value={currentUser.first_name}
+                        onChange={(e) => setCurrentUser({...currentUser, first_name: e.target.value})}
+                        error={!!errors.current_first_name}
+                    />
+                    {errors.current_first_name && (
+                        <p className="text-red-500 text-sm mt-1">{errors.current_first_name}</p>
                     )}
-                    <Button type="submit">
-                        {invited ? 'Invite More Users' : 'Send Invitation'}
-                    </Button>
-
                 </div>
-            </form>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                        value={currentUser.last_name}
+                        onChange={(e) => setCurrentUser({...currentUser, last_name: e.target.value})}
+                        error={!!errors.current_last_name}
+                    />
+                    {errors.current_last_name && (
+                        <p className="text-red-500 text-sm mt-1">{errors.current_last_name}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderStep2 = () => (
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h2 className="text-lg font-semibold mb-4">Invite Someone</h2>
+            <div className="space-y-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        First Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                        value={invitedUser.first_name}
+                        onChange={(e) => setInvitedUser({...invitedUser, first_name: e.target.value})}
+                        error={!!errors.invited_first_name}
+                    />
+                    {errors.invited_first_name && (
+                        <p className="text-red-500 text-sm mt-1">{errors.invited_first_name}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                        value={invitedUser.last_name}
+                        onChange={(e) => setInvitedUser({...invitedUser, last_name: e.target.value})}
+                        error={!!errors.invited_last_name}
+                    />
+                    {errors.invited_last_name && (
+                        <p className="text-red-500 text-sm mt-1">{errors.invited_last_name}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                        type="email"
+                        value={invitedUser.email}
+                        onChange={(e) => setInvitedUser({...invitedUser, email: e.target.value})}
+                        error={!!errors.email}
+                    />
+                    {errors.email && (
+                        <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderStep3 = () => (
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Check className="w-8 h-8 text-green-500"/>
+            </div>
+            <h2 className="text-2xl font-semibold mb-2">Invitation Sent!</h2>
+            <p className="text-gray-600 mb-6">
+                We've sent an invitation to {invitedUser.email}
+            </p>
+            <Button
+                onClick={() => {
+                    setStep(1);
+                    setInvitedUser({first_name: '', last_name: '', email: ''});
+                }}
+            >
+                Invite Another Person
+            </Button>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen py-12">
+            <div className="max-w-2xl mx-auto px-4">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-center mb-2">Invite Users</h1>
+                    {step === 1 &&
+                        <p className="text-gray-600 text-center">In order to prevent the invitation from being flagged
+                            as
+                            spam or ignored, please provide <b>your name</b> so that we can include it in the email
+                            invitation,
+                            that the recipient knows it is authentic.</p>}
+                    {step === 2 &&
+                        <p className="text-gray-600 text-center">Your contact will receive an email with the link to
+                            download & install the WebTrit app.
+
+                            To prevent spam and ensure proper addressing, please include their name.</p>}
+                </div>
+
+                {renderStepIndicator()}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {step === 1 && renderStep1()}
+                    {step === 2 && renderStep2()}
+                    {step === 3 && renderStep3()}
+
+                    {step !== 3 && (
+                        <div className='flex justify-between items-center'>
+
+                            <Button
+                                variant="ghost"
+                                type="button"
+                                onClick={step === 1 ? () => navigate('/dashboard') : handleBack}
+                                className="flex items-center"
+                            >
+                                <ArrowLeft className="w-4 h-4 mr-2"/>
+                                Back
+                            </Button>
+
+                            <div className="flex justify-end items-center">
+                                {step === 1 && (
+                                    <Button
+                                        onClick={handleNext}
+                                        className="ml-auto flex items-center"
+                                    >
+                                        Next
+                                        <ArrowRight className="w-4 h-4 ml-2"/>
+                                    </Button>
+                                )}
+
+                                {step === 2 && (
+                                    <Button
+                                        type="submit"
+                                        className="ml-auto flex items-center"
+                                    >
+                                        Send Invitation
+                                    </Button>
+                                )}
+                            </div>
+
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     );
 }

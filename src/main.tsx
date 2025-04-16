@@ -9,7 +9,7 @@ createRoot(document.getElementById('root')!).render(
     </StrictMode>
 );
 
-const title = import.meta.env.VITE_APP_TITLE || 'Default App Title';
+const title = import.meta.env.VITE_APP_TITLE || 'Webtrit';
 const favicon = import.meta.env.VITE_FAVICON_URL || '/favicon.png';
 
 if (title) {

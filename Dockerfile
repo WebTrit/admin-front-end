@@ -1,15 +1,12 @@
 # build environment
 FROM node:alpine AS build
 
-# this is the parameter passed from the deploy.ps1 script
-ARG BACKEND_URL="https://rest-api-84689730896.europe-west3.run.app/api/v1.0"
-# copy it to vite-specific environment variable
-ARG VITE_BACKEND_URL=$BACKEND_URL
-ENV VITE_BACKEND_URL=$BACKEND_URL
-
 WORKDIR /app
-
 COPY . .
+
+# Include runtime variables pulled from GCP
+COPY .env.build .env
+
 RUN npm install --legacy-peer-deps
 RUN npm run build
 
