@@ -91,8 +91,13 @@ $envVars = $parsed.spec.template.spec.containers[0].env
 $viteVars = $envVars | Where-Object { $_.name -like "VITE_*" }
 
 # Write them to a .env.build file
-@($viteVars | ForEach-Object { "$($_.name)=$($_.value)" }) | Set-Content -Path ".env.build"
-
+$env_file = ".env.build"
+@($viteVars | ForEach-Object { "$($_.name)=$($_.value)" }) | Set-Content -Path $env_file
+@($viteVars | ForEach-Object { "$($_.name)=$($_.value)" }) | Write-Output 
+Write-Output "Environment file $env_file"
+Get-Content -Path $env_file
+Write-Output "Edit the file if needed and press enter to continue..."
+$response = Read-Host
 
 #cd app
 docker build -t $tag .
@@ -124,8 +129,9 @@ $deployArgs = @(
 if ([System.Environment]::GetEnvironmentVariable("INITIAL_DEPLOY")) {
     # supply the yaml file with the environment variables so we do not have to set them all manually
     Write-Output "Will deploy a new service $cloudRunServiceName/$projectId in $region using image built in $currentDirectory"
-    $yaml_cfg = "${currentDir}\vars\${cloudRunServiceName}.yaml"
+    $yaml_cfg = "${currentDirectory}\vars\${cloudRunServiceName}.yaml"
     Write-Output "YAML config file $yaml_cfg"
+    $viteVars | ForEach-Object { "$($_.name): `"$($_.value)`"" } | Set-Content -Path $yaml_cfg
     Get-Content -Path $yaml_cfg
     Write-Output "Edit the file if needed and press enter to continue..."
     $response = Read-Host
