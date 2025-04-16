@@ -217,7 +217,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
             <div className="space-y-4">
                 <div>
                     <label htmlFor="voip_system_type" className="block text-sm font-medium text-gray-700">
-                        VoIP System Type <span>*</span>
+                        VoIP System Type <span className='text-red-500'>*</span>
                     </label>
                     <Select
                         id="voip_system_type"
@@ -239,14 +239,14 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label htmlFor="host" className="block text-sm font-medium text-gray-700">
-                            SIP Hostname <span>*</span>
+                            SIP Hostname <span className='text-red-500'>*</span>
                         </label>
                         <Input id="host" {...register("host")} disabled={!isEditing} error={!!validationErrors.host}/>
                         {validationErrors.host && <p className="mt-1 text-sm text-red-600">{validationErrors.host}</p>}
                     </div>
                     <div>
                         <label htmlFor="port" className="block text-sm font-medium text-gray-700">
-                            SIP Port <span>*</span>
+                            SIP Port <span className='text-red-500'>*</span>
                         </label>
                         <Input
                             id="port"
@@ -261,7 +261,7 @@ export function VoipConfig({tenantData}: VoipConfigProps) {
                     </div>
                     <div>
                         <label htmlFor="transport_protocol" className="block text-sm font-medium text-gray-700">
-                            SIP Protocol <span>*</span>
+                            SIP Protocol <span className='text-red-500'>*</span>
                         </label>
                         <Select
                             id="transport_protocol"

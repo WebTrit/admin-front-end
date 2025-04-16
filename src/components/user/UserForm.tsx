@@ -10,8 +10,8 @@ const userSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
+    main_number: z.string().min(1, "Main number is required"),
     ext_number: z.string().optional(),
-    main_number: z.string().optional(),
     sip_username: z.string().optional(),
     sip_password: z.string().min(8, "Password length must be at least 8 characters"),
     use_phone_as_username: z.boolean().default(true),
@@ -116,7 +116,7 @@ export const UserForm = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-                                First Name *
+                                First Name <span className='text-red-500'>*</span>
                             </label>
                             <Input
                                 id="first_name"
@@ -131,7 +131,7 @@ export const UserForm = ({
 
                         <div className="space-y-2">
                             <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-                                Last Name *
+                                Last Name <span className='text-red-500'>*</span>
                             </label>
                             <Input
                                 id="last_name"
@@ -146,7 +146,7 @@ export const UserForm = ({
 
                     <div className="space-y-2">
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                            Email Address *
+                            Email Address <span className='text-red-500'>*</span>
                         </label>
                         <Input
                             id="email"
@@ -162,7 +162,7 @@ export const UserForm = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <label htmlFor="main_number" className="block text-sm font-medium text-gray-700">
-                                Main Phone Number
+                                Main Phone Number <span className='text-red-500'>*</span>
                             </label>
                             <Input
                                 id="main_number"
@@ -230,11 +230,10 @@ export const UserForm = ({
 
                     <div className="space-y-2">
                         <label htmlFor="sip_password" className="block text-sm font-medium text-gray-700">
-                            SIP Password *
+                            SIP Password <span className='text-red-500'>*</span>
                         </label>
                         <Input
                             id="sip_password"
-                            type="password"
                             {...register("sip_password")}
                             error={!!validationErrors.sip_password}
                             placeholder="Enter SIP password"

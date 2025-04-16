@@ -17,7 +17,7 @@ export const PersonalInformation = ({register, errors}: PersonalInformationProps
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-                            First Name *
+                            First Name <span className='text-red-500'>*</span>
                         </label>
                         <Input
                             id="first_name"
@@ -35,7 +35,7 @@ export const PersonalInformation = ({register, errors}: PersonalInformationProps
 
                     <div>
                         <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-                            Last Name *
+                            Last Name <span className='text-red-500'>*</span>
                         </label>
                         <Input
                             id="last_name"

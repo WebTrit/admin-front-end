@@ -14,7 +14,7 @@ export const AccountInformation = ({register, errors}: AccountInformationProps) 
             <div className="mt-4 space-y-4">
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        Email Address *
+                        Email Address <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center">
                         <Input
@@ -38,7 +38,7 @@ export const AccountInformation = ({register, errors}: AccountInformationProps) 
 
                 <div>
                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        Password *
+                        Password <span className="text-red-500">*</span>
                     </label>
                     <Input
                         id="password"
@@ -60,7 +60,7 @@ export const AccountInformation = ({register, errors}: AccountInformationProps) 
 
                 <div>
                     <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                        Confirm Password *
+                        Confirm Password <span className='text-red-500'>*</span>
                     </label>
                     <Input
                         id="confirmPassword"
@@ -100,7 +100,7 @@ export const AccountInformation = ({register, errors}: AccountInformationProps) 
                             >
                                 Terms and Conditions
                             </a>
-                       
+
                         </label>
                         {errors.acceptTerms && (
                             <p className="mt-1 text-sm text-red-600">{errors.acceptTerms.message}</p>

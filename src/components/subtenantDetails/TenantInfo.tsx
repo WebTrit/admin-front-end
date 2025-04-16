@@ -155,7 +155,7 @@ export function TenantInfo({tenantData}: TenantInfoProps) {
                 </div>
                 <div>
                     <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
-                        First Name <span>*</span>
+                        First Name <span className='text-red-500'>*</span>
                     </label>
                     <Input id="first_name" {...register("first_name")} disabled={!isEditing}
                            error={!!errors.first_name}/>
@@ -163,7 +163,7 @@ export function TenantInfo({tenantData}: TenantInfoProps) {
                 </div>
                 <div>
                     <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-                        Last Name <span>*</span>
+                        Last Name <span className='text-red-500'>*</span>
                     </label>
                     <Input id="last_name" {...register("last_name")} disabled={!isEditing} error={!!errors.last_name}/>
                     {errors.last_name && <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>}
