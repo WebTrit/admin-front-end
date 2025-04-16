@@ -11,6 +11,7 @@ import Dashboard from "@/pages/Dashboard";
 import {useAppStore} from "@/lib/store.ts";
 import PrivateRouteGuard from "@/components/guards/PrivateRouteGuard.tsx";
 import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
+import Invite from "@/pages/Invite.tsx";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
@@ -23,7 +24,6 @@ export const publicRoutes: RouteObject[] = [
         element: <Signup/>
     },
 ];
-//TODO same supertenant and subtenant email??
 
 // Protected routes (require authentication)
 export const protectedRoutes: RouteObject[] = [
@@ -61,6 +61,10 @@ export const protectedRoutes: RouteObject[] = [
             {
                 path: "/add-subtenant",
                 element: <AddSubtenant/>,
+            },
+            {
+                path: "/invite",
+                element: <Invite/>,
             },
         ],
     },
