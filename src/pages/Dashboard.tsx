@@ -4,8 +4,11 @@ import {useAppStore} from "@/lib/store.ts";
 import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
 import Button from "@/components/ui/Button.tsx";
+import {useNavigate} from "react-router-dom";
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+
     const WEBTRIT_URL = import.meta.env.VITE_WEBTRIT_URL;
     const WEBTRIT_GOOGLE_PLAY_URL = import.meta.env.VITE_WEBTRIT_GOOGLE_PLAY_URL;
     const WEBTRIT_APP_STORE_URL = import.meta.env.VITE_WEBTRIT_APP_STORE_URL;
@@ -99,9 +102,14 @@ const Dashboard = () => {
                                     title="Simple Demo: App to App calling"
                                     description="Make voice or video calls to other people that also have the WebTrit App or WebTrit web-dialer installed."
                                     icon={Phone}
-                                    linkText="Invite your friends"
                                     linkUrl="#"
                                     imageUrl="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=400&h=300"
+                                    additionalContent={
+                                        <Button
+                                            onClick={() => navigate('/invite')}
+                                        >
+                                            Invite your friends
+                                        </Button>}
                                 />
                             )}
 
