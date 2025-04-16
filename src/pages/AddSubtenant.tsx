@@ -222,3 +222,4 @@ export default function AddSubtenant() {
         </div>
     );
 }
+//TODO refactor this code to use react-hook-form and split it into smaller components
