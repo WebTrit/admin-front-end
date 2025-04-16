@@ -1,12 +1,12 @@
 # build environment
 FROM node:alpine AS build
 
-ARG BACKEND_URL="https://rest-api-84689730896.europe-west3.run.app/api/v1.0"
-ENV VITE_BACKEND_URL=$BACKEND_URL
-
 WORKDIR /app
-
 COPY . .
+
+# Include runtime variables pulled from GCP
+COPY .env.build .env
+
 RUN npm install --legacy-peer-deps
 RUN npm run build
 

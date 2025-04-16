@@ -37,7 +37,6 @@ Environment variables:
 # Parse remaining arguments
 $region = ""
 $projectId = ""
-$backEndApi = ""
 
 for ($i = 0; $i -lt $remainingArgs.Count; $i++) {
     switch ($remainingArgs[$i]) {
@@ -49,20 +48,12 @@ for ($i = 0; $i -lt $remainingArgs.Count; $i++) {
             $projectId = $remainingArgs[$i + 1]
             $i++
         }
-        "--back-end-api" { 
-            $backEndApi = $remainingArgs[$i + 1]
-            $i++
-        }
     }
 }
 
 $projectId = if ($projectId) { $projectId } `
     elseif ([System.Environment]::GetEnvironmentVariable("PROJECT_ID")) { [System.Environment]::GetEnvironmentVariable("PROJECT_ID") } `
     else { "multi-tenant-demo" }
-
-$backEndApi = if ($backEndApi) { $backEndApi } `
-    elseif ([System.Environment]::GetEnvironmentVariable("BACK_END_API")) { [System.Environment]::GetEnvironmentVariable("BACK_END_API") } `
-    else { "" }
 
 $projectName = "Multi Tenant Demo Staging"
 $service_account = "bss-adapter"
@@ -92,8 +83,19 @@ gcloud config set project $projectId
 
 gcloud auth configure-docker "$repo_region-docker.pkg.dev"
 
+$describe = gcloud run services describe $cloudRunServiceName --region $region --format="json"
+$parsed = $describe | ConvertFrom-Json
+$envVars = $parsed.spec.template.spec.containers[0].env
+
+# Extract only VITE_* vars
+$viteVars = $envVars | Where-Object { $_.name -like "VITE_*" }
+
+# Write them to a .env.build file
+@($viteVars | ForEach-Object { "$($_.name)=$($_.value)" }) | Set-Content -Path ".env.build"
+
+
 #cd app
-docker build --build-arg BACKEND_URL=$backEndApi -t $tag .
+docker build --build-arg -t $tag .
 
 if (-not $repo_region) {
     $repo_region = "europe"
@@ -118,9 +120,6 @@ $deployArgs = @(
     "--allow-unauthenticated"
 )
 
-if ($backEndApi) {
-    $deployArgs += @("--set-env-vars", "BACK_END_API=$backEndApi")
-}
 
 if ([System.Environment]::GetEnvironmentVariable("INITIAL_DEPLOY")) {
     # supply the yaml file with the environment variables so we do not have to set them all manually
