@@ -4,9 +4,6 @@ FROM node:alpine AS build
 WORKDIR /app
 COPY . .
 
-# Include runtime variables pulled from GCP
-COPY .env.build .env
-
 RUN npm install --legacy-peer-deps
 RUN npm run build
 
