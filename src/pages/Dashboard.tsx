@@ -64,7 +64,7 @@ const Dashboard = () => {
                                 title="Useful links"
                                 description="Use email address as username to get started with WebTrit"
                                 icon={Globe}
-                                imageUrl="https://images.unsplash.com/photo-1557838923-2985c318be48?auto=format&fit=crop&q=80&w=400&h=300"
+                                imageUrl="/images/dashboard/usefulLinks.png"
                                 additionalContent={
                                     <div>
                                         <div className="flex flex-wrap gap-4 mt-4">
@@ -103,7 +103,7 @@ const Dashboard = () => {
                                     description="Make voice or video calls to other people that also have the WebTrit App or WebTrit web-dialer installed."
                                     icon={Phone}
                                     linkUrl="#"
-                                    imageUrl="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=400&h=300"
+                                    imageUrl="/images/dashboard/invite.png"
                                     additionalContent={
                                         <Button
                                             onClick={() => navigate('/invite')}
@@ -120,7 +120,7 @@ const Dashboard = () => {
                                     icon={Globe}
                                     linkText="Connect to your own PBX"
                                     linkUrl="#"
-                                    imageUrl="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=400&h=300"
+                                    imageUrl="/images/dashboard/developerAccess.png"
                                     additionalContent={
                                         <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
                                             <p>
@@ -141,7 +141,7 @@ const Dashboard = () => {
                                     description="Use the demo system's API to develop your own voice / video applications."
                                     icon={Code}
                                     linkUrl="#"
-                                    imageUrl="https://images.unsplash.com/photo-1555066931-bf19f8fd1085?auto=format&fit=crop&q=80&w=400&h=300"
+                                    imageUrl="/images/dashboard/PBX.png"
                                     additionalContent={
                                         <div className="mt-4 text-sm text-gray-600 space-y-3">
                                             <p>
