@@ -69,7 +69,7 @@ const Dashboard = () => {
                                     <div>
                                         <div className="flex flex-wrap gap-4 mt-4">
                                             <a
-                                                href={WEBTRIT_GOOGLE_PLAY_URL}
+                                                href={WEBTRIT_APP_STORE_URL}
                                                 target="_blank"
                                                 className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800"
                                             >
@@ -77,7 +77,7 @@ const Dashboard = () => {
                                                 App Store
                                             </a>
                                             <a
-                                                href={WEBTRIT_APP_STORE_URL}
+                                                href={WEBTRIT_GOOGLE_PLAY_URL}
                                                 target="_blank"
                                                 className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800"
                                             >
