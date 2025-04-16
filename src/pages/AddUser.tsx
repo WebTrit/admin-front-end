@@ -17,8 +17,8 @@ const AddUser = () => {
                 toast.error("Tenant ID not found. Please log in again.")
                 return
             }
-
-            await api.post(`/tenants/${tenantId}/users`, data)
+            // quick fix TODO: pass basic_demo value as set in tenant info
+            await api.post(`/tenants/${tenantId}/users`, { ...data, basic_demo: false })
             toast.success("User added successfully!")
             navigate(`/subtenants/${tenantId}`)
         } catch (error) {
