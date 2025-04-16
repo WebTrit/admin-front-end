@@ -108,23 +108,25 @@ function Header() {
             </div>
             {/* Mobile Navigation */}
             <nav className="md:hidden flex items-center gap-x-2 px-4 pb-4">
-                {navigationItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <button
-                            key={item.name}
-                            onClick={() => navigate(item.path)}
-                            className={`flex items-center gap-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors flex-1
+                {navigationItems
+                    .filter((item) => item.isAvailable && currentUser && !isTenantLoading)
+                    .map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <button
+                                key={item.name}
+                                onClick={() => navigate(item.path)}
+                                className={`flex items-center gap-x-2 px-3 py-2 text-sm font-medium rounded-md transition-colors flex-1
                                 ${isActive(item.path)
-                                ? 'bg-gray-100 text-gray-900'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                            }`}
-                        >
-                            <Icon className="h-4 w-4"/>
-                            {item.name}
-                        </button>
-                    );
-                })}
+                                    ? 'bg-gray-100 text-gray-900'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                }`}
+                            >
+                                <Icon className="h-4 w-4"/>
+                                {item.name}
+                            </button>
+                        );
+                    })}
             </nav>
         </header>
     );
