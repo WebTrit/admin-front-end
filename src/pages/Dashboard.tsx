@@ -29,7 +29,7 @@ const Dashboard = () => {
         if (!tenantId || !currentUser?.email) return;
 
         try {
-            await api.put(`/api/v1.0/tenants/${tenantId}/developer`, {
+            await api.put(`/tenants/${currentUser.super_tenant_id}/developer`, {
                 email: currentUser.email,
             });
 
@@ -38,7 +38,7 @@ const Dashboard = () => {
             toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentUser?.email}`);
         }
     };
-
+    //TODO cache tenants data in store
     return (
         <div className="bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

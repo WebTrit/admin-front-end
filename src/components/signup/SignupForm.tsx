@@ -11,6 +11,7 @@ import {AccountInformation} from "@/components/signup/AccounInformation.tsx"
 import {OTPVerification} from "@/components/signup/OTPVerification.tsx"
 import {OTPFormData, SignupFormData} from "@/types.ts"
 import axios from "axios"
+import {toast} from "react-toastify";
 
 export const SignupForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -70,7 +71,7 @@ export const SignupForm = () => {
                 params: {email: formData.email},
             })
 
-            if (!validateRes.data.status.toLowerCase().includes('ok')) {
+            if (!validateRes.data.status.toLowerCase().includes("ok")) {
                 setSignupError("email", {
                     type: "manual",
                     message: "This email address is not allowed or invalid.",
@@ -78,7 +79,9 @@ export const SignupForm = () => {
                 return
             }
 
-            const {data} = await api.post("signup/tenants/otp/generate", formData)
+            const {acceptTerms, ...cleanedFormData} = formData
+
+            const {data} = await api.post("signup/tenants/otp/generate", cleanedFormData)
             setOtpId(data.otp_id)
 
             setSubmittedEmail(formData.email)
@@ -87,10 +90,7 @@ export const SignupForm = () => {
             startResendTimer()
         } catch (error) {
             console.error("Error sending OTP:", error)
-            setSignupError("email", {
-                type: "manual",
-                message: "Failed to verify email. Please try again later.",
-            })
+            toast.error("Failed to create account. Please try again.")
         } finally {
             setIsSubmitting(false)
         }

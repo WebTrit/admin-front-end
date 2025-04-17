@@ -49,7 +49,7 @@ export default function AddSubtenant() {
                 email_validated: false,
                 password_reset_requested: false,
                 custom_attributes: {signedup_via: "Web portal"},
-                basic_demo: true,
+                basic_demo: false,
                 special_user: false,
                 max_users: 5,
             });

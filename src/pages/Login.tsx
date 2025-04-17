@@ -20,6 +20,7 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const navigate = useNavigate()
+    const isSignupLink = import.meta.env.VITE_WEBTRIT_IS_SIGNUP === 'true';
 
     // Get store actions
     const {setTenantId, setToken, setIsSuperTenant, setIsBasicDemo} = useAppStore()
@@ -76,7 +77,7 @@ const Login = () => {
                     console.log("Current user data:", currentUserData)
                     setIsSuperTenant(currentUserData.is_super_tenant)
                     setIsBasicDemo(currentUserData.basic_demo)
-      
+
                     if (currentUserData.basic_demo) {
                         navigate('/dashboard', {replace: true})
                         return
@@ -108,7 +109,7 @@ const Login = () => {
                 <div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
                 </div>
-                <div>
+                {isSignupLink && <div>
                     <div>If you don't have an account click here to {' '}
                         <span
                             onClick={() => navigate('/signup', {replace: true})}
@@ -117,7 +118,7 @@ const Login = () => {
                             sign up
                         </span>
                     </div>
-                </div>
+                </div>}
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div className="mb-4">

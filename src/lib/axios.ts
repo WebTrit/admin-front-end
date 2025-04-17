@@ -2,6 +2,7 @@ import axios, {AxiosError} from 'axios';
 import {toast} from 'react-toastify';
 import {jwtDecode} from 'jwt-decode';
 import {useAppStore} from './store';
+import {v4 as uuid} from 'uuid';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -18,12 +19,7 @@ const api = axios.create({
 const isTokenExpired = (token: string) => {
     try {
         const decoded = jwtDecode(token);
-
-        if (!decoded.exp) {
-            return true;
-
-        }
-
+        if (!decoded.exp) return true;
         return decoded.exp < Date.now() / 1000;
     } catch {
         return true;
@@ -32,6 +28,10 @@ const isTokenExpired = (token: string) => {
 
 api.interceptors.request.use((config) => {
     const token = useAppStore.getState().token;
+
+    const requestId = uuid();
+    config.headers['x-request-id'] = requestId;
+
     if (token) {
         if (isTokenExpired(token)) {
             throw new Error('Session expired. Please log in again.');
@@ -40,12 +40,12 @@ api.interceptors.request.use((config) => {
     }
 
     console.log('🚀 API Request:', {
+        id: requestId,
         backendURL: API_BASE_URL,
         method: config.method?.toUpperCase(),
         url: config.url,
-        headers: {
-            ...config.headers,
-        }
+        headers: {...config.headers},
+        data: config.data
     });
 
     return config;

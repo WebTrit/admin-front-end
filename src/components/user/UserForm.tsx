@@ -4,6 +4,7 @@ import {z} from "zod"
 import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx";
+import {useWatch} from "react-hook-form"
 
 // Define the form schema with Zod
 const userSchema = z.object({
@@ -50,9 +51,9 @@ export const UserForm = ({
     const {
         register,
         handleSubmit,
-        watch,
         setValue,
         reset,
+        control
     } = useForm<UserFormData>({
         defaultValues: {
             first_name: "",
@@ -73,7 +74,16 @@ export const UserForm = ({
         }
     }, [initialData, reset])
 
-    const usePhoneAsUsername = watch("use_phone_as_username")
+    const usePhoneAsUsername = useWatch({name: "use_phone_as_username", control})
+    const mainNumber = useWatch({name: "main_number", control})
+    const sipUsername = useWatch({name: "sip_username", control})
+
+    const getShowSipUsernameField = () => !usePhoneAsUsername ||
+        (
+            mainNumber.trim() !== "" &&
+            sipUsername.trim() !== "" &&
+            mainNumber.trim() !== sipUsername.trim()
+        )
 
     const validateForm = (data: UserFormData) => {
         const result = userSchema.safeParse(data)
@@ -211,7 +221,7 @@ export const UserForm = ({
                         </div>
                     </div>
 
-                    {!usePhoneAsUsername && (
+                    {getShowSipUsernameField() && (
                         <div className="space-y-2">
                             <label htmlFor="sip_username" className="block text-sm font-medium text-gray-700">
                                 SIP Username
