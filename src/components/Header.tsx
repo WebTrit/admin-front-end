@@ -4,7 +4,16 @@ import {useNavigate, useLocation} from "react-router-dom";
 import {useState, useRef, useEffect} from 'react';
 
 function Header() {
-    const {clearAuth, isSuperTenant, isBasicDemo, currentUser, isTenantLoading, tenantId, fetchTenant} = useAppStore();
+    const {
+        clearAuth,
+        isSuperTenant,
+        isBasicDemo,
+        isAdmin,
+        currentUser,
+        isTenantLoading,
+        tenantId,
+        fetchTenant
+    } = useAppStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,7 +27,7 @@ function Header() {
         },
         {
             name: 'Configuration',
-            path: isSuperTenant ? '/subtenants' : `/subtenants/${tenantId}`,
+            path: configurationPath(),
             icon: Settings,
             isAvailable: !isBasicDemo,
         }
@@ -43,8 +52,16 @@ function Header() {
     }, [tenantId]);
 
 
+    function configurationPath() {
+        if (isAdmin) {
+            return '/subtenants'
+        }
+
+        return isSuperTenant ? '/subtenants' : `/subtenants/${tenantId}`
+    }
+
     const isActive = (path: string) => {
-        return location.pathname === path;
+        return location.pathname.includes(path);
     };
 
     const handleLogout = () => {
@@ -52,6 +69,13 @@ function Header() {
         setIsDropdownOpen(false);
     };
 
+    function menuItemsFilter() {
+        if (isAdmin) {
+            return true
+        }
+
+        return (item) => item.isAvailable && currentUser && !isTenantLoading;
+    }
 
     return (
         <header className="bg-white shadow-sm">
@@ -65,7 +89,7 @@ function Header() {
                     </div>
                     <nav className="hidden md:flex items-center gap-x-4">
                         {navigationItems
-                            .filter((item) => item.isAvailable && currentUser && !isTenantLoading)
+                            .filter(menuItemsFilter)
                             .map((item) => {
                                 const Icon = item.icon;
                                 return (
@@ -109,7 +133,7 @@ function Header() {
             {/* Mobile Navigation */}
             <nav className="md:hidden flex items-center gap-x-2 px-4 pb-4">
                 {navigationItems
-                    .filter((item) => item.isAvailable && currentUser && !isTenantLoading)
+                    .filter(menuItemsFilter)
                     .map((item) => {
                         const Icon = item.icon;
                         return (

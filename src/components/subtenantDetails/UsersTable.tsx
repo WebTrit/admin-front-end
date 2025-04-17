@@ -315,3 +315,4 @@ export function UsersTable({maxUsers}: UsersTableProps) {
 }
 
 export default UsersTable
+//todo refactor variables names and props
