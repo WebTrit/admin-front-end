@@ -12,6 +12,7 @@ interface AppState {
     token: string | null;
     isSuperTenant: boolean;
     isBasicDemo: boolean;
+    isAdmin: boolean; // Add isAdmin here
     currentUser: User | null;
 
     isTenantLoading: boolean;
@@ -25,10 +26,12 @@ interface AppState {
     checkAuth: () => boolean;
     setIsSuperTenant: (isSuperTenant: boolean) => void;
     setIsBasicDemo: (isBasicDemo: boolean) => void;
+    setIsAdmin: (isAdmin: boolean) => void; // Add setter for isAdmin
     setCurrentUser: (user: User) => void;
 
     fetchTenant: () => Promise<void>;
 }
+
 
 // Helper function to check if token is expired
 const isTokenExpired = (token: string): boolean => {
@@ -53,6 +56,7 @@ export const useAppStore = create<AppState>()(
             token: localStorage.getItem("token"),
             isSuperTenant: localStorage.getItem("isSuperTenant") === "true",
             isBasicDemo: localStorage.getItem("isBasicDemo") === "true",
+            isAdmin: localStorage.getItem("isAdmin") === "true",
             currentUser: null,
 
             isTenantLoading: false,
@@ -62,7 +66,7 @@ export const useAppStore = create<AppState>()(
             setUsersList: (usersList) => set({usersList}),
             setIsSuperTenant: (isSuperTenant: boolean) => {
                 if (!isSuperTenant) {
-                    return
+                    return;
                 }
                 localStorage.setItem("isSuperTenant", isSuperTenant.toString());
                 set({isSuperTenant});
@@ -70,6 +74,10 @@ export const useAppStore = create<AppState>()(
             setIsBasicDemo: (isBasicDemo: boolean) => {
                 localStorage.setItem("isBasicDemo", isBasicDemo.toString());
                 set({isBasicDemo});
+            },
+            setIsAdmin: (isAdmin: boolean) => { // Add setter for isAdmin
+                localStorage.setItem("isAdmin", isAdmin.toString());
+                set({isAdmin});
             },
             setCurrentUser: (currentUser) => set({currentUser}),
             setTenantId: (tenantId) => {
@@ -85,13 +93,17 @@ export const useAppStore = create<AppState>()(
                 localStorage.removeItem("tenantId");
                 localStorage.removeItem("isSuperTenant");
                 localStorage.removeItem("isBasicDemo");
+                localStorage.removeItem("isAdmin");
+
                 set({
                     isAuthenticated: false,
                     tenantId: null,
                     token: null,
                     isSuperTenant: false,
                     isBasicDemo: false,
+                    isAdmin: false,
                     currentUser: null,
+                    usersList: [],
                 });
             },
             checkAuth: () => {
@@ -126,7 +138,9 @@ export const useAppStore = create<AppState>()(
                 token: state.token,
                 isSuperTenant: state.isSuperTenant,
                 isBasicDemo: state.isBasicDemo,
+                isAdmin: state.isAdmin, // Persist isAdmin as well
             }),
         }
     )
 );
+//Todo split into two stores and rename variables

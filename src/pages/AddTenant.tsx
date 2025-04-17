@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {ArrowLeft, Loader2} from "lucide-react";
 import {useMutation} from "@tanstack/react-query";
 import api from "@/lib/axios";
@@ -14,21 +14,16 @@ interface TenantFormData {
     last_name: string;
     email: string;
     password: string;
+    is_super_tenant: boolean;
 }
 
 interface FormErrors {
     [key: string]: string;
 }
 
-export default function AddSubtenant() {
-    const {tenantId, isSuperTenant} = useAppStore();
+export default function AddTenant() {
+    const {tenantId, isAdmin} = useAppStore();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!isSuperTenant) {
-            navigate("/")
-        }
-    })
 
     const [formData, setFormData] = useState<TenantFormData>({
         company_name: "",
@@ -36,16 +31,20 @@ export default function AddSubtenant() {
         last_name: "",
         email: "",
         password: "",
+        is_super_tenant: false,
     });
 
     const [errors, setErrors] = useState<FormErrors>({});
 
     const createTenantMutation = useMutation({
-        mutationFn: async (data: TenantFormData) => {
+        mutationFn: async (formData: TenantFormData) => {
+            const {is_super_tenant, ...tenantData} = formData;
+            const requestData = is_super_tenant ? formData : tenantData
+
             const response = await api.post("/tenants", {
-                ...data,
+                ...requestData,
                 tenant_id: uuid(),
-                super_tenant_id: tenantId,
+                super_tenant_id: is_super_tenant ? null : tenantId,
                 email_validated: false,
                 password_reset_requested: false,
                 custom_attributes: {signedup_via: "Web portal"},
@@ -68,10 +67,10 @@ export default function AddSubtenant() {
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
+        const {name, value, type, checked} = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: type === 'checkbox' ? checked : value,
         }));
 
         if (errors[name]) {
@@ -124,7 +123,7 @@ export default function AddSubtenant() {
                 <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mr-2">
                     <ArrowLeft className="w-4 h-4"/>
                 </Button>
-                <h1 className="text-xl font-bold">Add New Subtenant</h1>
+                <h1 className="text-xl font-bold">Add New tenant</h1>
             </div>
 
             {errors.form && (
@@ -207,6 +206,21 @@ export default function AddSubtenant() {
                         {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password}</p>}
                     </div>
 
+                    {isAdmin &&
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="is_super_tenant"
+                                name="is_super_tenant"
+                                checked={formData.is_super_tenant}
+                                onChange={handleInputChange}
+                                className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <label htmlFor="is_super_tenant" className="text-sm font-medium text-gray-700">
+                                Create as Super Tenant
+                            </label>
+                        </div>
+                    }
                     <Button type="submit" className="w-full mt-6" disabled={createTenantMutation.isPending}>
                         {createTenantMutation.isPending ? (
                             <>
@@ -222,4 +236,3 @@ export default function AddSubtenant() {
         </div>
     );
 }
-//TODO refactor this code to use react-hook-form and split it into smaller components

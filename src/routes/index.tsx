@@ -6,18 +6,23 @@ import AddUser from "@/pages/AddUser";
 import EditUser from "@/pages/EditUser";
 import Subtenants from "@/pages/Subtenants";
 import Layout from "@/components/Layout";
-import AddSubtenant from "@/pages/AddSubtenant.tsx";
+import AddTenant from "@/pages/AddTenant.tsx";
 import Dashboard from "@/pages/Dashboard";
 import {useAppStore} from "@/lib/store.ts";
 import PrivateRouteGuard from "@/components/guards/PrivateRouteGuard.tsx";
 import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
 import Invite from "@/pages/Invite.tsx";
+import LoginAdmin from "@/pages/LoginAdmin.tsx";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
     {
         path: "/login",
         element: <Login/>
+    },
+    {
+        path: "/login-admin",
+        element: <LoginAdmin/>
     },
     {
         path: "/signup",
@@ -60,7 +65,10 @@ export const protectedRoutes: RouteObject[] = [
             },
             {
                 path: "/add-subtenant",
-                element: <AddSubtenant/>,
+                element: (
+                    <SuperTenantGuard>
+                        <AddTenant/>
+                    </SuperTenantGuard>),
             },
             {
                 path: "/invite",
@@ -75,13 +83,17 @@ export const redirectRoutes: RouteObject[] = [
     {
         path: "/",
         element: (() => {
-            const {isSuperTenant, tenantId, isBasicDemo} = useAppStore.getState();
+            const {isSuperTenant, isAdmin, tenantId, isBasicDemo} = useAppStore.getState();
+
+            if (isAdmin) {
+                return <Navigate to="/subtenants" replace/>
+            }
 
             if (isBasicDemo) {
                 return <Navigate to="/dashboard" replace/>
             }
 
-            return isSuperTenant ? (
+            return (isSuperTenant) ? (
                 <Navigate to="/subtenants" replace/>
             ) : (
                 <Navigate to={`/subtenants/${tenantId}`} replace/>
