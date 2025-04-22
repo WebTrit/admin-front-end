@@ -12,6 +12,7 @@ const userSchema = z.object({
     last_name: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
     main_number: z.string().min(1, "Main number is required"),
+    password: z.string().min(8, "Password length must be at least 8 characters"),
     ext_number: z.string().optional(),
     sip_username: z.string().optional(),
     sip_password: z.string().min(8, "Password length must be at least 8 characters"),
@@ -24,11 +25,13 @@ export type UserFormData = {
     email: string
     ext_number: string
     main_number: string
+    password: string
     sip_username: string
     sip_password: string
     use_phone_as_username: boolean
 }
 
+//todo merge types and zod schema
 interface UserFormProps {
     initialData?: UserFormData
     onSubmit: (data: UserFormData) => Promise<void>
@@ -61,6 +64,7 @@ export const UserForm = ({
             email: "",
             ext_number: "",
             main_number: "",
+            password: "",
             sip_username: "",
             sip_password: "",
             use_phone_as_username: true,
@@ -197,6 +201,22 @@ export const UserForm = ({
                             />
                             {validationErrors.ext_number && (
                                 <p className="text-red-500 text-xs mt-1">{validationErrors.ext_number}</p>
+                            )}
+                        </div>
+
+
+                        <div className="space-y-2">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                                Password for app login <span className='text-red-500'>*</span>
+                            </label>
+                            <Input
+                                id="password"
+                                {...register("password")}
+                                error={!!validationErrors.password}
+                                placeholder="Enter main phone number"
+                            />
+                            {validationErrors.password && (
+                                <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
                             )}
                         </div>
                     </div>
