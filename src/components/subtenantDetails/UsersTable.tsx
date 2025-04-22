@@ -1,8 +1,8 @@
 import {useState} from "react"
 import {useNavigate, useParams} from "react-router-dom"
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
-import {Users, Plus, Pencil, Trash2, Loader2} from "lucide-react"
+import {Loader2, Pencil, Plus, Trash2, Users} from "lucide-react"
 import api from "@/lib/axios"
 import type {User} from "@/types"
 import Button from "@/components/ui/Button"
@@ -293,7 +293,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         <div className="text-gray-500">Login Link</div>
                                         <div className="text-gray-900 break-all">
                                             <CopyableText
-                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.sip_username}`}
+                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.main_number}`}
                                             />
                                         </div>
                                     </div>
