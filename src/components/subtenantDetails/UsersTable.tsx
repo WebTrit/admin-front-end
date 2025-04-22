@@ -7,8 +7,8 @@ import api from "@/lib/axios"
 import type {User} from "@/types"
 import Button from "@/components/ui/Button"
 import {useAppStore} from "@/lib/store"
-import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
-import {CopyableText} from "@/components/ui/CopyableText.tsx";
+import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
+import {CopyableText} from "@/components/ui/CopyableText.tsx"
 
 interface UsersTableProps {
     maxUsers: number
@@ -23,6 +23,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
     const {setUsersList} = useAppStore()
+
+    const DIALER_URL = import.meta.env.VITE_WEBTRIT_DIALER_URL
 
     const {
         data: usersData,
@@ -144,20 +146,12 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                             <tr>
-                                <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
-                                    Name
-                                </th>
-                                <th scope="col" className="pl-8 py-3 text-left text-sm font-medium text-gray-900">
-                                    Email
-                                </th>
-                                <th scope="col" className="pl-8 py-3 text-left text-sm font-medium text-gray-900">
-                                    SIP Username
-                                </th>
-                                <th scope="col" className="px-4 py-3 text-left text-sm font-medium text-gray-900">
-                                    Extension
-                                </th>
-                                <th scope="col"
-                                    className="relative px-4 py-3 text-right text-sm font-medium text-gray-900 w-[100px]">
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Name</th>
+                                <th className="pl-8 py-3 text-left text-sm font-medium text-gray-900">Email</th>
+                                <th className="pl-8 py-3 text-left text-sm font-medium text-gray-900">SIP Username</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Extension</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Login Link</th>
+                                <th className="relative px-4 py-3 text-right text-sm font-medium text-gray-900 w-[100px]">
                                     <span className="sr-only">Actions</span>
                                 </th>
                             </tr>
@@ -165,7 +159,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                             <tbody className="bg-white divide-y divide-gray-200">
                             {users.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">
+                                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
                                         <div className="flex flex-col items-center justify-center">
                                             <Users className="h-8 w-8 mb-2 text-gray-400"/>
                                             <p>No users found</p>
@@ -196,11 +190,16 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             {user.ext_number ? (
                                                 <span
                                                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                        {user.ext_number}
-                                                    </span>
+                                                    {user.ext_number}
+                                                </span>
                                             ) : (
                                                 <span className="text-gray-400">-</span>
                                             )}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
+                                            <CopyableText
+                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.sip_username}`}
+                                            />
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">
                                             <div className="flex justify-end gap-2">
@@ -290,6 +289,13 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                 <span className="text-gray-400">-</span>
                                             )}
                                         </div>
+
+                                        <div className="text-gray-500">Login Link</div>
+                                        <div className="text-gray-900 break-all">
+                                            <CopyableText
+                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.sip_username}`}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             ))
@@ -315,4 +321,3 @@ export function UsersTable({maxUsers}: UsersTableProps) {
 }
 
 export default UsersTable
-//todo refactor variables names and props
