@@ -54,7 +54,9 @@ export const CopyableText: React.FC<CopyableTextProps> = ({tooltip = "", classNa
                     </div>
                 ) : (
                     <div
-                        className="absolute hidden md:block -top-8 left-0 px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg whitespace-nowrap  z-10">
+                        className="absolute hidden md:block -top-8 left-0 px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg z-10"
+                        onClick={handleCopy}
+                    >
                         {tooltip}
                     </div>
                 ))}

@@ -198,7 +198,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
                                             <CopyableText
-                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.sip_username}`}
+                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.main_number}`}
                                             />
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">

@@ -1,10 +1,9 @@
-import {useState, useEffect} from "react"
-import {useForm} from "react-hook-form"
+import {useEffect, useState} from "react"
+import {useForm, useWatch} from "react-hook-form"
 import {z} from "zod"
 import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx";
-import {useWatch} from "react-hook-form"
 
 // Define the form schema with Zod
 const userSchema = z.object({
@@ -67,7 +66,7 @@ export const UserForm = ({
             password: "",
             sip_username: "",
             sip_password: "",
-            use_phone_as_username: true,
+            use_phone_as_username: initialData?.sip_username === initialData?.main_number,
             ...initialData,
         },
     })
