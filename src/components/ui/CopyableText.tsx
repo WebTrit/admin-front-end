@@ -1,40 +1,42 @@
-import React, {useState} from 'react';
-import {Copy, CheckCircle2} from 'lucide-react';
+import type React from "react"
+import {useState} from "react"
+import {CheckCircle2, Copy} from "lucide-react"
 
 interface CopyableTextProps {
-    tooltip: string;
+    tooltip: string
+    className?: string
 }
 
-export const CopyableText: React.FC<CopyableTextProps> = (
-    {
-        tooltip = '',
-    }) => {
-    const [showCopied, setShowCopied] = useState(false);
-    const [showTooltip, setShowTooltip] = useState(false);
+export const CopyableText: React.FC<CopyableTextProps> = ({tooltip = "", className = ""}) => {
+    const [showCopied, setShowCopied] = useState(false)
+    const [showTooltip, setShowTooltip] = useState(false)
 
     const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(tooltip);
-            setShowCopied(true);
-            setTimeout(() => setShowCopied(false), 2000);
+            await navigator.clipboard.writeText(tooltip)
+            setShowCopied(true)
+            setTimeout(() => setShowCopied(false), 2000)
         } catch (err) {
-            console.error('Failed to copy text:', err);
+            console.error("Failed to copy text:", err)
         }
-    };
+    }
 
     if (!tooltip) {
-        return null;
+        return null
     }
 
     return (
         <div
-            className={`group relative inline-flex items-center gap-1 max-w-[200px]  lg:max-w-[400px] ${showTooltip ? 'cursor-pointer' : ''}`}
+            className={`group relative flex items-center gap-1 w-full ${showTooltip ? "cursor-pointer" : ""} ${className}`}
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
         >
+      <span className="truncate cursor-pointer flex-grow" onClick={handleCopy}>
+        {tooltip}
+      </span>
             <button
                 onClick={handleCopy}
-                className="opacity-0  group-hover:opacity-100 transition-opacity"
+                className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="Copy to clipboard"
             >
                 {showCopied ? (
@@ -43,25 +45,19 @@ export const CopyableText: React.FC<CopyableTextProps> = (
                     <Copy className="w-4 h-4 text-gray-400 hover:text-gray-600"/>
                 )}
             </button>
-            <span
-                className="truncate cursor-pointer"
-                onClick={handleCopy}
-            >
-        {tooltip}
-      </span>
-            {tooltip && showTooltip && (
-                showCopied ? (
-                        <div
-                            className="absolute -top-8 left-0 px-2 py-1 text-xs text-white bg-green-600 rounded shadow-lg whitespace-nowrap">
-                            Copied!
-                        </div>
-                    ) :
+            {tooltip &&
+                showTooltip &&
+                (showCopied ? (
                     <div
-                        className="absolute hidden md:block -top-8 left-0 px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg whitespace-nowrap">
+                        className="absolute -top-8 right-0 px-2 py-1 text-xs text-white bg-green-600 rounded shadow-lg whitespace-nowrap z-10">
+                        Copied!
+                    </div>
+                ) : (
+                    <div
+                        className="absolute hidden md:block -top-8 left-0 px-2 py-1 text-xs text-white bg-gray-800 rounded shadow-lg whitespace-nowrap  z-10">
                         {tooltip}
                     </div>
-            )}
-
+                ))}
         </div>
-    );
-};
+    )
+}
