@@ -164,12 +164,16 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 <th className="pl-8 py-3 text-left text-sm font-medium text-gray-900">Email</th>
                                 <th className="pl-8 py-3 text-left text-sm font-medium text-gray-900">SIP Username</th>
                                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Extension</th>
-                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Login Link</th>
+                                {DIALER_URL && (
+                                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Login
+                                        Link</th>
+                                )}
                                 <th className="relative px-4 py-3 text-right text-sm font-medium text-gray-900 w-[100px]">
                                     <span className="sr-only">Actions</span>
                                 </th>
                             </tr>
                             </thead>
+
                             <tbody className="bg-white divide-y divide-gray-200">
                             {users.length === 0 ? (
                                 <tr>
@@ -204,33 +208,25 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             {user.ext_number ? (
                                                 <span
                                                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                    {user.ext_number}
-                                                </span>
+                {user.ext_number}
+            </span>
                                             ) : (
                                                 <span className="text-gray-400">-</span>
                                             )}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
-                                            <CopyableText
-                                                tooltip={getLoginLink(tenantId, user.main_number)}
-                                            />
-                                        </td>
+                                        {DIALER_URL && (
+                                            <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
+                                                <CopyableText tooltip={getLoginLink(tenantId, user.main_number)}/>
+                                            </td>
+                                        )}
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}
-                                                    aria-label="Edit user"
-                                                >
+                                                <Button variant="ghost" size="sm"
+                                                        onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}>
                                                     <Pencil className="h-4 w-4"/>
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteClick(user)}
-                                                    aria-label="Delete user"
-                                                >
+                                                <Button variant="ghost" size="sm"
+                                                        onClick={() => handleDeleteClick(user)}>
                                                     <Trash2 className="h-4 w-4 text-red-500"/>
                                                 </Button>
                                             </div>
@@ -304,12 +300,15 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             )}
                                         </div>
 
-                                        <div className="text-gray-500">Login Link</div>
-                                        <div className="text-gray-900 break-all">
-                                            <CopyableText
-                                                tooltip={getLoginLink(tenantId, user.main_number)}
-                                            />
-                                        </div>
+                                        {DIALER_URL && (
+                                            <>
+                                                <div className="text-gray-500">Login Link</div>
+                                                <div className="text-gray-900 break-all">
+                                                    <CopyableText tooltip={getLoginLink(tenantId, user.main_number)}/>
+                                                </div>
+                                            </>
+                                        )}
+
                                     </div>
                                 </div>
                             ))
