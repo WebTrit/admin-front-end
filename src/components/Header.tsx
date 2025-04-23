@@ -1,7 +1,7 @@
-import {User, Home, LogOut, Settings} from 'lucide-react';
+import {Home, LogOut, Settings, User} from 'lucide-react';
 import {useAppStore} from "@/lib/store.ts";
-import {useNavigate, useLocation} from "react-router-dom";
-import {useState, useRef, useEffect} from 'react';
+import {useLocation, useNavigate} from "react-router-dom";
+import {useEffect, useRef, useState} from 'react';
 
 function Header() {
     const {
@@ -69,12 +69,11 @@ function Header() {
         setIsDropdownOpen(false);
     };
 
-    function menuItemsFilter() {
+    function menuItemsFilter(item) {
         if (isAdmin) {
-            return true
+            return true;
         }
-
-        return (item) => item.isAvailable && currentUser && !isTenantLoading;
+        return item.isAvailable && currentUser && !isTenantLoading;
     }
 
     return (

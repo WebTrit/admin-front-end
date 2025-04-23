@@ -17,7 +17,7 @@ function SubtenantDetails() {
             return response.data
         },
     })
-
+    //TODO cash tenants
 
     if (error) {
         return (

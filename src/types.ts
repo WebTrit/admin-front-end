@@ -49,7 +49,7 @@ export interface User {
     registrar_server: string | null;
     outbound_proxy_server: string | null;
     max_users: number;
-    users: User[];
+    users: [];
 }
 
 export const signupSchema = z.object({

@@ -39,6 +39,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
             return response.data
         },
     })
+    //TODO add user and tenant types
 
     const deleteMutation = useMutation({
         mutationFn: async (userId: string) => {
@@ -68,6 +69,19 @@ export function UsersTable({maxUsers}: UsersTableProps) {
         } finally {
             setIsDeleting(false)
         }
+    }
+
+    const getLoginLink = (tenantId: string | undefined, tenantLogin: string | undefined) => {
+
+        if (!tenantLogin) {
+            return `${DIALER_URL}/login?tenant=${tenantId}`;
+        }
+
+        if (!tenantId) {
+            return `${DIALER_URL}/login?email=${tenantLogin}`;
+        }
+
+        return `${DIALER_URL}/login?tenant=${tenantId}&email=${tenantLogin}`;
     }
 
     const users = usersData?.items || []
@@ -198,7 +212,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
                                             <CopyableText
-                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.main_number}`}
+                                                tooltip={getLoginLink(tenantId, user.main_number)}
                                             />
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">
@@ -293,7 +307,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         <div className="text-gray-500">Login Link</div>
                                         <div className="text-gray-900 break-all">
                                             <CopyableText
-                                                tooltip={`${DIALER_URL}/login?tenant=${user.tenant_id}&email=${user.main_number}`}
+                                                tooltip={getLoginLink(tenantId, user.main_number)}
                                             />
                                         </div>
                                     </div>

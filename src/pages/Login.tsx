@@ -20,7 +20,7 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const navigate = useNavigate()
-    const isSignupLink = import.meta.env.VITE_WEBTRIT_IS_SIGNUP === 'true';
+    const isSignupLink = import.meta.env.VITE_IS_SIGNUP === 'true';
 
     // Get store actions
     const {setTenantId, setToken, setIsSuperTenant, setIsBasicDemo} = useAppStore()
