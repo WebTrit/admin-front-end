@@ -14,13 +14,13 @@ type UserDetails = {
 };
 
 function Invite() {
-    const {currentUser: currentUserData, tenantId} = useAppStore(); // Get currentUser from the store
+    const {currentTenant, tenantId} = useAppStore(); // Get currentUser from the store
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
-    const [currentUser, setCurrentUser] = useState<UserDetails>({
-        first_name: currentUserData?.first_name || '',
-        last_name: currentUserData?.last_name || '',
+    const [currentUser, setCurrentTenant] = useState<UserDetails>({
+        first_name: currentTenant?.first_name || '',
+        last_name: currentTenant?.last_name || '',
     });
     const [invitedUser, setInvitedUser] = useState<UserDetails>({
         first_name: '',
@@ -30,8 +30,8 @@ function Invite() {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        setCurrentUser({first_name: currentUserData?.first_name || '', last_name: currentUserData?.last_name || ''});
-    }, [currentUserData]);
+        setCurrentTenant({first_name: currentTenant?.first_name || '', last_name: currentTenant?.last_name || ''});
+    }, [currentTenant]);
 
     const validateStep = (stepNumber: number) => {
 
@@ -127,7 +127,7 @@ function Invite() {
                     </label>
                     <Input
                         value={currentUser.first_name}
-                        onChange={(e) => setCurrentUser({...currentUser, first_name: e.target.value})}
+                        onChange={(e) => setCurrentTenant({...currentUser, first_name: e.target.value})}
                         error={!!errors.current_first_name}
                     />
                     {errors.current_first_name && (
@@ -140,7 +140,7 @@ function Invite() {
                     </label>
                     <Input
                         value={currentUser.last_name}
-                        onChange={(e) => setCurrentUser({...currentUser, last_name: e.target.value})}
+                        onChange={(e) => setCurrentTenant({...currentUser, last_name: e.target.value})}
                         error={!!errors.current_last_name}
                     />
                     {errors.current_last_name && (
@@ -208,9 +208,14 @@ function Invite() {
             <p className="text-gray-600 mb-6">
                 We've sent an invitation to {invitedUser.email}
             </p>
+            <Button className="mr-4"
+                    onClick={() => navigate('/dashboard')}
+            >
+                To dashboard
+            </Button>
             <Button
                 onClick={() => {
-                    setStep(1);
+                    setStep(2);
                     setInvitedUser({first_name: '', last_name: '', email: ''});
                 }}
             >
@@ -220,7 +225,7 @@ function Invite() {
     );
 
     return (
-        <div className="min-h-screen py-12">
+        <div className="min-h-screen">
             <div className="max-w-2xl mx-auto px-4">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-center mb-2">Invite Users</h1>

@@ -26,7 +26,7 @@ export const SignupForm = () => {
     const isCompanySite = import.meta.env.VITE_IS_SIGNUP_COMPANY_SITE === 'true';
 
     const navigate = useNavigate()
-    const {setToken, setTenantId, setIsSuperTenant, setIsBasicDemo} = useAppStore()
+    const {setToken, setTenantId, setIsSuperTenant} = useAppStore()
 
     const {
         register: registerSignup,
@@ -74,7 +74,7 @@ export const SignupForm = () => {
             if (!validateRes.data.status.toLowerCase().includes("ok")) {
                 setSignupError("email", {
                     type: "manual",
-                    message: "This email address is not allowed or invalid.",
+                    message: `The email address did not pass the validation. The error message was: ${validateRes.data.message}`,
                 })
                 return
             }
@@ -115,7 +115,6 @@ export const SignupForm = () => {
                 setToken(access_token)
                 setTenantId(tenant_id)
                 setIsSuperTenant(false)
-                setIsBasicDemo(true)
 
                 navigate(`/dashboard`, {replace: true})
             } else {

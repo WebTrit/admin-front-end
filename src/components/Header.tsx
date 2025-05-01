@@ -7,9 +7,8 @@ function Header() {
     const {
         clearAuth,
         isSuperTenant,
-        isBasicDemo,
         isAdmin,
-        currentUser,
+        currentTenant,
         isTenantLoading,
         tenantId,
         fetchTenant
@@ -23,13 +22,13 @@ function Header() {
             name: 'Home',
             path: '/dashboard',
             icon: Home,
-            isAvailable: true,
+            isAvailable: !isAdmin,
         },
         {
             name: 'Configuration',
             path: configurationPath(),
             icon: Settings,
-            isAvailable: !isBasicDemo,
+            isAvailable: !currentTenant?.basic_demo,
         }
     ];
 
@@ -45,7 +44,7 @@ function Header() {
     }, []);
 
     useEffect(() => {
-        if (!currentUser && tenantId) {
+        if (!currentTenant && tenantId) {
             fetchTenant();
         }
 
@@ -69,15 +68,16 @@ function Header() {
         setIsDropdownOpen(false);
     };
 
-    function menuItemsFilter(item) {
+    function menuItemsFilter(item: any) {
         if (isAdmin) {
             return true;
         }
-        return item.isAvailable && currentUser && !isTenantLoading;
+        return item.isAvailable && currentTenant && !isTenantLoading;
     }
 
+    // todo replace any with the actual type
     return (
-        <header className="bg-white shadow-sm">
+        <header className="bg-white shadow-sm fixed w-full z-40">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center gap-x-8">
                     <div
@@ -108,25 +108,34 @@ function Header() {
                             })}
                     </nav>
                 </div>
-                <div className="flex items-center relative" ref={dropdownRef}>
-                    <button
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="h-9 w-9 p-0 flex items-center justify-center rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
-                    >
-                        <User className="h-5 w-5"/>
-                    </button>
-                    {isDropdownOpen && (
-                        <div
-                            className="absolute right-0 top-full mt-1 w-36 py-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-                            <button
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 transition-colors"
-                            >
-                                <LogOut className="h-4 w-4"/>
-                                Logout
-                            </button>
+
+
+                <div className="flex items-center gap-x-4">
+                    {!isAdmin && currentTenant?.basic_demo && (
+                        <div className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">
+                            Demo Mode
                         </div>
                     )}
+                    <div className="flex items-center relative" ref={dropdownRef}>
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="h-9 w-9 p-0 flex items-center justify-center rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
+                        >
+                            <User className="h-5 w-5"/>
+                        </button>
+                        {isDropdownOpen && (
+                            <div
+                                className="absolute right-0 top-full mt-1 w-36 py-1 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 transition-colors"
+                                >
+                                    <LogOut className="h-4 w-4"/>
+                                    Logout
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
             {/* Mobile Navigation */}

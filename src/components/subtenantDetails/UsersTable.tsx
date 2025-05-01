@@ -1,10 +1,10 @@
-import {useState} from "react"
+import React, {useState} from "react"
 import {useNavigate, useParams} from "react-router-dom"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import {Loader2, Pencil, Plus, Trash2, Users} from "lucide-react"
 import api from "@/lib/axios"
-import type {User} from "@/types"
+import {User} from "@/types"
 import Button from "@/components/ui/Button"
 import {useAppStore} from "@/lib/store"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
@@ -15,6 +15,7 @@ interface UsersTableProps {
 }
 
 export function UsersTable({maxUsers}: UsersTableProps) {
+    const {currentTenant} = useAppStore()
     const navigate = useNavigate()
     const queryClient = useQueryClient()
     const {tenantId} = useParams()
@@ -22,7 +23,6 @@ export function UsersTable({maxUsers}: UsersTableProps) {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
-    const {setUsersList} = useAppStore()
 
     const DIALER_URL = import.meta.env.VITE_WEBTRIT_DIALER_URL
 
@@ -35,11 +35,10 @@ export function UsersTable({maxUsers}: UsersTableProps) {
         queryFn: async () => {
             if (!tenantId) throw new Error("No tenant ID found")
             const response = await api.get(`/tenants/${tenantId}/users/`)
-            setUsersList(response.data)
-            return response.data
+
+            return response.data as { items: User[], count: number }
         },
     })
-    //TODO add user and tenant types
 
     const deleteMutation = useMutation({
         mutationFn: async (userId: string) => {
@@ -53,6 +52,11 @@ export function UsersTable({maxUsers}: UsersTableProps) {
             setUserToDelete(null)
         },
     })
+
+    const users: User[] = usersData?.items || []
+    const usersCount = users.length
+    const canAddUsers = maxUsers > 0 && usersCount < maxUsers
+    const hasReachedMaxUsers = maxUsers > 0 && usersCount >= maxUsers
 
     const handleDeleteClick = (user: User) => {
         setUserToDelete(user)
@@ -84,10 +88,6 @@ export function UsersTable({maxUsers}: UsersTableProps) {
         return `${DIALER_URL}/login?tenant=${tenantId}&email=${tenantLogin}`;
     }
 
-    const users = usersData?.items || []
-    const usersCount = users.length
-    const canAddUsers = maxUsers > 0 && usersCount < maxUsers
-    const hasReachedMaxUsers = maxUsers > 0 && usersCount >= maxUsers
 
     if (error) {
         return (
@@ -164,6 +164,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 <th className="pl-8 py-3 text-left text-sm font-medium text-gray-900">Email</th>
                                 <th className="pl-8 py-3 text-left text-sm font-medium text-gray-900">SIP Username</th>
                                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Extension</th>
+                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Demo</th>
                                 {DIALER_URL && (
                                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Login
                                         Link</th>
@@ -193,25 +194,38 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                     </td>
                                 </tr>
                             ) : (
-                                users.map((user: User) => (
+                                users.map((user, index) => (
                                     <tr key={user.user_id} className="hover:bg-gray-50">
                                         <td className="px-4 py-3 text-sm font-medium text-gray-900">
                                             {user.first_name} {user.last_name}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px]">
-                                            <CopyableText tooltip={user.email}/>
+                                            <CopyableText tooltip={user.email || ''}/>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500">
                                             <CopyableText tooltip={user.sip_username}/>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-gray-500">
-                                            {user.ext_number ? (
+                                            {user.ext_number ?
+                                                (<span
+                                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                            {user.ext_number}
+                                                    </span>) :
+                                                (
+                                                    <span className="text-gray-400">-</span>
+                                                )}
+                                        </td>
+                                        <td className="px-4 py-3 text-sm text-gray-500">
+                                            {user.basic_demo ? (
+                                                <span
+                                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Yes
+                                                </span>
+                                            ) : (
                                                 <span
                                                     className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                {user.ext_number}
-            </span>
-                                            ) : (
-                                                <span className="text-gray-400">-</span>
+                                                    No
+                                                </span>
                                             )}
                                         </td>
                                         {DIALER_URL && (
@@ -225,10 +239,13 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                         onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}>
                                                     <Pencil className="h-4 w-4"/>
                                                 </Button>
-                                                <Button variant="ghost" size="sm"
+                                                {users[index].email !== currentTenant?.email &&
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
                                                         onClick={() => handleDeleteClick(user)}>
-                                                    <Trash2 className="h-4 w-4 text-red-500"/>
-                                                </Button>
+                                                        <Trash2 className="h-4 w-4 text-red-500"/>
+                                                    </Button>}
                                             </div>
                                         </td>
                                     </tr>
@@ -254,7 +271,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 )}
                             </div>
                         ) : (
-                            users.map((user: User) => (
+                            users.map((user, index) => (
                                 <div key={user.user_id} className="bg-white border border-gray-200 rounded-lg p-4">
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
@@ -274,14 +291,16 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             >
                                                 <Pencil className="h-4 w-4"/>
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDeleteClick(user)}
-                                                aria-label="Delete user"
-                                            >
-                                                <Trash2 className="h-4 w-4 text-red-500"/>
-                                            </Button>
+                                            {users[index].email !== currentTenant?.email &&
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteClick(user)}
+                                                    aria-label="Delete user"
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-red-500"/>
+                                                </Button>}
+
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-y-2 text-sm">
@@ -299,7 +318,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                 <span className="text-gray-400">-</span>
                                             )}
                                         </div>
-
+                                        <div className="text-gray-500">Demo</div>
+                                        <div className="text-gray-900">{user.basic_demo ? "Yes" : "No"}</div>
                                         {DIALER_URL && (
                                             <>
                                                 <div className="text-gray-500">Login Link</div>
