@@ -1,6 +1,6 @@
 import {z} from "zod"
 
-export interface User {
+export interface Tenant {
     created_at: string;
     created_by: string;
     last_updated: string;
@@ -50,6 +50,46 @@ export interface User {
     outbound_proxy_server: string | null;
     max_users: number;
     users: [];
+}
+
+export interface User {
+    user_id: string
+    tenant_id: string
+    first_name: string
+    last_name: string
+    email: string | null
+    login: string | null
+    password: string
+    sip_username: string
+    sip_password: string
+    ext_number: string
+    main_number: string
+    outgoing_cli: string | null
+    phone_number: string | null
+    comment: string | null
+    dids: string[]
+    sms_numbers: string[]
+    config_token: string
+    config_token_expires: string
+    created_at: string
+    created_by: string
+    last_updated: string
+    updated_by: string | null
+    basic_demo: boolean
+    special_user: boolean
+    custom_attributes: Record<string, any>
+    email_validated: boolean
+    password_reset_requested: boolean
+    first_time_login: string | null
+    sip_registered: boolean
+    sip_registered_updated_at: string | null
+    api_token: string | null
+    token_expires: string | null
+    role: string | null
+    otp_sent: string | null
+    otp_id: string | null
+    otp_expires: string | null
+    validation_url: string | null
 }
 
 export const signupSchema = z.object({

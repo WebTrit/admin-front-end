@@ -1,4 +1,4 @@
-import type {UseFormRegister, FieldErrors} from "react-hook-form"
+import type {FieldErrors, UseFormRegister} from "react-hook-form"
 import {Loader2} from "lucide-react"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
@@ -68,15 +68,21 @@ export const OTPVerification = (
                     )}
                 </Button>
 
+                <Button className="w-full" type="button" onClick={onChangeInfo}>
+                    Change information
+                </Button>
+
                 <div className="text-center space-y-2">
-                    <Button type="button" variant="ghost" disabled={resendDisabled} onClick={onResend}
-                            className="w-full">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={resendDisabled}
+                        onClick={onResend}
+                        className="w-full text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
+                    >
                         {resendDisabled ? `Resend in ${resendTimer}s` : "Resend temporary password"}
                     </Button>
 
-                    <Button type="button" variant="ghost" onClick={onChangeInfo}>
-                        Change information
-                    </Button>
                 </div>
             </div>
         </div>

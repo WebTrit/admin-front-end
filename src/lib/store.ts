@@ -1,19 +1,18 @@
 import {create} from "zustand"
 import {persist} from "zustand/middleware"
 import {jwtDecode} from "jwt-decode"
-import {User} from "@/types.ts";
+import {Tenant, User} from "@/types.ts";
 import api from "@/lib/axios.ts";
 
 // Define the store state type
 interface AppState {
     isAuthenticated: boolean;
-    usersList: any[];
+    usersList: { items: User[], count: number };
     tenantId: string | null;
     token: string | null;
     isSuperTenant: boolean;
-    isBasicDemo: boolean;
     isAdmin: boolean; // Add isAdmin here
-    currentUser: User | null;
+    currentTenant: Tenant | null;
 
     isTenantLoading: boolean;
     tenantError: string | null;
@@ -25,10 +24,8 @@ interface AppState {
     clearAuth: () => void;
     checkAuth: () => boolean;
     setIsSuperTenant: (isSuperTenant: boolean) => void;
-    setIsBasicDemo: (isBasicDemo: boolean) => void;
     setIsAdmin: (isAdmin: boolean) => void; // Add setter for isAdmin
-    setCurrentUser: (user: User) => void;
-
+    setCurrentTenant: (user: Tenant) => void;
     fetchTenant: () => Promise<void>;
 }
 
@@ -51,13 +48,12 @@ export const useAppStore = create<AppState>()(
     persist(
         (set, get) => ({
             isAuthenticated: !!localStorage.getItem("token"),
-            usersList: [],
+            usersList: {items: [], count: 0},
             tenantId: localStorage.getItem("tenantId"),
             token: localStorage.getItem("token"),
             isSuperTenant: localStorage.getItem("isSuperTenant") === "true",
-            isBasicDemo: localStorage.getItem("isBasicDemo") === "true",
             isAdmin: localStorage.getItem("isAdmin") === "true",
-            currentUser: null,
+            currentTenant: null,
 
             isTenantLoading: false,
             tenantError: null,
@@ -71,15 +67,11 @@ export const useAppStore = create<AppState>()(
                 localStorage.setItem("isSuperTenant", isSuperTenant.toString());
                 set({isSuperTenant});
             },
-            setIsBasicDemo: (isBasicDemo: boolean) => {
-                localStorage.setItem("isBasicDemo", isBasicDemo.toString());
-                set({isBasicDemo});
-            },
             setIsAdmin: (isAdmin: boolean) => { // Add setter for isAdmin
                 localStorage.setItem("isAdmin", isAdmin.toString());
                 set({isAdmin});
             },
-            setCurrentUser: (currentUser) => set({currentUser}),
+            setCurrentTenant: (currentTenant) => set({currentTenant}),
             setTenantId: (tenantId) => {
                 localStorage.setItem("tenantId", tenantId);
                 set({tenantId});
@@ -92,7 +84,6 @@ export const useAppStore = create<AppState>()(
                 localStorage.removeItem("token");
                 localStorage.removeItem("tenantId");
                 localStorage.removeItem("isSuperTenant");
-                localStorage.removeItem("isBasicDemo");
                 localStorage.removeItem("isAdmin");
 
                 set({
@@ -100,10 +91,9 @@ export const useAppStore = create<AppState>()(
                     tenantId: null,
                     token: null,
                     isSuperTenant: false,
-                    isBasicDemo: false,
                     isAdmin: false,
-                    currentUser: null,
-                    usersList: [],
+                    currentTenant: null,
+                    usersList: {items: [], count: 0},
                 });
             },
             checkAuth: () => {
@@ -115,13 +105,13 @@ export const useAppStore = create<AppState>()(
                 return true;
             },
             fetchTenant: async () => {
-                const {tenantId, setCurrentUser} = get();
+                const {tenantId, setCurrentTenant} = get();
                 if (!tenantId) return;
 
                 set({isTenantLoading: true, tenantError: null});
                 try {
                     const response = await api.get(`/tenants/${tenantId}`);
-                    setCurrentUser(response.data);
+                    setCurrentTenant(response.data);
                 } catch (error: any) {
                     set({tenantError: error.message || "Failed to fetch tenant"});
                 } finally {
@@ -137,7 +127,6 @@ export const useAppStore = create<AppState>()(
                 tenantId: state.tenantId,
                 token: state.token,
                 isSuperTenant: state.isSuperTenant,
-                isBasicDemo: state.isBasicDemo,
                 isAdmin: state.isAdmin, // Persist isAdmin as well
             }),
         }

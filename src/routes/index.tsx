@@ -13,6 +13,7 @@ import PrivateRouteGuard from "@/components/guards/PrivateRouteGuard.tsx";
 import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
 import Invite from "@/pages/Invite.tsx";
 import LoginAdmin from "@/pages/LoginAdmin.tsx";
+import {PbxSetupWizard} from "@/pages/PbxSetupWizard.tsx";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
@@ -29,6 +30,7 @@ export const publicRoutes: RouteObject[] = [
         element: <Signup/>
     },
 ];
+//TODO create name based navigation
 
 // Protected routes (require authentication)
 export const protectedRoutes: RouteObject[] = [
@@ -42,6 +44,9 @@ export const protectedRoutes: RouteObject[] = [
             {
                 path: "/dashboard",
                 element: <Dashboard/>,
+            }, {
+                path: "/pbx-setup",
+                element: <PbxSetupWizard/>,
             },
             {
                 path: "/subtenants",
@@ -83,13 +88,13 @@ export const redirectRoutes: RouteObject[] = [
     {
         path: "/",
         element: (() => {
-            const {isSuperTenant, isAdmin, tenantId, isBasicDemo} = useAppStore.getState();
+            const {isSuperTenant, currentTenant, isAdmin, tenantId} = useAppStore.getState();
 
             if (isAdmin) {
                 return <Navigate to="/subtenants" replace/>
             }
 
-            if (isBasicDemo) {
+            if (currentTenant?.basic_demo) {
                 return <Navigate to="/dashboard" replace/>
             }
 

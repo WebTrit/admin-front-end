@@ -34,7 +34,8 @@ api.interceptors.request.use((config) => {
 
     if (token) {
         if (isTokenExpired(token)) {
-            throw new Error('Session expired. Please log in again.');
+            toast.error('Session expired. Please log in again.');
+            useAppStore.getState().clearAuth();
         }
         config.headers.Authorization = `Bearer ${token}`;
     }
@@ -61,7 +62,7 @@ api.interceptors.response.use(
         console.error(`❌ API Error ${status}:`, error.message);
 
         if (status === 401) {
-            toast.error('Session expired. Please log in again.');
+            toast.error('You have no permission to perform this action.');
         } else {
             toast.error(`Request failed: ${error.message}`);
         }

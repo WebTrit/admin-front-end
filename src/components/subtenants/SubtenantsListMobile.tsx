@@ -3,25 +3,14 @@ import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
+import {Tenant} from "@/types.ts";
 
-interface Subtenant {
-    tenant_id: string
-    email: string
-    login: string
-    company_name: string
-    basic_demo: boolean
-    sip: { host: string; port: number } | null
-    registrar_server: string | null
-    transport_protocol: string
-    voip_system?: { type: string }
-}
 
 interface SubtenantsListDesktopViewProps {
-    subtenants: Subtenant[]
+    subtenants: Tenant[]
     deletingTenantId: string | null
     onDelete: (tenantId: string) => void
     onCancelDelete: () => void
-    onDeleteClick: (tenantId: string) => void
     appliedFilters: Record<string, string>
     onClearFilters: () => void
 }
@@ -32,15 +21,14 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
          deletingTenantId,
          onDelete,
          onCancelDelete,
-         onDeleteClick,
          appliedFilters,
          onClearFilters,
      }) => {
         const navigate = useNavigate();
-        const [tenantToDelete, setTenantToDelete] = useState<Subtenant | null>(null);
+        const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
         const [isModalOpen, setIsModalOpen] = useState(false);
 
-        const handleDeleteClick = (tenant: Subtenant) => {
+        const handleDeleteClick = (tenant: Tenant) => {
             setTenantToDelete(tenant);
             setIsModalOpen(true);
         };

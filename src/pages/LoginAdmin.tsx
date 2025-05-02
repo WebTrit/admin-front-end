@@ -8,7 +8,6 @@ import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx"
 import axios from "axios";
 
-// Zod schema for admin login
 const adminLoginSchema = z.object({
     username: z.string().min(1, "Username is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -85,7 +84,7 @@ const LoginAdmin = () => {
             setIsAdmin(true)
 
             toast.success("Admin login successful!")
-            navigate("/dashboard", {replace: true}) // adjust path
+            navigate("/subtenants", {replace: true})
         } catch (error) {
             console.error("Admin login error:", error)
             toast.error("Invalid username or password.")

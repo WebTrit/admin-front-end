@@ -1,4 +1,4 @@
-import {Phone, Globe, Code, Download, Loader2, ExternalLink} from "lucide-react";
+import {Code, Download, ExternalLink, Globe, Loader2, Phone} from "lucide-react";
 import {DashboardCard} from "@/components/dashboard/DashboardCard.tsx";
 import {useAppStore} from "@/lib/store.ts";
 import {toast} from "react-toastify";
@@ -9,7 +9,7 @@ import {useNavigate} from "react-router-dom";
 const Dashboard = () => {
     const navigate = useNavigate();
 
-    const WEBTRIT_URL = import.meta.env.VITE_WEBTRIT_URL;
+    const WEBTRIT_URL = import.meta.env.VITE_WEBTRIT_DIALER_URL;
     const WEBTRIT_GOOGLE_PLAY_URL = import.meta.env.VITE_WEBTRIT_GOOGLE_PLAY_URL;
     const WEBTRIT_APP_STORE_URL = import.meta.env.VITE_WEBTRIT_APP_STORE_URL;
 
@@ -17,31 +17,25 @@ const Dashboard = () => {
     const IS_CONNECT_PBX_ENABLED = import.meta.env.VITE_APP_IS_DASHBOARD_CONNECT_PBX === 'true';
     const IS_DEVELOPER_ACCESS_ENABLED = import.meta.env.VITE_APP_IS_DASHBOARD_DEVELOPER_ACCESS === 'true';
 
-
-    const {
-        tenantId,
-        currentUser,
-        isTenantLoading,
-        tenantError,
-    } = useAppStore();
+    const {tenantId, currentTenant, isTenantLoading, tenantError} = useAppStore();
 
     const handleEnableDeveloperAccess = async () => {
-        if (!tenantId || !currentUser?.email) return;
+        if (!tenantId || !currentTenant?.email) return;
 
         try {
-            await api.put(`/tenants/${currentUser.super_tenant_id}/developer`, {
-                email: currentUser.email,
+            await api.put(`/tenants/${currentTenant.tenant_id}/developer`, {
+                email: currentTenant.email,
             });
 
             toast.success("Developer access enabled! Check your email for credentials.");
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentUser?.email}`);
+            toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
         }
     };
-    //TODO cache tenants data in store
+
     return (
         <div className="bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 ">
                 {isTenantLoading ? (
                     <div className="w-full h-full flex justify-center">
                         <Loader2 size={40} className="mr-2 animate-spin"/>
@@ -55,7 +49,7 @@ const Dashboard = () => {
                                 Start your WebTrit journey now!
                             </h1>
                             <p className="mt-3 text-xl text-gray-600">
-                                Hi {currentUser?.first_name}, how would you like to use WebTrit today?
+                                Hi {currentTenant?.first_name}, how would you like to use WebTrit today?
                             </p>
                         </div>
 
@@ -86,7 +80,7 @@ const Dashboard = () => {
                                             </a>
                                         </div>
                                         <a
-                                            href={`${WEBTRIT_URL}/login?tenant=${tenantId}&email=${currentUser?.email}`}
+                                            href={`${WEBTRIT_URL}/login?tenant=${tenantId}&email=${encodeURIComponent(currentTenant?.email || "")}`}
                                             target="_blank"
                                             className="mt-4 inline-flex items-center text-primary-500 hover:text-primary-600 font-medium"
                                         >
@@ -118,18 +112,36 @@ const Dashboard = () => {
                                     title="Connect WebTrit to your own PBX"
                                     description="Make and receive calls on WebTrit via your own PBX. You can add up to five users (SIP accounts) for free."
                                     icon={Globe}
-                                    linkText="Connect to your own PBX"
-                                    linkUrl="#"
                                     imageUrl="/images/dashboard/developerAccess.png"
                                     additionalContent={
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
-                                            <p>
-                                                To ensure calls go through - if you have a firewall on your PBX, please
-                                                add
-                                                the IP address of WebTrit's - 35.207.181.165 to the list of allowed IPs
-                                                for
-                                                SIP & RTP traffic.
-                                            </p>
+                                        <div>
+                                            <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
+                                                <p>
+                                                    To ensure calls go through - if you have a firewall on your PBX,
+                                                    please
+                                                    add
+                                                    the IP address of WebTrit's - 35.207.181.165 to the list of allowed
+                                                    IPs
+                                                    for
+                                                    SIP & RTP traffic.
+                                                </p>
+                                            </div>
+                                            {currentTenant?.basic_demo ?
+                                                <Button
+                                                    onClick={() => navigate('/pbx-setup')}
+                                                    className="mt-4"
+                                                >
+                                                    Connect to your own PBX
+                                                </Button> :
+                                                <Button
+                                                    className="mt-4"
+                                                    onClick={() => currentTenant?.is_super_tenant ?
+                                                        navigate(`/subtenants`) :
+                                                        navigate(`/subtenants/${tenantId}`)}
+                                                >
+                                                    To configuration page
+                                                </Button>
+                                            }
                                         </div>
                                     }
                                 />
@@ -143,16 +155,18 @@ const Dashboard = () => {
                                     linkUrl="#"
                                     imageUrl="/images/dashboard/PBX.png"
                                     additionalContent={
-                                        <div className="mt-4 text-sm text-gray-600 space-y-3">
-                                            <p>
+                                        <div className="mt-4 space-y-4">
+                                            <p className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
                                                 This will enable API access for your account and send you an email with
                                                 required credentials and detailed instructions.
                                             </p>
+
                                             <Button
                                                 onClick={handleEnableDeveloperAccess}
                                             >
                                                 Enable Developer Access
                                             </Button>
+
                                         </div>
                                     }
                                 />

@@ -1,9 +1,9 @@
-import {useParams, useNavigate} from "react-router-dom"
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query"
+import {useNavigate, useParams} from "react-router-dom"
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import {Loader2} from "lucide-react"
 import api from "../lib/axios"
-import {UserForm, UserFormData} from "@/components/user/UserForm.tsx";
+import {UserForm, UserFormData} from "@/components/shared/UserForm.tsx";
 
 const EditUser = () => {
     const {userId, tenantId} = useParams<{ userId: string; tenantId: string }>()
@@ -33,7 +33,7 @@ const EditUser = () => {
             if (!tenantId) {
                 throw new Error("Tenant ID not found. Please log in again.")
             }
-            return api.put(`/tenants/${tenantId}/users/${userId}`, data)
+            return api.patch(`/tenants/${tenantId}/users/${userId}`, data)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ["users", tenantId]})

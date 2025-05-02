@@ -23,7 +23,7 @@ const Login = () => {
     const isSignupLink = import.meta.env.VITE_IS_SIGNUP === 'true';
 
     // Get store actions
-    const {setTenantId, setToken, setIsSuperTenant, setIsBasicDemo} = useAppStore()
+    const {setTenantId, setToken, setIsSuperTenant} = useAppStore()
 
     const {
         register,
@@ -76,7 +76,6 @@ const Login = () => {
                     const {data: currentUserData} = await api.get(`/tenants/${tenant_id}`)
                     console.log("Current user data:", currentUserData)
                     setIsSuperTenant(currentUserData.is_super_tenant)
-                    setIsBasicDemo(currentUserData.basic_demo)
 
                     if (currentUserData.basic_demo) {
                         navigate('/dashboard', {replace: true})
