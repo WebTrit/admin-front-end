@@ -9,7 +9,7 @@ import {useNavigate} from "react-router-dom";
 const Dashboard = () => {
     const navigate = useNavigate();
 
-    const WEBTRIT_URL = import.meta.env.VITE_WEBTRIT_URL;
+    const WEBTRIT_URL = import.meta.env.VITE_WEBTRIT_DIALER_URL;
     const WEBTRIT_GOOGLE_PLAY_URL = import.meta.env.VITE_WEBTRIT_GOOGLE_PLAY_URL;
     const WEBTRIT_APP_STORE_URL = import.meta.env.VITE_WEBTRIT_APP_STORE_URL;
 
