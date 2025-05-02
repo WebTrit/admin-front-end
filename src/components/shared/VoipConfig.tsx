@@ -219,7 +219,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label htmlFor="host" className="block text-sm font-medium text-gray-700">
-                                SIP Hostname <span className="text-red-500">*</span>
+                                SIP Hostname / IP <span className="text-red-500">*</span>
                             </label>
                             <Input id="host" {...register("host")} disabled={!isEditing}
                                    error={!!validationErrors.host}/>
