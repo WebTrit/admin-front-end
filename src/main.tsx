@@ -8,19 +8,3 @@ createRoot(document.getElementById('root')!).render(
         <App/>
     </StrictMode>
 );
-
-const title = import.meta.env.VITE_APP_TITLE || 'Webtrit';
-const favicon = import.meta.env.VITE_FAVICON_URL || '/favicon.png';
-
-if (title) {
-    document.title = title;
-}
-
-if (favicon) {
-    const link: HTMLLinkElement =
-        document.querySelector("link[rel~='icon']") || document.createElement('link');
-    link.rel = 'icon';
-    link.href = favicon;
-    link.type = 'image/png';
-    document.head.appendChild(link);
-}

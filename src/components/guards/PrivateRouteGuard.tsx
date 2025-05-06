@@ -5,7 +5,7 @@ function PrivateRouteGuard({children}: { children: React.ReactNode }) {
     const isAuthenticated = useAppStore((state) => state.isAuthenticated)
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace/>
+        return <Navigate to="/signup" replace/>
     }
 
     return children;

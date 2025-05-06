@@ -27,7 +27,7 @@ const Dashboard = () => {
                 email: currentTenant.email,
             });
 
-            toast.success("Developer access enabled! Check your email for credentials.");
+            toast.success("We activated your developer's access. Please check your email for instructions on accessing the development environment");
         } catch (error: any) {
             toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
         }

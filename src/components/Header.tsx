@@ -69,7 +69,7 @@ function Header() {
     };
 
     function menuItemsFilter(item: any) {
-        if (isAdmin) {
+        if (isAdmin && item.name !== 'Home') {
             return true;
         }
         return item.isAvailable && currentTenant && !isTenantLoading;
