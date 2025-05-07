@@ -48,8 +48,8 @@ const LoginAdmin = () => {
         return true
     }
 
-    const onSubmit = async (data: AdminLoginFormData) => {
-        if (!validateForm(data)) return
+    const onSubmit = async (formData: AdminLoginFormData) => {
+        if (!validateForm(formData)) return
 
         const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
         const TOKEN_BASE_URL = API_BASE_URL.replace(/\/api\/v\d+(\.\d+)?$/, '');
@@ -68,8 +68,8 @@ const LoginAdmin = () => {
 
             const data = new URLSearchParams({
                 grant_type: 'password',
-                username: 'webtrit',
-                password: 'Kyiv2025!',
+                username: formData.username,
+                password: formData.password,
                 scope: '',
                 client_id: 'string',
                 client_secret: 'string',

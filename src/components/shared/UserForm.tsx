@@ -72,7 +72,6 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                 ...initialData,
             },
         })
-        console.log(12321, initialData?.sip_username, initialData?.main_number)
         const usePhoneAsUsername = useWatch({name: "use_phone_as_username", control})
         const mainNumber = useWatch({name: "main_number", control})
 
