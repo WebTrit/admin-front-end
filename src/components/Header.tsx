@@ -66,6 +66,7 @@ function Header() {
     const handleLogout = () => {
         clearAuth();
         setIsDropdownOpen(false);
+        navigate('/');
     };
 
     function menuItemsFilter(item: any) {
