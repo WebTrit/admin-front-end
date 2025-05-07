@@ -99,7 +99,9 @@ export function VoipConfigStep() {
             if (data.voip_system_type !== tenantData.voip_system?.type) {
                 changes.voip_system = {type: data.voip_system_type}
             }
-
+            if (data.transport_protocol !== tenantData.transport_protocol) {
+                changes.transport_protocol = data.transport_protocol
+            }
             const sipChanges: Record<string, any> = {}
             if (data.host !== tenantData.sip?.host) sipChanges.host = data.host
             if (String(data.port) !== String(tenantData.sip?.port)) sipChanges.port = data.port
@@ -134,13 +136,13 @@ export function VoipConfigStep() {
             tenantData={tenantData}
             onSubmit={onSubmitVoipConfig}
             isMutationPending={updateVoipMutation.isPending}
-            isEditing={true} // Always in edit mode
+            isEditing={true}
             handleEdit={() => {
-            }} // Empty function since we don't need edit button
+            }}
             validationErrors={validationErrors}
             isValidatingHost={isValidatingHost}
             setValidationErrors={setValidationErrors}
-            hideControls={true} // Hide the control buttons
+            hideControls={true}
         />
     )
 }

@@ -125,6 +125,9 @@ function SubtenantDetails() {
             if (data.voip_system_type !== tenantInfo.voip_system?.type) {
                 changes.voip_system = {type: data.voip_system_type}
             }
+            if (data.transport_protocol !== tenantInfo.transport_protocol) {
+                changes.transport_protocol = data.transport_protocol
+            }
 
             const sipChanges: Record<string, any> = {}
             if (data.host !== tenantInfo.sip?.host) sipChanges.host = data.host

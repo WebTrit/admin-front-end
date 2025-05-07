@@ -51,7 +51,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 voip_system_type: "",
                 host: "",
                 port: "5060",
-                transport_protocol: tenantData?.sip?.use_tcp ? "TCP" : "UDP",
+                transport_protocol: tenantData?.transport_protocol,
                 custom_voip_type: "",
             },
         })
@@ -72,7 +72,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                         voip_system_type: tenantData.voip_system?.type || "",
                         host: tenantData.sip?.host || "",
                         port: String(tenantData.sip?.port || ""),
-                        transport_protocol: tenantData?.sip?.use_tcp ? "TCP" : "UDP",
+                        transport_protocol: tenantData?.transport_protocol,
                     })
                 }
             },
@@ -85,7 +85,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                     custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
-                    transport_protocol: tenantData?.sip?.use_tcp ? "TCP" : "UDP",
+                    transport_protocol: tenantData?.transport_protocol,
                 })
             }
         }, [tenantData, reset])
@@ -99,7 +99,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                     custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
-                    transport_protocol: tenantData?.sip?.use_tcp ? "TCP" : "UDP",
+                    transport_protocol: tenantData?.transport_protocol,
                 })
             }
         }

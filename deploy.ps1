@@ -55,8 +55,7 @@ $projectId = if ($projectId) { $projectId } `
     elseif ([System.Environment]::GetEnvironmentVariable("PROJECT_ID")) { [System.Environment]::GetEnvironmentVariable("PROJECT_ID") } `
     else { "multi-tenant-demo" }
 
-$projectName = "Multi Tenant Demo Staging"
-$service_account = "bss-adapter"
+$service_account = "demo-backend"
 $service_account_full = "$service_account@$projectId.iam.gserviceaccount.com"
 
 $region = if ($region) { $region } `
