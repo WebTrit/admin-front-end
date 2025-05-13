@@ -64,8 +64,6 @@ api.interceptors.response.use(
         if (status === 401) {
         } else if (status === 404 || String(status).startsWith("50")) {
             toast.error('We are having difficulties connecting to WebTrit servers. Try a bit later and if the problem persists - please let us know at contact@webtrit.com')
-        } else {
-            toast.error(`Request failed: ${error.message}`);
         }
 
         return Promise.reject(error);
