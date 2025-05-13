@@ -120,7 +120,8 @@ const Dashboard = () => {
                                                     To ensure calls go through - if you have a firewall on your PBX,
                                                     please
                                                     add
-                                                    the IP address of WebTrit's - 35.207.181.165 to the list of allowed
+                                                    the IP address of WebTrit's - 129.159.206.65 and 193.122.50.244 to
+                                                    the list of allowed
                                                     IPs
                                                     for
                                                     SIP & RTP traffic.

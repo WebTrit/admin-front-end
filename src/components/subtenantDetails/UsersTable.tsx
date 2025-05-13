@@ -75,7 +75,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
         }
     }
 
-    const getLoginLink = (tenantId: string | undefined, tenantLogin: string | undefined) => {
+    const getLoginLink = (tenantId: string | undefined, tenantLogin?: string | null) => {
 
         if (!tenantLogin) {
             return `${DIALER_URL}/login?tenant=${tenantId}`;
@@ -322,9 +322,9 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         <div className="text-gray-900">{user.basic_demo ? "Yes" : "No"}</div>
                                         {DIALER_URL && (
                                             <>
-                                                <div className="text-gray-500">Login Link</div>
+                                                <div className="text-gray-500">Web-dialer Link</div>
                                                 <div className="text-gray-900 break-all">
-                                                    <CopyableText tooltip={getLoginLink(tenantId, user.main_number)}/>
+                                                    <CopyableText tooltip={getLoginLink(tenantId, user.email)}/>
                                                 </div>
                                             </>
                                         )}
