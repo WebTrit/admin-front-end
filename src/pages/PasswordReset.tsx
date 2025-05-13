@@ -60,6 +60,7 @@ const PasswordReset = () => {
             setStep("verify")
             toast.success("Reset code sent! Check your email.")
         } catch (err) {
+            toast.success("Failed to send reset code. Please try again.")
             console.error("Password reset request failed:", err)
         } finally {
             setIsSubmitting(false)
@@ -86,6 +87,13 @@ const PasswordReset = () => {
             toast.success("Password reset successful!")
             navigate("/login", {replace: true})
         } catch (err) {
+            const status = err.response?.status || 'Unknown';
+            if (status === 401) {
+                toast.error("Invalid verification code")
+            } else if (status !== 401 && String(status).startsWith("50")) {
+                toast.error("Failed to reset password. Please try again.")
+            }
+
             console.error("Password reset verification failed:", err)
         } finally {
             setIsSubmitting(false)
