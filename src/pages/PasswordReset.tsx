@@ -36,6 +36,9 @@ const PasswordReset = () => {
     const [step, setStep] = useState<"request" | "verify">("request")
     const [userEmail, setUserEmail] = useState("")
     const [otpId, setOtpId] = useState("")
+    const [resendDisabled, setResendDisabled] = useState(false)
+    const [resendTimer, setResendTimer] = useState(0)
+    const timer = useRef<number | null>(null)
 
     const navigate = useNavigate()
     const location = useLocation()
@@ -117,7 +120,42 @@ const PasswordReset = () => {
             emailForm.setValue("email", email)
             emailForm.handleSubmit(handleEmailSubmit)()
         }
+
+        return () => {
+            if (timer.current) {
+                clearInterval(timer.current)
+            }
+        }
     }, [location.search])
+
+    const handleResend = async () => {
+        if (!resendDisabled && userEmail) {
+            await handleEmailSubmit({email: userEmail})
+            startResendTimer()
+        }
+    }
+
+
+    function startResendTimer() {
+        if (timer.current) {
+            clearInterval(timer.current)
+        }
+
+        setResendDisabled(true)
+        setResendTimer(30)
+
+        timer.current = window.setInterval(() => {
+            setResendTimer((prev) => {
+                if (prev <= 1) {
+                    if (timer.current) clearInterval(timer.current)
+                    setResendDisabled(false)
+                    return 0
+                }
+                return prev - 1
+            })
+        }, 1000)
+    }
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -199,6 +237,18 @@ const PasswordReset = () => {
                                     className="bg-transparent text-gray-700 hover:bg-gray-100 border border-gray-300"
                                 >
                                     Use Different Email
+                                </Button>
+                            </div>
+
+                            <div className="text-center space-y-2">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    disabled={resendDisabled}
+                                    onClick={handleResend}
+                                    className="w-full hover:bg-transparent active:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
+                                >
+                                    {resendDisabled ? `Resend in ${resendTimer}s` : "Resend temporary password"}
                                 </Button>
                             </div>
                         </form>
