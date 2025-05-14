@@ -70,7 +70,7 @@ const PasswordReset = () => {
     const handleResetSubmit = async (data: ResetFormData) => {
         setIsSubmitting(true)
         try {
-            const response = await api.put("/api/v1.0/tenants/pwd_reset", {
+            const response = await api.put("/tenants/pwd_reset", {
                 code: data.code,
                 new_password: data.new_password,
                 otp_id: otpId,
@@ -85,7 +85,7 @@ const PasswordReset = () => {
             }
 
             toast.success("Password reset successful!")
-            navigate("/login", {replace: true})
+            navigate("/dashboard", {replace: true})
         } catch (err) {
             const status = err.response?.status || 'Unknown';
             if (status === 401) {
