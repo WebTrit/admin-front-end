@@ -14,6 +14,7 @@ import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
 import Invite from "@/pages/Invite.tsx";
 import LoginAdmin from "@/pages/LoginAdmin.tsx";
 import {PbxSetupWizard} from "@/pages/PbxSetupWizard.tsx";
+import PasswordReset from "@/pages/PasswordReset.tsx";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
@@ -24,6 +25,10 @@ export const publicRoutes: RouteObject[] = [
     {
         path: "/login-admin",
         element: <LoginAdmin/>
+    },
+    {
+        path: "/password-reset",
+        element: <PasswordReset/>
     },
     {
         path: "/signup",

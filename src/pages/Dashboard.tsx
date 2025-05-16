@@ -1,10 +1,11 @@
-import {Code, Download, ExternalLink, Globe, Loader2, Phone} from "lucide-react";
+import {Code, Download, ExternalLink, Globe, Loader2, Phone,} from "lucide-react";
 import {DashboardCard} from "@/components/dashboard/DashboardCard.tsx";
 import {useAppStore} from "@/lib/store.ts";
 import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
 import Button from "@/components/ui/Button.tsx";
 import {useNavigate} from "react-router-dom";
+import {useEffect, useState} from "react";
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -18,6 +19,23 @@ const Dashboard = () => {
     const IS_DEVELOPER_ACCESS_ENABLED = import.meta.env.VITE_APP_IS_DASHBOARD_DEVELOPER_ACCESS === 'true';
 
     const {tenantId, currentTenant, isTenantLoading, tenantError} = useAppStore();
+
+    const [whitelistIps, setWhitelistIps] = useState<string[] | null>(null);
+
+    useEffect(() => {
+        const fetchWhitelistIps = async () => {
+            try {
+                const {data} = await api.get("/info/whitelist-ips");
+                if (Array.isArray(data)) {
+                    setWhitelistIps(data);
+                }
+            } catch (error) {
+                toast.error("Failed to load whitelist IPs");
+                setWhitelistIps(null);
+            }
+        };
+        fetchWhitelistIps();
+    }, []);
 
     const handleEnableDeveloperAccess = async () => {
         if (!tenantId || !currentTenant?.email) return;
@@ -118,21 +136,23 @@ const Dashboard = () => {
                                             <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
                                                 <p>
                                                     To ensure calls go through - if you have a firewall on your PBX,
-                                                    please
-                                                    add
-                                                    the IP address of WebTrit's - 35.207.181.165 to the list of allowed
-                                                    IPs
-                                                    for
-                                                    SIP & RTP traffic.
+                                                    please add the following IP addresses to the allowed list for SIP &
+                                                    RTP traffic:
                                                 </p>
+                                                <ul className="list-disc list-inside mt-2">
+                                                    {(whitelistIps ?? ["129.159.206.65", "193.122.50.244"]).map((ip) => (
+                                                        <li key={ip}>{ip}</li>
+                                                    ))}
+                                                </ul>
                                             </div>
-                                            {currentTenant?.basic_demo ?
+                                            {currentTenant?.basic_demo ? (
                                                 <Button
                                                     onClick={() => navigate('/pbx-setup')}
                                                     className="mt-4"
                                                 >
                                                     Connect to your own PBX
-                                                </Button> :
+                                                </Button>
+                                            ) : (
                                                 <Button
                                                     className="mt-4"
                                                     onClick={() => currentTenant?.is_super_tenant ?
@@ -141,7 +161,7 @@ const Dashboard = () => {
                                                 >
                                                     To configuration page
                                                 </Button>
-                                            }
+                                            )}
                                         </div>
                                     }
                                 />
@@ -166,7 +186,6 @@ const Dashboard = () => {
                                             >
                                                 Enable Developer Access
                                             </Button>
-
                                         </div>
                                     }
                                 />

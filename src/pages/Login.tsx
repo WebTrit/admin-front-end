@@ -7,8 +7,8 @@ import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
 import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx";
+import Button from "@/components/ui/Button.tsx";
 
-// Define the form schema with Zod
 const loginSchema = z.object({
     login: z.string(),
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -22,12 +22,12 @@ const Login = () => {
     const navigate = useNavigate()
     const isSignupLink = import.meta.env.VITE_IS_SIGNUP === 'true';
 
-    // Get store actions
     const {setTenantId, setToken, setIsSuperTenant} = useAppStore()
 
     const {
         register,
         handleSubmit,
+        getValues
     } = useForm<LoginFormData>({
         defaultValues: {
             login: "",
@@ -153,7 +153,7 @@ const Login = () => {
                     </div>
 
                     <div>
-                        <button
+                        <Button
                             type="submit"
                             disabled={isSubmitting}
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -166,7 +166,19 @@ const Login = () => {
                             ) : (
                                 "Sign in"
                             )}
-                        </button>
+                        </Button>
+                        <div className="text-center mt-4">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="w-full hover:bg-transparent active:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
+                                onClick={() => {
+                                    const email = getValues("login")
+                                    navigate(`/password-reset?email=${encodeURIComponent(email)}`)
+                                }}>
+                                Forgot password? Click here to reset.
+                            </Button>
+                        </div>
                     </div>
                 </form>
             </div>
