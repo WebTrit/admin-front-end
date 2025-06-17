@@ -18,10 +18,10 @@ const userSchema = z.object({
     last_name: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
     main_number: z.string().min(1, "Main number is required"),
-    password: z.string().min(8, "Password length must be at least 8 characters"),
+    password: z.string().min(7, "Password length must be at least 7 characters"),
     ext_number: z.string().optional(),
     sip_username: z.string().optional(),
-    sip_password: z.string().min(8, "Password length must be at least 8 characters"),
+    sip_password: z.string().min(7, "Password length must be at least 7 characters"),
     use_phone_as_username: z.boolean().default(true),
 })
 
