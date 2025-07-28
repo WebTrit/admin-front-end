@@ -8,6 +8,7 @@ import api from "@/lib/axios"
 import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx";
 import Button from "@/components/ui/Button.tsx";
+import {config} from "@/config/runtime";
 
 const loginSchema = z.object({
     login: z.string(),
@@ -20,7 +21,7 @@ const Login = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const navigate = useNavigate()
-    const isSignupLink = import.meta.env.VITE_IS_SIGNUP === 'true';
+    const isSignupLink = config.IS_SIGNUP;
 
     const {setTenantId, setToken, setIsSuperTenant} = useAppStore()
 

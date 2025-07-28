@@ -1,13 +1,14 @@
 # Check if the first command-line parameter is provided
 param(
-    [Parameter(Position=0, Mandatory=$false)]
+    [Parameter(Position = 0, Mandatory = $false)]
     [string]$serviceName,
-    
-    [Parameter(ValueFromRemainingArguments=$true)]
+
+    [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$remainingArgs
 )
 
-if (-not $serviceName -or $serviceName -eq "-h") {
+if (-not $serviceName -or $serviceName -eq "-h")
+{
     Write-Host @"
 Usage: cloud-deploy.ps1 <service-name> [options]
 
@@ -39,28 +40,51 @@ $region = ""
 $projectId = ""
 
 for ($i = 0; $i -lt $remainingArgs.Count; $i++) {
-    switch ($remainingArgs[$i]) {
-        "--region" { 
+    switch ($remainingArgs[$i])
+    {
+        "--region" {
             $region = $remainingArgs[$i + 1]
             $i++
         }
-        "--project-id" { 
+        "--project-id" {
             $projectId = $remainingArgs[$i + 1]
             $i++
         }
     }
 }
 
-$projectId = if ($projectId) { $projectId } `
-    elseif ([System.Environment]::GetEnvironmentVariable("PROJECT_ID")) { [System.Environment]::GetEnvironmentVariable("PROJECT_ID") } `
-    else { "multi-tenant-demo" }
+$projectId = if ($projectId)
+{
+    $projectId
+} `
 
-$service_account = "demo-backend"
+elseif ([System.Environment]::GetEnvironmentVariable("PROJECT_ID"))
+{
+    [System.Environment]::GetEnvironmentVariable("PROJECT_ID")
+} `
+
+else
+{
+    "multi-tenant-demo"
+}
+
+$service_account = "bss-adapter"
 $service_account_full = "$service_account@$projectId.iam.gserviceaccount.com"
 
-$region = if ($region) { $region } `
-    elseif ([System.Environment]::GetEnvironmentVariable("CLOUD_REGION")) { [System.Environment]::GetEnvironmentVariable("CLOUD_REGION") } `
-    else { "europe-west3" }
+$region = if ($region)
+{
+    $region
+} `
+
+elseif ([System.Environment]::GetEnvironmentVariable("CLOUD_REGION"))
+{
+    [System.Environment]::GetEnvironmentVariable("CLOUD_REGION")
+} `
+
+else
+{
+    "europe-west3"
+}
 
 # it should be near firestore, which is in the US
 # not currently used in activation scripts
@@ -74,7 +98,8 @@ $cloudRunServiceName = $serviceName
 $currentDirectory = $PWD.Path
 Write-Host "Current Directory: $currentDirectory"
 
-if (-not $repo_region) {
+if (-not $repo_region)
+{
     $repo_region = "europe"
 }
 
@@ -91,8 +116,8 @@ $viteVars = $envVars | Where-Object { $_.name -like "VITE_*" }
 
 # Write them to a .env.build file
 $env_file = ".env.build"
-@($viteVars | ForEach-Object { "$($_.name)=$($_.value)" }) | Set-Content -Path $env_file
-@($viteVars | ForEach-Object { "$($_.name)=$($_.value)" }) | Write-Output 
+@($viteVars | ForEach-Object { "$( $_.name )=$( $_.value )" }) | Set-Content -Path $env_file
+@($viteVars | ForEach-Object { "$( $_.name )=$( $_.value )" }) | Write-Output
 Write-Output "Environment file $env_file"
 Get-Content -Path $env_file
 Write-Output "Edit the file if needed and press enter to continue..."
@@ -101,7 +126,8 @@ $response = Read-Host
 #cd app
 docker build -t $tag .
 
-if (-not $repo_region) {
+if (-not $repo_region)
+{
     $repo_region = "europe"
 }
 $registryId = "gcf-artifacts"
@@ -125,17 +151,20 @@ $deployArgs = @(
 )
 
 
-if ([System.Environment]::GetEnvironmentVariable("INITIAL_DEPLOY")) {
+if ( [System.Environment]::GetEnvironmentVariable("INITIAL_DEPLOY"))
+{
     # supply the yaml file with the environment variables so we do not have to set them all manually
     Write-Output "Will deploy a new service $cloudRunServiceName/$projectId in $region using image built in $currentDirectory"
     $yaml_cfg = "${currentDirectory}\vars\${cloudRunServiceName}.yaml"
     Write-Output "YAML config file $yaml_cfg"
-    $viteVars | ForEach-Object { "$($_.name): `"$($_.value)`"" } | Set-Content -Path $yaml_cfg
+    $viteVars | ForEach-Object { "$( $_.name ): `"$( $_.value )`"" } | Set-Content -Path $yaml_cfg
     Get-Content -Path $yaml_cfg
     Write-Output "Edit the file if needed and press enter to continue..."
     $response = Read-Host
     $deployArgs += @("--env-vars-file", $yaml_cfg)
-} else {
+}
+else
+{
     Write-Output "Will update $projectId/$cloudRunServiceName in $region using image built in $currentDirectory"
     Write-Output "Press enter to continue..."
     $response = Read-Host

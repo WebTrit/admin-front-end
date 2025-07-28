@@ -12,6 +12,7 @@ import {OTPVerification} from "@/components/signup/OTPVerification.tsx"
 import {OTPFormData, SignupFormData} from "@/types.ts"
 import axios from "axios"
 import {toast} from "react-toastify";
+import {config} from "@/config/runtime";
 
 export const SignupForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -22,8 +23,8 @@ export const SignupForm = () => {
     const [resendTimer, setResendTimer] = useState(0)
     const [formData, setFormData] = useState<SignupFormData | null>(null)
     const timer = useRef<number | null>(null)
-    const isCompanyName = import.meta.env.VITE_IS_SIGNUP_COMPANY_NAME === 'true';
-    const isCompanySite = import.meta.env.VITE_IS_SIGNUP_COMPANY_SITE === 'true';
+    const isCompanyName = config.IS_SIGNUP_COMPANY_NAME;
+    const isCompanySite = config.IS_SIGNUP_COMPANY_SITE;
 
     const navigate = useNavigate()
     const {setToken, setTenantId, setIsSuperTenant} = useAppStore()

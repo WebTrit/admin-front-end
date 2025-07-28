@@ -3,11 +3,13 @@ import {toast} from 'react-toastify';
 import {jwtDecode} from 'jwt-decode';
 import {useAppStore} from './store';
 import {v4 as uuid} from 'uuid';
+import {config} from '../config/runtime';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const API_BASE_URL = config.BACKEND_URL;
+export const API_VERSION = '/api/v1.0';
 
 const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: `${API_BASE_URL}${API_VERSION}`,
     withCredentials: false,
     headers: {
         'Content-Type': 'application/json',

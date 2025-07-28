@@ -6,17 +6,18 @@ import api from "@/lib/axios.ts";
 import Button from "@/components/ui/Button.tsx";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
+import {config} from "@/config/runtime";
 
 const Dashboard = () => {
     const navigate = useNavigate();
 
-    const WEBTRIT_URL = import.meta.env.VITE_WEBTRIT_DIALER_URL;
-    const WEBTRIT_GOOGLE_PLAY_URL = import.meta.env.VITE_WEBTRIT_GOOGLE_PLAY_URL;
-    const WEBTRIT_APP_STORE_URL = import.meta.env.VITE_WEBTRIT_APP_STORE_URL;
+    const WEBTRIT_URL = config.WEBTRIT_DIALER_URL;
+    const WEBTRIT_GOOGLE_PLAY_URL = config.WEBTRIT_GOOGLE_PLAY_URL;
+    const WEBTRIT_APP_STORE_URL = config.WEBTRIT_APP_STORE_URL;
 
-    const IS_INVITE_ENABLED = import.meta.env.VITE_APP_IS_DASHBOARD_INVITE === 'true';
-    const IS_CONNECT_PBX_ENABLED = import.meta.env.VITE_APP_IS_DASHBOARD_CONNECT_PBX === 'true';
-    const IS_DEVELOPER_ACCESS_ENABLED = import.meta.env.VITE_APP_IS_DASHBOARD_DEVELOPER_ACCESS === 'true';
+    const IS_INVITE_ENABLED = config.APP_IS_DASHBOARD_INVITE;
+    const IS_CONNECT_PBX_ENABLED = config.APP_IS_DASHBOARD_CONNECT_PBX;
+    const IS_DEVELOPER_ACCESS_ENABLED = config.APP_IS_DASHBOARD_DEVELOPER_ACCESS;
 
     const {tenantId, currentTenant, isTenantLoading, tenantError} = useAppStore();
 

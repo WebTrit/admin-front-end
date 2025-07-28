@@ -1,6 +1,7 @@
 import type {UseFormRegister, FieldErrors} from "react-hook-form"
 import Input from "@/components/ui/Input"
 import {SignupFormData} from "@/types.ts"
+import {config} from "@/config/runtime"
 
 interface PersonalInformationProps {
     register: UseFormRegister<SignupFormData>
@@ -8,7 +9,7 @@ interface PersonalInformationProps {
 }
 
 export const PersonalInformation = ({register, errors}: PersonalInformationProps) => {
-    const VITE_IS_SIGNUP_PHONE_NUMBER = import.meta.env.VITE_IS_SIGNUP_PHONE_NUMBER === 'true';
+    const VITE_IS_SIGNUP_PHONE_NUMBER = config.IS_SIGNUP_PHONE_NUMBER;
 
     return (
         <div>

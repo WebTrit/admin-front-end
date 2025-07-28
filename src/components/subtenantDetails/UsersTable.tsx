@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button"
 import {useAppStore} from "@/lib/store"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
 import {CopyableText} from "@/components/ui/CopyableText.tsx"
+import {config} from "@/config/runtime"
 
 interface UsersTableProps {
     maxUsers: number
@@ -24,7 +25,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
 
-    const DIALER_URL = import.meta.env.VITE_WEBTRIT_DIALER_URL
+    const DIALER_URL = config.WEBTRIT_DIALER_URL
 
     const {
         data: usersData,
@@ -230,7 +231,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         </td>
                                         {DIALER_URL && (
                                             <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
-                                                <CopyableText tooltip={getLoginLink(tenantId, user.main_number)}/>
+                                                <CopyableText tooltip={getLoginLink(tenantId, user.email)}/>
                                             </td>
                                         )}
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">

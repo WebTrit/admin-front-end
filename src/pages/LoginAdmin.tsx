@@ -7,6 +7,7 @@ import {Loader2} from "lucide-react"
 import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx"
 import axios from "axios";
+import {config} from "@/config/runtime";
 
 const adminLoginSchema = z.object({
     username: z.string().min(1, "Username is required"),
@@ -51,14 +52,13 @@ const LoginAdmin = () => {
     const onSubmit = async (formData: AdminLoginFormData) => {
         if (!validateForm(formData)) return
 
-        const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-        const TOKEN_BASE_URL = API_BASE_URL.replace(/\/api\/v\d+(\.\d+)?$/, '');
+        const API_BASE_URL = config.BACKEND_URL;
 
         try {
             setIsSubmitting(true)
 
             const tokenApi = axios.create({
-                baseURL: TOKEN_BASE_URL,
+                baseURL: API_BASE_URL,
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json',

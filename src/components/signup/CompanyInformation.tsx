@@ -1,6 +1,7 @@
 import type {UseFormRegister, FieldErrors} from "react-hook-form"
 import Input from "@/components/ui/Input"
 import {SignupFormData} from "@/types.ts";
+import {config} from "@/config/runtime";
 
 interface CompanyInformationProps {
     register: UseFormRegister<SignupFormData>
@@ -8,8 +9,8 @@ interface CompanyInformationProps {
 }
 
 export const CompanyInformation = ({register, errors}: CompanyInformationProps) => {
-    const isCompanyName = import.meta.env.VITE_IS_SIGNUP_COMPANY_NAME === 'true';
-    const isCompanySite = import.meta.env.VITE_IS_SIGNUP_COMPANY_SITE === 'true';
+    const isCompanyName = config.IS_SIGNUP_COMPANY_NAME;
+    const isCompanySite = config.IS_SIGNUP_COMPANY_SITE;
 
     return (
         <div>
