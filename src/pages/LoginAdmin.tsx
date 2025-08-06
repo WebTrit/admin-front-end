@@ -63,7 +63,7 @@ const LoginAdmin = () => {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json',
                 },
-                timeout: 10000,
+                timeout: 20000,
             });
 
             const data = new URLSearchParams({
