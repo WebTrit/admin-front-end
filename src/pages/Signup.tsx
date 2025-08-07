@@ -1,6 +1,6 @@
-import {Building2} from "lucide-react"
 import {SignupForm} from "@/components/signup/SignupForm.tsx";
 import {useNavigate} from "react-router-dom";
+import logoImage from "/favicon.png";
 
 const Signup = () => {
     const navigate = useNavigate()
@@ -9,7 +9,7 @@ const Signup = () => {
             <div className="max-w-md w-full space-y-6">
                 <div className="hidden lg:block">
                     <div className="flex justify-center">
-                        <Building2 className="h-12 w-12 text-primary-500"/>
+                        <img src={logoImage} alt="Logo" className="h-10 w-12"/>
                     </div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
                 </div>
