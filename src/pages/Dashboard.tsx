@@ -131,7 +131,7 @@ const Dashboard = () => {
                                     title="Connect WebTrit to your own PBX"
                                     description="Make and receive calls on WebTrit via your own PBX. You can add up to five users (SIP accounts) for free."
                                     icon={Globe}
-                                    imageUrl="/images/dashboard/developerAccess.png"
+                                    imageUrl="/images/dashboard/PBX.png"
                                     additionalContent={
                                         <div>
                                             <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
@@ -174,7 +174,7 @@ const Dashboard = () => {
                                     description="Use the demo system's API to develop your own voice / video applications."
                                     icon={Code}
                                     linkUrl="#"
-                                    imageUrl="/images/dashboard/PBX.png"
+                                    imageUrl="/images/dashboard/developerAccess.png"
                                     additionalContent={
                                         <div className="mt-4 space-y-4">
                                             <p className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">

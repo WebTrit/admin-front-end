@@ -8,6 +8,7 @@ import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx"
 import axios from "axios";
 import {config} from "@/config/runtime";
+import {API_VERSION} from "@/lib/axios.ts";
 
 const adminLoginSchema = z.object({
     username: z.string().min(1, "Username is required"),
@@ -58,7 +59,7 @@ const LoginAdmin = () => {
             setIsSubmitting(true)
 
             const tokenApi = axios.create({
-                baseURL: API_BASE_URL,
+                baseURL: `${API_BASE_URL}${API_VERSION}`,
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Accept': 'application/json',
