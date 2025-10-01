@@ -88,6 +88,12 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
             }
         }, [initialData, reset, setValue]);
 
+        useEffect(() => {
+            if (usePhoneAsUsername && mainNumber) {
+                setValue("sip_username", mainNumber);
+            }
+        }, [usePhoneAsUsername, mainNumber, setValue]);
+
         useImperativeHandle(ref, () => ({
             submitForm: () => {
                 // Create a promise that will resolve with the validation result
@@ -258,12 +264,6 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                                     type="checkbox"
                                     className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                                     {...register("use_phone_as_username")}
-                                    onChange={(e) => {
-                                        setValue("use_phone_as_username", e.target.checked)
-                                        if (e.target.checked) {
-                                            setValue("sip_username", mainNumber)
-                                        }
-                                    }}
                                 />
                                 <label htmlFor="use_phone_as_username" className="ml-2 block text-sm text-gray-700">
                                     Use phone number as SIP username

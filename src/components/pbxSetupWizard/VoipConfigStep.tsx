@@ -84,13 +84,15 @@ export function VoipConfigStep() {
         const port = Number.parseInt(data.port)
         const use_tcp = data.transport_protocol.toLowerCase() === "tcp"
 
-        const isValidHost = await validateSipHostname(data.host, port, use_tcp)
-        if (!isValidHost) {
-            setValidationErrors((prev) => ({
-                ...prev,
-                host: "SIP host is not reachable or invalid",
-            }))
-            return
+        if (!data.skip_hostname_validation) {
+            const isValidHost = await validateSipHostname(data.host, port, use_tcp)
+            if (!isValidHost) {
+                setValidationErrors((prev) => ({
+                    ...prev,
+                    host: "SIP host is not reachable or invalid",
+                }))
+                return
+            }
         }
 
         const changes: Record<string, any> = {}

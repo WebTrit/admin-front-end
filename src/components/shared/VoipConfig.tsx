@@ -53,12 +53,14 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 port: "5060",
                 transport_protocol: tenantData?.transport_protocol,
                 custom_voip_type: "",
+                skip_hostname_validation: false,
             },
         })
         //TODO fix schema mismatch
 
         const isOtherVoip = tenantData?.voip_system?.type && !VOIP_SYSTEM_TYPES.includes(tenantData.voip_system.type)
         const voipSystemType = watch("voip_system_type")
+        const skipHostnameValidation = watch("skip_hostname_validation")
 
 
         useImperativeHandle(ref, () => ({
@@ -263,6 +265,29 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                                 <p className="mt-1 text-sm text-red-600">{validationErrors.transport_protocol}</p>
                             )}
                         </div>
+                    </div>
+
+                    <div className="pt-2 space-y-2">
+                        <div className="flex items-center">
+                            <input
+                                id="skip_hostname_validation"
+                                type="checkbox"
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                disabled={!isEditing}
+                                {...register("skip_hostname_validation")}
+                            />
+                            <label htmlFor="skip_hostname_validation" className="ml-2 block text-sm text-gray-700">
+                                Skip hostname validation
+                            </label>
+                        </div>
+                        {skipHostnameValidation && (
+                            <div className="ml-6 p-2 bg-amber-50 border-l-4 border-amber-400">
+                                <p className="text-xs text-amber-800">
+                                    <strong>Warning:</strong> Configuration may not work if hostname/port/protocol are
+                                    incorrect
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </form>

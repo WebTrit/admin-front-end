@@ -23,6 +23,7 @@ export const voipConfigSchema = z.object({
         return !isNaN(port) && port >= 1 && port <= 65535
     }, "Port must be between 1 and 65535"),
     transport_protocol: z.string().min(1, "Transport protocol is required"),
+    skip_hostname_validation: z.boolean().default(false),
 })
 
 export type VoipFormData = z.infer<typeof voipConfigSchema>;
@@ -109,15 +110,17 @@ function SubtenantDetails() {
         const port = Number.parseInt(data.port);
         const use_tcp = data.transport_protocol.toLowerCase() === "tcp";
 
-        setIsValidatingHost(true);
-        const isValidHost = await validateSipHostname(data.host, port, use_tcp);
-        setIsValidatingHost(false);
-        if (!isValidHost) {
-            setVoipValidationErrors((prev) => ({
-                ...prev,
-                host: "SIP host is not reachable or invalid",
-            }));
-            return;
+        if (!data.skip_hostname_validation) {
+            setIsValidatingHost(true);
+            const isValidHost = await validateSipHostname(data.host, port, use_tcp);
+            setIsValidatingHost(false);
+            if (!isValidHost) {
+                setVoipValidationErrors((prev) => ({
+                    ...prev,
+                    host: "SIP host is not reachable or invalid",
+                }));
+                return;
+            }
         }
 
         const changes: Record<string, any> = {};
