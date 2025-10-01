@@ -9,7 +9,7 @@ const AddUser = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const navigate = useNavigate()
     const {tenantId} = useParams()
-    const {currentTenant} = useAppStore()
+    const {currentTenant, isSuperTenant} = useAppStore()
 
     const handleSubmit = async (data: UserFormData) => {
         try {
@@ -20,10 +20,15 @@ const AddUser = () => {
                 return
             }
 
-            await api.post(`/tenants/${tenantId}/users`, {
-                basic_demo: typeof currentTenant?.basic_demo === 'boolean' ? currentTenant.basic_demo : true
-                , ...data
-            })
+            const payload: any = {...data}
+
+            if (!isSuperTenant && typeof currentTenant?.basic_demo === 'boolean') {
+                payload.basic_demo = currentTenant.basic_demo
+            } else {
+                payload.basic_demo = false
+            }
+
+            await api.post(`/tenants/${tenantId}/users`, payload)
             toast.success("User added successfully!")
             navigate(`/subtenants/${tenantId}`)
         } catch (error) {
