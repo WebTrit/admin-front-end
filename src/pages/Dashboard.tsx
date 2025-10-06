@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button.tsx";
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {config} from "@/config/runtime";
+import DeveloperAccessDialog from "@/components/ui/DeveloperAccessDialog.tsx";
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -22,6 +23,8 @@ const Dashboard = () => {
     const {tenantId, currentTenant, isTenantLoading, tenantError} = useAppStore();
 
     const [whitelistIps, setWhitelistIps] = useState<string[] | null>(null);
+    const [showDevAccessDialog, setShowDevAccessDialog] = useState(false);
+    const [devAccessProcessing, setDevAccessProcessing] = useState(false);
 
     useEffect(() => {
         const fetchWhitelistIps = async () => {
@@ -38,18 +41,41 @@ const Dashboard = () => {
         fetchWhitelistIps();
     }, []);
 
+    useEffect(() => {
+        const pendingDeveloperAccess = localStorage.getItem('pendingDeveloperAccess');
+
+        if (pendingDeveloperAccess === 'true' && !isTenantLoading && currentTenant) {
+            const showDialogTimer = setTimeout(() => {
+                setShowDevAccessDialog(true);
+                handleEnableDeveloperAccess();
+            }, 5000);
+
+            return () => {
+                clearTimeout(showDialogTimer);
+            };
+        }
+    }, [currentTenant, isTenantLoading]);
+
     const handleEnableDeveloperAccess = async () => {
         if (!tenantId || !currentTenant?.email) return;
 
         try {
+            setDevAccessProcessing(true);
             await api.put(`/tenants/${currentTenant.tenant_id}/developer`, {
                 email: currentTenant.email,
             });
-
-            toast.success("We activated your developer's access. Please check your email for instructions on accessing the development environment");
         } catch (error: any) {
             toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
+            localStorage.removeItem('pendingDeveloperAccess');
+            setShowDevAccessDialog(false);
+        } finally {
+            setDevAccessProcessing(false);
         }
+    };
+
+    const handleCloseDeveloperAccessDialog = () => {
+        localStorage.removeItem('pendingDeveloperAccess');
+        setShowDevAccessDialog(false);
     };
 
     return (
@@ -195,6 +221,12 @@ const Dashboard = () => {
                     </div>
                 )}
             </div>
+
+            <DeveloperAccessDialog
+                isOpen={showDevAccessDialog}
+                onClose={handleCloseDeveloperAccessDialog}
+                isProcessing={devAccessProcessing}
+            />
         </div>
     );
 };

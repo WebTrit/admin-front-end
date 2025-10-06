@@ -2,7 +2,7 @@ import React, {useState} from "react"
 import {useNavigate, useParams} from "react-router-dom"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
-import {Loader2, Pencil, Plus, Trash2, Users} from "lucide-react"
+import {Loader2, Mail, Pencil, Plus, Trash2, Users} from "lucide-react"
 import api from "@/lib/axios"
 import {User} from "@/types"
 import Button from "@/components/ui/Button"
@@ -24,6 +24,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [resendingEmailUserId, setResendingEmailUserId] = useState<string | null>(null)
 
     const DIALER_URL = config.WEBTRIT_DIALER_URL
 
@@ -54,6 +55,43 @@ export function UsersTable({maxUsers}: UsersTableProps) {
         },
     })
 
+    const resendEmailMutation = useMutation({
+        mutationFn: async (user: User) => {
+            if (!tenantId) throw new Error("No tenant ID found")
+
+            const currentUserData = {
+                first_name: currentTenant?.first_name || '',
+                last_name: currentTenant?.last_name || ''
+            }
+
+            const invitedUserData = {
+                first_name: user.first_name,
+                last_name: user.last_name,
+                email: user.email
+            }
+
+            const fullName = `${currentUserData.first_name} ${currentUserData.last_name}`
+
+            const data = {
+                current_user: currentUserData,
+                invited_user: invitedUserData,
+                invite_msg: `Hello ${user.first_name},
+          You've received an invitation from ${fullName} to make free voice and video calls with WebTrit.
+          Don't miss out! Download the WebTrit app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`
+            }
+
+            await api.post(`/tenants/${tenantId}/invite`, data)
+        },
+        onSuccess: () => {
+            toast.success("Auto-provisioning email sent successfully")
+            setResendingEmailUserId(null)
+        },
+        onError: () => {
+            toast.error("Failed to send auto-provisioning email")
+            setResendingEmailUserId(null)
+        },
+    })
+
     const users: User[] = usersData?.items || []
     const usersCount = users.length
     const canAddUsers = maxUsers > 0 && usersCount < maxUsers
@@ -74,6 +112,11 @@ export function UsersTable({maxUsers}: UsersTableProps) {
         } finally {
             setIsDeleting(false)
         }
+    }
+
+    const handleResendEmail = async (user: User) => {
+        setResendingEmailUserId(user.user_id)
+        await resendEmailMutation.mutateAsync(user)
     }
 
     const getLoginLink = (tenantId: string | undefined, tenantLogin?: string | null) => {
@@ -236,6 +279,21 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         )}
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">
                                             <div className="flex justify-end gap-2">
+                                                {user.email && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleResendEmail(user)}
+                                                        disabled={resendingEmailUserId === user.user_id}
+                                                        title="Re-send auto-provisioning email"
+                                                    >
+                                                        {resendingEmailUserId === user.user_id ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin"/>
+                                                        ) : (
+                                                            <Mail className="h-4 w-4 text-blue-500"/>
+                                                        )}
+                                                    </Button>
+                                                )}
                                                 <Button variant="ghost" size="sm"
                                                         onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}>
                                                     <Pencil className="h-4 w-4"/>
@@ -284,6 +342,21 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             </p>
                                         </div>
                                         <div className="flex gap-2">
+                                            {user.email && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleResendEmail(user)}
+                                                    disabled={resendingEmailUserId === user.user_id}
+                                                    aria-label="Re-send auto-provisioning email"
+                                                >
+                                                    {resendingEmailUserId === user.user_id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin"/>
+                                                    ) : (
+                                                        <Mail className="h-4 w-4 text-blue-500"/>
+                                                    )}
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
