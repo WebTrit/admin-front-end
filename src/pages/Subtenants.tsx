@@ -128,7 +128,7 @@ const Subtenants = () => {
     return (
         <div className="mx-auto px-2 py-4">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-bold">Subtenants</h1>
+                <h1 className="text-xl font-bold">Tenants</h1>
                 <button
                     onClick={() => navigate("/add-subtenant")}
                     className="bg-primary-500 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-primary-600"
@@ -176,7 +176,7 @@ const Subtenants = () => {
                     {totalItems > 0 && (
                         <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="text-sm text-gray-500">
-                                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, totalItems)} of {totalItems} subtenants
+                                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, totalItems)} of {totalItems} tenants
                             </div>
 
                             <div className="flex items-center gap-2">

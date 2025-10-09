@@ -332,49 +332,50 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                         ) : (
                             users.map((user, index) => (
                                 <div key={user.user_id} className="bg-white border border-gray-200 rounded-lg p-4">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h3 className="text-sm font-medium text-gray-900">
-                                                {user.first_name} {user.last_name}
-                                            </h3>
-                                            <p className="text-sm max-w-48 text-gray-500 mt-1">
-                                                {user.email}
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {user.email && (
+                                    <div className="flex flex-col gap-3 mb-4">
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-sm font-medium text-gray-900">
+                                                    {user.first_name} {user.last_name}
+                                                </h3>
+                                                <p className="text-sm text-gray-500 mt-1 break-words">
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-1 flex-shrink-0">
+                                                {user.email && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleResendEmail(user)}
+                                                        disabled={resendingEmailUserId === user.user_id}
+                                                        aria-label="Re-send auto-provisioning email"
+                                                    >
+                                                        {resendingEmailUserId === user.user_id ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin"/>
+                                                        ) : (
+                                                            <Mail className="h-4 w-4 text-blue-500"/>
+                                                        )}
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => handleResendEmail(user)}
-                                                    disabled={resendingEmailUserId === user.user_id}
-                                                    aria-label="Re-send auto-provisioning email"
+                                                    onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}
+                                                    aria-label="Edit user"
                                                 >
-                                                    {resendingEmailUserId === user.user_id ? (
-                                                        <Loader2 className="h-4 w-4 animate-spin"/>
-                                                    ) : (
-                                                        <Mail className="h-4 w-4 text-blue-500"/>
-                                                    )}
+                                                    <Pencil className="h-4 w-4"/>
                                                 </Button>
-                                            )}
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}
-                                                aria-label="Edit user"
-                                            >
-                                                <Pencil className="h-4 w-4"/>
-                                            </Button>
-                                            {users[index].email !== currentTenant?.email &&
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteClick(user)}
-                                                    aria-label="Delete user"
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-red-500"/>
-                                                </Button>}
-
+                                                {users[index].email !== currentTenant?.email &&
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteClick(user)}
+                                                        aria-label="Delete user"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-red-500"/>
+                                                    </Button>}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-y-2 text-sm">

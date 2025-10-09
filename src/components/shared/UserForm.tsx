@@ -250,7 +250,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                                     id="password"
                                     {...register("password")}
                                     error={!!validationErrors.password}
-                                    placeholder="Enter main phone number"
+                                    placeholder="Enter password for app login"
                                 />
                                 {validationErrors.password &&
                                     <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>}

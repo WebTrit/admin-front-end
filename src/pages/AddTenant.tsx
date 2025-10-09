@@ -141,6 +141,7 @@ export default function AddTenant() {
                         <Input
                             id="company_name"
                             name="company_name"
+                            placeholder="Enter company name"
                             value={formData.company_name}
                             onChange={handleInputChange}
                             error={!!errors.company_name}
@@ -155,6 +156,7 @@ export default function AddTenant() {
                         <Input
                             id="first_name"
                             name="first_name"
+                            placeholder="Enter first name"
                             value={formData.first_name}
                             onChange={handleInputChange}
                             error={!!errors.first_name}
@@ -169,6 +171,7 @@ export default function AddTenant() {
                         <Input
                             id="last_name"
                             name="last_name"
+                            placeholder="Enter last name"
                             value={formData.last_name}
                             onChange={handleInputChange}
                             error={!!errors.last_name}
@@ -184,6 +187,7 @@ export default function AddTenant() {
                             id="email"
                             name="email"
                             type="text"
+                            placeholder="example@company.com"
                             value={formData.email}
                             onChange={handleInputChange}
                             error={!!errors.email}
@@ -199,6 +203,7 @@ export default function AddTenant() {
                             id="password"
                             name="password"
                             type="password"
+                            placeholder="Minimum 8 characters"
                             value={formData.password}
                             onChange={handleInputChange}
                             error={!!errors.password}
@@ -228,7 +233,7 @@ export default function AddTenant() {
                                 Creating...
                             </>
                         ) : (
-                            "Create Subtenant"
+                            "Create tenant"
                         )}
                     </Button>
                 </div>
