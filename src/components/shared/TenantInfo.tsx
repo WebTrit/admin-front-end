@@ -4,6 +4,7 @@ import {Building2, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import type {TenantFormData} from "@/pages/SubtenantDetails.tsx"
+import {useAppStore} from "@/lib/store.ts"
 
 export interface TenantInfoRef {
     submitForm: () => void
@@ -35,6 +36,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
         },
         ref,
     ) => {
+        const {isAdmin} = useAppStore()
         const {
             register,
             handleSubmit,
@@ -46,6 +48,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
                 first_name: "",
                 last_name: "",
                 email: "",
+                basic_demo: false,
             },
         })
 
@@ -61,6 +64,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
                         first_name: tenantData.first_name || "",
                         last_name: tenantData.last_name || "",
                         email: tenantData.email || "",
+                        basic_demo: tenantData.basic_demo || false,
                     })
                 }
             },
@@ -73,6 +77,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
                     first_name: tenantData.first_name || "",
                     last_name: tenantData.last_name || "",
                     email: tenantData.email || "",
+                    basic_demo: tenantData.basic_demo || false,
                 })
             }
         }, [tenantData, reset])
@@ -86,6 +91,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
                     first_name: tenantData.first_name || "",
                     last_name: tenantData.last_name || "",
                     email: tenantData.email || "",
+                    basic_demo: tenantData.basic_demo || false,
                 })
             }
         }
@@ -187,6 +193,25 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
                             <p className="mt-1 text-sm text-red-600">{getFieldError("last_name")}</p>
                         )}
                     </div>
+                    {isAdmin && (
+                        <div className="col-span-1 sm:col-span-2">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="basic_demo"
+                                    {...register("basic_demo")}
+                                    disabled={!isEditing}
+                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
+                                />
+                                <label htmlFor="basic_demo" className="text-sm font-medium text-gray-700">
+                                    Demo Mode
+                                </label>
+                            </div>
+                            {getFieldError("basic_demo") && (
+                                <p className="mt-1 text-sm text-red-600">{getFieldError("basic_demo")}</p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </form>
         )

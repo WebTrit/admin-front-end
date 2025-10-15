@@ -23,7 +23,7 @@ const Login = () => {
     const navigate = useNavigate()
     const isSignupLink = config.IS_SIGNUP;
 
-    const {setTenantId, setToken, setIsSuperTenant} = useAppStore()
+    const {setTenantId, setToken, setIsSuperTenant, setIsAdmin} = useAppStore()
 
     const {
         register,
@@ -68,6 +68,7 @@ const Login = () => {
             }
 
             setToken(access_token)
+            setIsAdmin(false)
             toast.success("Login successful!")
 
             if (tenant_id) {

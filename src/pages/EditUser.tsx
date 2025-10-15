@@ -83,6 +83,7 @@ const EditUser = () => {
             isSubmitting={updateUserMutation.isPending}
             title="Edit User"
             submitButtonText="Update User"
+            isEditMode={true}
         />
     )
 }

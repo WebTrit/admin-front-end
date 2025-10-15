@@ -4,6 +4,7 @@ import {z} from "zod"
 import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx"
+import {useAppStore} from "@/lib/store.ts"
 
 const userSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
@@ -16,6 +17,7 @@ const userSchema = z.object({
     sip_password: z.string().min(8, "Password length must be at least 8 characters"),
     use_phone_as_username: z.boolean().default(true),
     user_id: z.string().optional(),
+    basic_demo: z.boolean().optional(),
 }).refine((data) => {
     if (!data.use_phone_as_username && !data.sip_username) {
         return false;
@@ -42,6 +44,7 @@ interface UserFormProps {
     title?: string
     submitButtonText?: string
     hideControls?: boolean
+    isEditMode?: boolean
 }
 
 export const UserForm = forwardRef<UserFormRef, UserFormProps>(
@@ -52,11 +55,13 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
             isSubmitting,
             title,
             submitButtonText,
-            hideControls = false
+            hideControls = false,
+            isEditMode = false
         }, ref
     ) => {
         const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
         const navigate = useNavigate()
+        const {isAdmin} = useAppStore()
 
         const {register, handleSubmit, setValue, reset, control} = useForm<UserFormData>({
             defaultValues: {
@@ -69,6 +74,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                 sip_username: "",
                 sip_password: "",
                 use_phone_as_username: initialData?.sip_username === initialData?.main_number,
+                basic_demo: false,
                 ...initialData,
             },
         })
@@ -301,6 +307,22 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                                 <p className="text-red-500 text-xs mt-1">{validationErrors.sip_password}</p>
                             )}
                         </div>
+
+                        {isAdmin && isEditMode && (
+                            <div className="space-y-2">
+                                <div className="flex items-center">
+                                    <input
+                                        id="basic_demo"
+                                        type="checkbox"
+                                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                        {...register("basic_demo")}
+                                    />
+                                    <label htmlFor="basic_demo" className="ml-2 block text-sm text-gray-700">
+                                        Demo Mode
+                                    </label>
+                                </div>
+                            </div>
+                        )}
 
                         {!hideControls && (
                             <div className="flex justify-end space-x-4 pt-4">

@@ -27,7 +27,7 @@ export const SignupForm = () => {
     const isCompanySite = config.IS_SIGNUP_COMPANY_SITE;
 
     const navigate = useNavigate()
-    const {setToken, setTenantId, setIsSuperTenant} = useAppStore()
+    const {setToken, setTenantId, setIsSuperTenant, setIsAdmin} = useAppStore()
 
     const {
         register: registerSignup,
@@ -116,6 +116,7 @@ export const SignupForm = () => {
                 setToken(access_token)
                 setTenantId(tenant_id)
                 setIsSuperTenant(false)
+                setIsAdmin(false)
 
                 navigate(`/dashboard`, {replace: true})
             } else {

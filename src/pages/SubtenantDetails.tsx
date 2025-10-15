@@ -33,6 +33,7 @@ export const tenantSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
     email: z.string().optional(),
+    basic_demo: z.boolean().optional(),
 })
 
 export type TenantFormData = z.infer<typeof tenantSchema & typeof voipConfigSchema>
@@ -190,6 +191,7 @@ function SubtenantDetails() {
         if (data.company_name !== tenantInfo.company_name) changes.company_name = data.company_name;
         if (data.first_name !== tenantInfo.first_name) changes.first_name = data.first_name;
         if (data.last_name !== tenantInfo.last_name) changes.last_name = data.last_name;
+        if (data.basic_demo !== tenantInfo.basic_demo) changes.basic_demo = data.basic_demo;
 
         if (Object.keys(changes).length > 0) {
             updateTenantMutation.mutate(changes);
