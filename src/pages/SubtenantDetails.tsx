@@ -2,6 +2,7 @@ import {Loader2} from "lucide-react"
 import {TenantInfo} from "@/components/shared/TenantInfo"
 import {VoipConfig} from "@/components/shared/VoipConfig"
 import {UsersTable} from "@/components/subtenantDetails/UsersTable"
+import {SipLogs} from "@/components/subtenantDetails/SipLogs"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import api from "@/lib/axios.ts";
 import {useParams} from "react-router-dom";
@@ -241,7 +242,10 @@ function SubtenantDetails() {
                 isValidatingHost={isValidatingHost}
                 setValidationErrors={setVoipValidationErrors}
             />
+
             <UsersTable maxUsers={tenantInfo.max_users || 0}/>
+
+            <SipLogs tenantId={tenantId!} />
         </div>
     )
 }

@@ -58,17 +58,19 @@ $projectId = if ($projectId)
     $projectId
 } `
 
+
 elseif ([System.Environment]::GetEnvironmentVariable("PROJECT_ID"))
 {
     [System.Environment]::GetEnvironmentVariable("PROJECT_ID")
 } `
+
 
 else
 {
     "multi-tenant-demo"
 }
 
-$service_account = "bss-adapter"
+$service_account = "demo-backend"
 $service_account_full = "$service_account@$projectId.iam.gserviceaccount.com"
 
 $region = if ($region)
@@ -76,10 +78,12 @@ $region = if ($region)
     $region
 } `
 
+
 elseif ([System.Environment]::GetEnvironmentVariable("CLOUD_REGION"))
 {
     [System.Environment]::GetEnvironmentVariable("CLOUD_REGION")
 } `
+
 
 else
 {

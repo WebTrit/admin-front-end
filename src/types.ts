@@ -115,3 +115,60 @@ export const otpSchema = z.object({
 
 export type SignupFormData = z.infer<typeof signupSchema>
 export type OTPFormData = z.infer<typeof otpSchema>
+
+// Logs API types based on actual API endpoints
+export interface CallLogsParams {
+    date_time_gte?: string // ISO date-time (Greater or Equal)
+    date_time_lte?: string // ISO date-time (Less or Equal)
+    order?: 'asc' | 'desc'
+    limit?: number
+    filters_from?: string
+    filters_to?: string
+    filters_tenant_id?: string
+    filters_app_type?: string
+    filters_app_identifier?: string
+    filters_bundle_id?: string
+}
+
+export interface EventLogsParams {
+    date_time_gte?: string // ISO date-time (Greater or Equal)
+    date_time_lte?: string // ISO date-time (Less or Equal)
+    order?: 'asc' | 'desc'
+    limit?: number
+    filters_event_type?: string
+    filters_session_id?: number
+    filters_handle_id?: number
+    filters_call_id?: string
+    filters_app_type?: string
+    filters_tenant?: string
+    filters_app_identifier?: string
+    filters_bundle_id?: string
+}
+
+// Call log entry structure from backend
+export interface CallLog {
+    call_id: string
+    from: string
+    to: string
+    tenant_id: string
+    app_type: string
+    app_identifier: string
+    bundle_id: string
+    start_at: string // ISO date-time
+    accepted_at?: string // ISO date-time, optional
+    end_at?: string // ISO date-time, optional
+}
+
+// Event log entry structure from backend
+export interface EventLog {
+    event_type: string
+    session_id: number
+    handle_id: number
+    call_id: string
+    app_type: string
+    tenant: string
+    app_identifier: string
+    bundle_id: string
+    timestamp: string // ISO date-time
+    data?: any // Additional event data
+}
