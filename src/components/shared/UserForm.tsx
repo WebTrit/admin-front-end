@@ -10,7 +10,12 @@ const userSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
     last_name: z.string().min(1, "Last name is required"),
     email: z.string().email("Invalid email address"),
-    main_number: z.string().min(1, "Main number is required"),
+    main_number: z.string()
+        .min(1, "Main number is required")
+        .regex(
+            /^\+?[a-zA-Z0-9]+$/,
+            "Phone number can only contain +, numbers, and letters. The + sign can only appear at the start."
+        ),
     password: z.string().min(8, "Password length must be at least 8 characters"),
     ext_number: z.string().optional(),
     sip_username: z.string().optional(),
