@@ -46,8 +46,16 @@ export interface Tenant {
         port: number;
         use_tcp: boolean;
     };
-    registrar_server: string | null;
-    outbound_proxy_server: string | null;
+    registrar_server: {
+        host: string;
+        port: number;
+        use_tcp: boolean;
+    } | null;
+    outbound_proxy_server: {
+        host: string;
+        port: number;
+        use_tcp: boolean;
+    } | null;
     max_users: number;
     users: [];
 }

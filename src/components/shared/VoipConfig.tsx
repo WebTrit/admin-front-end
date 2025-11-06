@@ -54,6 +54,9 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 transport_protocol: tenantData?.transport_protocol,
                 custom_voip_type: "",
                 skip_hostname_validation: false,
+                outbound_proxy_enabled: false,
+                outbound_proxy_host: "",
+                outbound_proxy_port: "5060",
             },
         })
         //TODO fix schema mismatch
@@ -61,6 +64,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
         const isOtherVoip = tenantData?.voip_system?.type && !VOIP_SYSTEM_TYPES.includes(tenantData.voip_system.type)
         const voipSystemType = watch("voip_system_type")
         const skipHostnameValidation = watch("skip_hostname_validation")
+        const outboundProxyEnabled = watch("outbound_proxy_enabled")
 
 
         useImperativeHandle(ref, () => ({
@@ -70,11 +74,15 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             resetForm: () => {
                 setValidationErrors({})
                 if (tenantData) {
+                    const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                     reset({
                         voip_system_type: tenantData.voip_system?.type || "",
                         host: tenantData.sip?.host || "",
                         port: String(tenantData.sip?.port || ""),
                         transport_protocol: tenantData?.transport_protocol,
+                        outbound_proxy_enabled: !!hasOutboundProxy,
+                        outbound_proxy_host: tenantData.outbound_proxy_server?.host || "",
+                        outbound_proxy_port: String(tenantData.outbound_proxy_server?.port || "5060"),
                     })
                 }
             },
@@ -82,12 +90,16 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
 
         useEffect(() => {
             if (tenantData) {
+                const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                 reset({
                     voip_system_type: isOtherVoip ? "Other - not listed here" : tenantData.voip_system?.type || "",
                     custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
                     transport_protocol: tenantData?.transport_protocol,
+                    outbound_proxy_enabled: !!hasOutboundProxy,
+                    outbound_proxy_host: tenantData.outbound_proxy_server?.host || "",
+                    outbound_proxy_port: String(tenantData.outbound_proxy_server?.port || "5060"),
                 })
             }
         }, [tenantData, reset])
@@ -96,12 +108,16 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             handleEdit(false)
             setValidationErrors({})
             if (tenantData) {
+                const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                 reset({
                     voip_system_type: isOtherVoip ? "Other - not listed here" : tenantData.voip_system?.type || "",
                     custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
                     transport_protocol: tenantData?.transport_protocol,
+                    outbound_proxy_enabled: !!hasOutboundProxy,
+                    outbound_proxy_host: tenantData.outbound_proxy_server?.host || "",
+                    outbound_proxy_port: String(tenantData.outbound_proxy_server?.port || "5060"),
                 })
             }
         }
@@ -221,7 +237,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label htmlFor="host" className="block text-sm font-medium text-gray-700">
-                                SIP Hostname / IP <span className="text-red-500">*</span>
+                                {outboundProxyEnabled ? "SIP Domain" : "SIP Server Hostname / IP"} <span className="text-red-500">*</span>
                             </label>
                             <Input id="host" {...register("host")} disabled={!isEditing}
                                    error={!!validationErrors.host}/>
@@ -285,6 +301,69 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                                 <p className="text-xs text-amber-800">
                                     <strong>Warning:</strong> Configuration may not work if hostname/port/protocol are
                                     incorrect
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pt-4 mt-4 border-t border-gray-200">
+                        <div className="flex items-start mb-3">
+                            <input
+                                id="outbound_proxy_enabled"
+                                type="checkbox"
+                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-0.5"
+                                disabled={!isEditing}
+                                {...register("outbound_proxy_enabled")}
+                            />
+                            <div className="ml-3">
+                                <label htmlFor="outbound_proxy_enabled" className="block text-sm font-medium text-gray-900">
+                                    Outbound SIP Proxy
+                                </label>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Send SIP REGISTER / INVITE requests to this SIP proxy
+                                </p>
+                            </div>
+                        </div>
+
+                        {outboundProxyEnabled && (
+                            <div className="mt-4 space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="outbound_proxy_host" className="block text-sm font-medium text-gray-700">
+                                            Proxy Server Hostname / IP <span className="text-red-500">*</span>
+                                        </label>
+                                        <Input
+                                            id="outbound_proxy_host"
+                                            {...register("outbound_proxy_host")}
+                                            disabled={!isEditing}
+                                            placeholder="proxy.example.com"
+                                            error={!!validationErrors.outbound_proxy_host}
+                                        />
+                                        {validationErrors.outbound_proxy_host && (
+                                            <p className="mt-1 text-sm text-red-600">{validationErrors.outbound_proxy_host}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label htmlFor="outbound_proxy_port" className="block text-sm font-medium text-gray-700">
+                                            Proxy Server Port
+                                        </label>
+                                        <Input
+                                            id="outbound_proxy_port"
+                                            type="number"
+                                            min="1"
+                                            max="65535"
+                                            {...register("outbound_proxy_port")}
+                                            disabled={!isEditing}
+                                            placeholder="5060"
+                                            error={!!validationErrors.outbound_proxy_port}
+                                        />
+                                        {validationErrors.outbound_proxy_port && (
+                                            <p className="mt-1 text-sm text-red-600">{validationErrors.outbound_proxy_port}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 italic">
+                                    Protocol will match the SIP Protocol setting above ({watch("transport_protocol") || "UDP"})
                                 </p>
                             </div>
                         )}
