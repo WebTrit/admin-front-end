@@ -12,13 +12,7 @@ import {toast} from "react-toastify";
 
 export const voipConfigSchema = z.object({
     voip_system_type: z.string().min(1, "VoIP system type is required"),
-    host: z
-        .string()
-        .min(1, "SIP Server Hostname / IP is required")
-        .regex(
-            /^(?:\d{1,3}\.){3}\d{1,3}$|^(?=.{1,253}$)(?!-)[a-zA-Z0-9-]{1,63}(?<!-)(\.(?!-)[a-zA-Z0-9-]{1,63}(?<!-))*\.[a-zA-Z]{2,}$/,
-            "Invalid SIP Server Hostname / IP"
-        ),
+    host: z.string(),
     port: z.string().refine((val) => {
         const port = Number.parseInt(val)
         return !isNaN(port) && port >= 1 && port <= 65535
@@ -32,15 +26,34 @@ export const voipConfigSchema = z.object({
         const port = Number.parseInt(val)
         return !isNaN(port) && port >= 1 && port <= 65535
     }, "Port must be between 1 and 65535"),
-}).refine((data) => {
-    // If outbound proxy is enabled, host must be provided
-    if (data.outbound_proxy_enabled && (!data.outbound_proxy_host || data.outbound_proxy_host.trim() === "")) {
-        return false;
+}).superRefine((data, ctx) => {
+    if (!data.skip_hostname_validation && !data.outbound_proxy_enabled) {
+        if (!data.host || data.host.trim().length === 0) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "SIP Server Hostname / IP is required",
+                path: ["host"],
+            });
+            return;
+        }
+
+        const hostnameRegex = /^(?:\d{1,3}\.){3}\d{1,3}$|^(?=.{1,253}$)(?!-)[a-zA-Z0-9-]{1,63}(?<!-)(\.(?!-)[a-zA-Z0-9-]{1,63}(?<!-))*\.[a-zA-Z]{2,}$/;
+        if (!hostnameRegex.test(data.host)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Invalid SIP Server Hostname / IP",
+                path: ["host"],
+            });
+        }
     }
-    return true;
-}, {
-    message: "Outbound proxy host is required when outbound proxy is enabled",
-    path: ["outbound_proxy_host"],
+
+    if (data.outbound_proxy_enabled && (!data.outbound_proxy_host || data.outbound_proxy_host.trim() === "")) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Outbound proxy host is required when outbound proxy is enabled",
+            path: ["outbound_proxy_host"],
+        });
+    }
 })
 
 export type VoipFormData = z.infer<typeof voipConfigSchema>;

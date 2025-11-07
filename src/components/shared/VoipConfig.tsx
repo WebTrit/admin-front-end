@@ -104,6 +104,15 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             }
         }, [tenantData, reset])
 
+        useEffect(() => {
+            if (outboundProxyEnabled && skipHostnameValidation) {
+                reset((formValues) => ({
+                    ...formValues,
+                    skip_hostname_validation: false,
+                }))
+            }
+        }, [outboundProxyEnabled, skipHostnameValidation, reset])
+
         const handleCancel = () => {
             handleEdit(false)
             setValidationErrors({})
@@ -237,7 +246,8 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label htmlFor="host" className="block text-sm font-medium text-gray-700">
-                                {outboundProxyEnabled ? "SIP Domain" : "SIP Server Hostname / IP"} <span className="text-red-500">*</span>
+                                {outboundProxyEnabled ? "SIP Domain" : "SIP Server Hostname / IP"}{" "}
+                                {!outboundProxyEnabled && <span className="text-red-500">*</span>}
                             </label>
                             <Input id="host" {...register("host")} disabled={!isEditing}
                                    error={!!validationErrors.host}/>
@@ -283,28 +293,30 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                         </div>
                     </div>
 
-                    <div className="pt-2 space-y-2">
-                        <div className="flex items-center">
-                            <input
-                                id="skip_hostname_validation"
-                                type="checkbox"
-                                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                disabled={!isEditing}
-                                {...register("skip_hostname_validation")}
-                            />
-                            <label htmlFor="skip_hostname_validation" className="ml-2 block text-sm text-gray-700">
-                                Skip hostname validation
-                            </label>
-                        </div>
-                        {skipHostnameValidation && (
-                            <div className="ml-6 p-2 bg-amber-50 border-l-4 border-amber-400">
-                                <p className="text-xs text-amber-800">
-                                    <strong>Warning:</strong> Configuration may not work if hostname/port/protocol are
-                                    incorrect
-                                </p>
+                    {isEditing && !outboundProxyEnabled && (
+                        <div className="pt-2 space-y-2">
+                            <div className="flex items-center">
+                                <input
+                                    id="skip_hostname_validation"
+                                    type="checkbox"
+                                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                                    {...register("skip_hostname_validation")}
+                                />
+                                <label htmlFor="skip_hostname_validation" className="ml-2 block text-sm text-gray-700">
+                                    Skip hostname validation
+                                </label>
                             </div>
-                        )}
-                    </div>
+                            {skipHostnameValidation && (
+                                <div className="ml-6 p-2 bg-amber-50 border-l-4 border-amber-400">
+                                    <p className="text-xs text-amber-800">
+                                        <strong>Warning:</strong> Configuration may not work if hostname/port/protocol
+                                        are
+                                        incorrect
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="pt-4 mt-4 border-t border-gray-200">
                         <div className="flex items-start mb-3">
@@ -316,7 +328,8 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                                 {...register("outbound_proxy_enabled")}
                             />
                             <div className="ml-3">
-                                <label htmlFor="outbound_proxy_enabled" className="block text-sm font-medium text-gray-900">
+                                <label htmlFor="outbound_proxy_enabled"
+                                       className="block text-sm font-medium text-gray-900">
                                     Outbound SIP Proxy
                                 </label>
                                 <p className="text-xs text-gray-500 mt-1">
@@ -329,7 +342,8 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                             <div className="mt-4 space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="outbound_proxy_host" className="block text-sm font-medium text-gray-700">
+                                        <label htmlFor="outbound_proxy_host"
+                                               className="block text-sm font-medium text-gray-700">
                                             Proxy Server Hostname / IP <span className="text-red-500">*</span>
                                         </label>
                                         <Input
@@ -344,7 +358,8 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                                         )}
                                     </div>
                                     <div>
-                                        <label htmlFor="outbound_proxy_port" className="block text-sm font-medium text-gray-700">
+                                        <label htmlFor="outbound_proxy_port"
+                                               className="block text-sm font-medium text-gray-700">
                                             Proxy Server Port
                                         </label>
                                         <Input
@@ -363,7 +378,8 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                                     </div>
                                 </div>
                                 <p className="text-xs text-gray-500 italic">
-                                    Protocol will match the SIP Protocol setting above ({watch("transport_protocol") || "UDP"})
+                                    Protocol will match the SIP Protocol setting above
+                                    ({watch("transport_protocol") || "UDP"})
                                 </p>
                             </div>
                         )}
