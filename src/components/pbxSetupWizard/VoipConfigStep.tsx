@@ -85,13 +85,25 @@ export function VoipConfigStep() {
         const use_tcp = data.transport_protocol.toLowerCase() === "tcp"
 
         if (!data.skip_hostname_validation) {
-            const isValidHost = await validateSipHostname(data.host, port, use_tcp)
-            if (!isValidHost) {
-                setValidationErrors((prev) => ({
-                    ...prev,
-                    host: "SIP host is not reachable or invalid",
-                }))
-                return
+            if (data.outbound_proxy_enabled && data.outbound_proxy_host && data.outbound_proxy_host.trim() !== "") {
+                const proxyPort = data.outbound_proxy_port ? Number.parseInt(data.outbound_proxy_port) : 5060
+                const isValidProxyHost = await validateSipHostname(data.outbound_proxy_host, proxyPort, use_tcp)
+                if (!isValidProxyHost) {
+                    setValidationErrors((prev) => ({
+                        ...prev,
+                        outbound_proxy_host: "Proxy server is not reachable or invalid",
+                    }))
+                    return
+                }
+            } else {
+                const isValidHost = await validateSipHostname(data.host, port, use_tcp)
+                if (!isValidHost) {
+                    setValidationErrors((prev) => ({
+                        ...prev,
+                        host: "SIP host is not reachable or invalid",
+                    }))
+                    return
+                }
             }
         }
 
@@ -109,16 +121,37 @@ export function VoipConfigStep() {
             if (String(data.port) !== String(tenantData.sip?.port)) sipChanges.port = data.port
 
             if (Object.keys(sipChanges).length > 0) changes.sip = sipChanges
+
+            if (data.outbound_proxy_enabled && data.outbound_proxy_host && data.outbound_proxy_host.trim() !== "") {
+                const outboundProxyPort = data.outbound_proxy_port ? Number.parseInt(data.outbound_proxy_port) : 5060;
+                const useTcp = data.transport_protocol.toLowerCase() === "tcp";
+                const proxyConfig = {
+                    host: data.outbound_proxy_host,
+                    port: outboundProxyPort,
+                    use_tcp: useTcp
+                };
+
+                changes.outbound_proxy_server = proxyConfig;
+                changes.registrar_server = proxyConfig;
+            }
         }
 
-        const finalData = {
+        const finalData: Record<string, any> = {
             voip_system: {type: changes.voip_system?.type ?? tenantData.voip_system?.type},
             sip: {
                 host: changes.sip?.host ?? tenantData.sip?.host,
                 port: String(changes.sip?.port ?? tenantData.sip?.port),
+                use_tcp: data.transport_protocol.toLowerCase() === "tcp"
             },
             transport_protocol: data.transport_protocol ?? tenantData.sip?.transport_protocol,
             basic_demo: false
+        }
+
+        if (changes.outbound_proxy_server) {
+            finalData.outbound_proxy_server = changes.outbound_proxy_server;
+        }
+        if (changes.registrar_server) {
+            finalData.registrar_server = changes.registrar_server;
         }
 
         updateTenantData(finalData)
