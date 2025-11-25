@@ -9,6 +9,7 @@ import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx";
 import Button from "@/components/ui/Button.tsx";
 import {config} from "@/config/runtime";
+import logoImage from "/favicon.png";
 
 const loginSchema = z.object({
     login: z.string(),
@@ -106,8 +107,14 @@ const Login = () => {
     }
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
+            <div className="max-w-md w-full space-y-6">
+                <div className="hidden lg:block">
+                    <div className="flex justify-center">
+                        <img src={logoImage} alt="Logo" className="h-10 w-12"/>
+                    </div>
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+                </div>
+                <div className="lg:hidden">
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
                 </div>
                 {isSignupLink && <div>
