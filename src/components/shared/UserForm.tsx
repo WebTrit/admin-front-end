@@ -73,7 +73,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                 password: "",
                 sip_username: "",
                 sip_password: "",
-                use_phone_as_username: initialData?.sip_username === initialData?.main_number,
+                use_phone_as_username: true,
                 basic_demo: false,
                 ...initialData,
             },
@@ -88,9 +88,15 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                     return acc;
                 }, {} as UserFormData);
 
+                const shouldUsePhoneAsUsername = transformedData?.sip_username === initialData?.main_number;
+
                 reset(transformedData);
                 setValue("ext_number", transformedData?.ext_number || "");
-                setValue("use_phone_as_username", transformedData?.sip_username === initialData?.main_number);
+                setValue("use_phone_as_username", shouldUsePhoneAsUsername);
+
+                if (shouldUsePhoneAsUsername && transformedData?.main_number) {
+                    setValue("sip_username", transformedData.main_number);
+                }
             }
         }, [initialData, reset, setValue]);
 

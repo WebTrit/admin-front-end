@@ -169,7 +169,10 @@ export interface CallLog {
 
 // Event log entry structure from backend
 export interface EventLog {
-    event_type: string
+    id: number
+    event: string // Event name (e.g., 'sip-in', 'sip-out')
+    event_type: string // 'sip_event', 'webrtc_event', 'jsep_event', etc.
+    event_datetime: string // ISO date-time
     session_id: number
     handle_id: number
     call_id: string
@@ -178,5 +181,78 @@ export interface EventLog {
     app_identifier: string
     bundle_id: string
     timestamp: string // ISO date-time
-    data?: any // Additional event data
+
+    // WebRTC event fields
+    peer_connection?: {
+        connection_state?: string
+    }
+    subtype?: string // WebRTC event subtype
+
+    // JSEP event fields (SDP offer/answer)
+    type?: string // 'offer', 'answer', etc.
+    owner?: string // identifies the source
+    sdp?: string // Session Description Protocol data
+
+    // ICE related fields
+    local_candidate?: Record<string, unknown>
+    remote_candidate?: Record<string, unknown>
+    selected_pair?: Record<string, unknown>
+
+    // DTLS info
+    dtls?: Record<string, unknown>
+
+    sip?: {
+        sip?: string // Raw SIP message text
+        call_id?: string
+        code?: number
+        reason?: string
+        identity?: string
+    }
+    emitter?: {
+        id: number
+        name: string
+        active: boolean
+    }
+    plugin?: {
+        id: number
+        name: string
+        active: boolean
+    }
+    app_identification?: {
+        id: number
+        bundle_id: string
+        app_type: string
+        app_identifier: string
+        target_identification?: {
+            id: number
+            name: string | null
+            tenant_id: string
+            active: boolean
+        }
+    }
+    data?: {
+        app_identification?: {
+            id?: number
+            bundle_id?: string
+            app_type?: string
+            app_identifier?: string
+        }
+        target_identification?: {
+            id?: number
+            name?: string | null
+            tenant_id?: string
+            active?: boolean
+        }
+        emitter?: {
+            id?: number
+            name?: string
+            active?: boolean
+        }
+        plugin?: {
+            id?: number
+            name?: string
+            active?: boolean
+        }
+        [key: string]: unknown // Allow other unknown properties
+    }
 }
