@@ -224,24 +224,25 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
         fetchAllEvents(newLimit, true);
     };
 
+    // Track if filters changed (not just view type)
+    const currentFiltersKey = `${order}-${dateTimeGte}-${dateTimeLte}-${filterFrom}-${filterTo}-${filterStatus}-${filterAppType}`;
+    const [filtersKey, setFiltersKey] = useState('');
+    const [initialFetchDone, setInitialFetchDone] = useState(false);
+
     // Auto-fetch data when accordion is expanded (only calls on initial open)
     useEffect(() => {
-        if (!isExpanded) return;
+        if (!isExpanded || initialFetchDone) return;
         setHasCallsError(false);
-        // Only fetch calls when accordion first opens
+        setFiltersKey(currentFiltersKey);
+        setInitialFetchDone(true);
         fetchCallLogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tenantId, isExpanded]);
-
-    // Track if filters changed (not just view type)
-    const [filtersKey, setFiltersKey] = useState('');
-    const currentFiltersKey = `${order}-${dateTimeGte}-${dateTimeLte}-${filterFrom}-${filterTo}-${filterStatus}-${filterAppType}`;
+    }, [isExpanded]);
 
     // Auto-fetch when filters change with debounce
-    // Note: viewType is NOT in dependencies - we handle tab switch separately
     useEffect(() => {
-        if (!isExpanded) return;
-        if (filtersKey === currentFiltersKey) return; // No filter change
+        if (!isExpanded || !initialFetchDone) return;
+        if (filtersKey === currentFiltersKey) return;
 
         const timeoutId = setTimeout(() => {
             setFiltersKey(currentFiltersKey);
@@ -254,11 +255,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
 
         return () => clearTimeout(timeoutId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        currentFiltersKey,
-        viewType,
-        isExpanded,
-    ]);
+    }, [currentFiltersKey, viewType, isExpanded, initialFetchDone]);
 
     const clearFilters = () => {
         setDateTimeGte('');
@@ -315,11 +312,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                     if (viewType === 'calls') return;
                                     setViewType('calls');
                                     setLimit(50);
-                                    // Only fetch if no data yet
-                                    if (callLogs.length === 0 && !loadingCalls) {
-                                        setLoadingCalls(true);
-                                        fetchCallLogs();
-                                    }
+                                    fetchCallLogs();
                                 }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
                                     viewType === 'calls'
@@ -335,11 +328,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                     if (viewType === 'all-events') return;
                                     setViewType('all-events');
                                     setLimit(50);
-                                    // Only fetch if no data yet
-                                    if (allEvents.length === 0 && !loadingAllEvents) {
-                                        setLoadingAllEvents(true);
-                                        fetchAllEvents();
-                                    }
+                                    fetchAllEvents();
                                 }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
                                     viewType === 'all-events'
