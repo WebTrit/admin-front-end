@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {EventLog} from '@/types';
-import {ArrowDown, ArrowUp, Clock, Hash, Activity, ChevronDown, ChevronRight, Code} from 'lucide-react';
+import {ArrowDown, ArrowUp, Clock, Hash, Activity, ChevronDown, ChevronRight, Code, Loader2, ArrowDownWideNarrow, ArrowUpWideNarrow} from 'lucide-react';
 
 interface SipMessageDetailsProps {
     events: EventLog[];
@@ -8,12 +8,35 @@ interface SipMessageDetailsProps {
     onEventClick?: (event: EventLog) => void;
     expandedEventIds?: Set<number>;
     onToggleExpand?: (eventId: number) => void;
+    onLoadMore?: () => void;
+    hasMore?: boolean;
+    isLoadingMore?: boolean;
+    order?: 'asc' | 'desc';
+    onToggleOrder?: () => void;
 }
 
-export const SipMessageDetails = ({events, selectedEvent, onEventClick, expandedEventIds, onToggleExpand}: SipMessageDetailsProps) => {
+export const SipMessageDetails = ({events, selectedEvent, onEventClick, expandedEventIds, onToggleExpand, onLoadMore, hasMore, isLoadingMore, order = 'desc', onToggleOrder}: SipMessageDetailsProps) => {
     const [expandedRawJsonIds, setExpandedRawJsonIds] = React.useState<Set<number>>(new Set());
     const sipMessageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
     const prevSelectedEventId = useRef<number | null>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollPositionRef = useRef<number>(0);
+    const prevEventsLengthRef = useRef<number>(events.length);
+
+    // Restore scroll position after loading more
+    useEffect(() => {
+        if (events.length > prevEventsLengthRef.current && scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+        }
+        prevEventsLengthRef.current = events.length;
+    }, [events.length]);
+
+    const handleLoadMore = () => {
+        if (scrollContainerRef.current) {
+            scrollPositionRef.current = scrollContainerRef.current.scrollTop;
+        }
+        onLoadMore?.();
+    };
 
     // Scroll to SIP message only when selectedEvent changes (not when other events are expanded)
     useEffect(() => {
@@ -245,6 +268,12 @@ export const SipMessageDetails = ({events, selectedEvent, onEventClick, expanded
                         <div className="break-all">
                             <span className="font-medium text-gray-600">To:</span>
                             <span className="ml-1 sm:ml-2 text-gray-700 font-mono text-[10px] sm:text-xs">{headers['To']}</span>
+                        </div>
+                    )}
+                    {event.sip?.call_id && (
+                        <div className="break-all">
+                            <span className="font-medium text-gray-600">Call-ID:</span>
+                            <span className="ml-1 sm:ml-2 text-gray-700 font-mono text-[10px] sm:text-xs">{event.sip.call_id}</span>
                         </div>
                     )}
                 </div>
@@ -509,16 +538,49 @@ export const SipMessageDetails = ({events, selectedEvent, onEventClick, expanded
     };
 
     return (
-        <div className="h-full overflow-auto bg-gray-50">
+        <div ref={scrollContainerRef} className="h-full overflow-auto bg-gray-50">
             {/* SIP Messages List */}
             <div className="p-2 sm:p-4">
                 <h4 className="text-xs sm:text-sm font-bold text-gray-700 mb-2 sm:mb-3 uppercase flex items-center gap-2 sticky top-0 bg-gray-50 py-2 z-10 -mx-2 sm:-mx-4 px-2 sm:px-4">
                     <Activity className="w-4 h-4" />
                     SIP Messages ({events.length})
+                    {onToggleOrder && (
+                        <button
+                            onClick={onToggleOrder}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors ml-1"
+                            title={order === 'desc' ? 'Newest first' : 'Oldest first'}
+                        >
+                            {order === 'desc' ? (
+                                <ArrowDownWideNarrow className="w-4 h-4 text-gray-500" />
+                            ) : (
+                                <ArrowUpWideNarrow className="w-4 h-4 text-gray-500" />
+                            )}
+                        </button>
+                    )}
                 </h4>
                 <div className="mt-2">
                     {events.map(event => renderMessageItem(event))}
                 </div>
+
+                {/* Show More Button */}
+                {hasMore && onLoadMore && (
+                    <div className="flex justify-center py-4">
+                        <button
+                            onClick={handleLoadMore}
+                            disabled={isLoadingMore}
+                            className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {isLoadingMore ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Loading...
+                                </>
+                            ) : (
+                                'Show more'
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

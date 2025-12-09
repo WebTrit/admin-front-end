@@ -3,47 +3,13 @@ import {CallLog, CallLogsParams, EventLog, EventLogsParams} from '@/types';
 import {toast} from 'react-toastify';
 import {Activity, ChevronDown, ChevronUp, Loader2, Network, Phone, RefreshCw, Search} from 'lucide-react';
 import Button from '@/components/ui/Button';
+import {DateTimeRangePicker} from '@/components/ui/DateTimeRangePicker';
 import api from '@/lib/axios';
 import {CallLogsTable} from './CallLogsTable';
 import {CallFlowModal} from './CallFlowModal';
 import {SipMessageDetails} from './SipMessageDetails';
 
 type LogViewType = 'calls' | 'all-events';
-
-// Helper to format date for datetime-local input
-const formatForInput = (date: Date) => {
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-// Helper to format time range as human readable string
-// Returns empty string if 'to' date is not close to current time (not "last X" period)
-const formatTimeRange = (fromStr: string, toStr: string): string => {
-    if (!fromStr || !toStr) return '';
-
-    const from = new Date(fromStr);
-    const to = new Date(toStr);
-    const now = new Date();
-
-    // Check if 'to' date is within 5 minutes of now (considered as "current")
-    const toNowDiffMs = Math.abs(now.getTime() - to.getTime());
-    if (toNowDiffMs > 5 * 60 * 1000) return ''; // More than 5 minutes difference - not "last X"
-
-    const diffMs = to.getTime() - from.getTime();
-    if (diffMs <= 0) return '';
-
-    const diffMinutes = Math.round(diffMs / (1000 * 60));
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMinutes < 60) {
-        return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-    } else if (diffHours < 24) {
-        return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-    } else {
-        return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-    }
-};
 
 // Helper to extract user part from SIP URI or return as-is
 // e.g. "sip:12065551003@demo-sip.webtrit.com" -> "12065551003"
@@ -74,6 +40,8 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
     const [loadingCalls, setLoadingCalls] = useState(false);
     const [loadingEvents, setLoadingEvents] = useState(false);
     const [loadingAllEvents, setLoadingAllEvents] = useState(false);
+    const [loadingMoreCalls, setLoadingMoreCalls] = useState(false);
+    const [loadingMoreEvents, setLoadingMoreEvents] = useState(false);
     const [hasCallsError, setHasCallsError] = useState(false);
     const [hasEventsError, setHasEventsError] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -88,15 +56,12 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
     const [expandedAllEventIds, setExpandedAllEventIds] = useState<Set<number>>(new Set());
 
     // Common filter states
-    const [limit, setLimit] = useState(100);
+    const [limit, setLimit] = useState(50);
     const [order, setOrder] = useState<'asc' | 'desc'>('desc');
 
-    // Default to last hour
-    const [dateTimeGte, setDateTimeGte] = useState(() => {
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        return formatForInput(oneHourAgo);
-    });
-    const [dateTimeLte, setDateTimeLte] = useState(() => formatForInput(new Date()));
+    // No date filter by default - show all logs
+    const [dateTimeGte, setDateTimeGte] = useState('');
+    const [dateTimeLte, setDateTimeLte] = useState('');
 
     // Filters for Calls tab (filters_from, filters_to)
     const [filterFrom, setFilterFrom] = useState('');
@@ -122,18 +87,14 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
         return new Date(dateTimeLocal).toISOString();
     };
 
-    const handleDateTimeGteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setDateTimeGte(e.target.value);
-    };
-
-    const handleDateTimeLteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setDateTimeLte(e.target.value);
-    };
-
-    const fetchCallLogs = async () => {
+    const fetchCallLogs = async (newLimit?: number, isLoadMore = false) => {
         if (!tenantId) return;
 
-        setLoadingCalls(true);
+        if (isLoadMore) {
+            setLoadingMoreCalls(true);
+        } else {
+            setLoadingCalls(true);
+        }
         setHasCallsError(false);
         try {
             // Build full SIP URI from user input
@@ -142,9 +103,10 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                 return `sip:${user.trim()}@${sipDomain}`;
             };
 
+            const effectiveLimit = newLimit ?? limit;
             const params: CallLogsParams = {
                 filters_tenant_id: tenantId,
-                limit,
+                limit: effectiveLimit,
                 order,
                 ...(dateTimeGte && {date_time_gte: toISOString(dateTimeGte)}),
                 ...(dateTimeLte && {date_time_lte: toISOString(dateTimeLte)}),
@@ -173,7 +135,14 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             });
         } finally {
             setLoadingCalls(false);
+            setLoadingMoreCalls(false);
         }
+    };
+
+    const handleLoadMoreCalls = () => {
+        const newLimit = limit + 100;
+        setLimit(newLimit);
+        fetchCallLogs(newLimit, true);
     };
 
     const fetchEventLogsForCall = async (callId: string) => {
@@ -213,15 +182,20 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
         });
     };
 
-    const fetchAllEvents = async () => {
+    const fetchAllEvents = async (newLimit?: number, isLoadMore = false) => {
         if (!tenantId) return;
 
-        setLoadingAllEvents(true);
+        if (isLoadMore) {
+            setLoadingMoreEvents(true);
+        } else {
+            setLoadingAllEvents(true);
+        }
         setHasEventsError(false);
         try {
+            const effectiveLimit = newLimit ?? limit;
             const params: EventLogsParams = {
                 filters_tenant: tenantId,
-                limit,
+                limit: effectiveLimit,
                 order,
                 ...(dateTimeGte && {date_time_gte: toISOString(dateTimeGte)}),
                 ...(dateTimeLte && {date_time_lte: toISOString(dateTimeLte)}),
@@ -240,7 +214,14 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             });
         } finally {
             setLoadingAllEvents(false);
+            setLoadingMoreEvents(false);
         }
+    };
+
+    const handleLoadMoreEvents = () => {
+        const newLimit = limit + 100;
+        setLimit(newLimit);
+        fetchAllEvents(newLimit, true);
     };
 
     // Auto-fetch data when accordion is expanded (only calls on initial open)
@@ -252,11 +233,18 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tenantId, isExpanded]);
 
-    // Auto-fetch when filters or view type change with debounce
+    // Track if filters changed (not just view type)
+    const [filtersKey, setFiltersKey] = useState('');
+    const currentFiltersKey = `${order}-${dateTimeGte}-${dateTimeLte}-${filterFrom}-${filterTo}-${filterStatus}-${filterAppType}`;
+
+    // Auto-fetch when filters change with debounce
+    // Note: viewType is NOT in dependencies - we handle tab switch separately
     useEffect(() => {
         if (!isExpanded) return;
+        if (filtersKey === currentFiltersKey) return; // No filter change
 
         const timeoutId = setTimeout(() => {
+            setFiltersKey(currentFiltersKey);
             if (viewType === 'calls') {
                 if (!hasCallsError) fetchCallLogs();
             } else {
@@ -267,15 +255,9 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
         return () => clearTimeout(timeoutId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
+        currentFiltersKey,
         viewType,
-        limit,
-        order,
-        dateTimeGte,
-        dateTimeLte,
-        filterFrom,
-        filterTo,
-        filterStatus,
-        filterAppType,
+        isExpanded,
     ]);
 
     const clearFilters = () => {
@@ -285,6 +267,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
         setFilterTo('');
         setFilterStatus('all');
         setFilterAppType('');
+        setLimit(50); // Reset to default
     };
 
     return (
@@ -328,7 +311,16 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                     <div className="p-4 border-b border-gray-200 bg-white">
                         <div className="flex bg-gray-100 rounded-lg p-1 w-fit">
                             <button
-                                onClick={() => setViewType('calls')}
+                                onClick={() => {
+                                    if (viewType === 'calls') return;
+                                    setViewType('calls');
+                                    setLimit(50);
+                                    // Only fetch if no data yet
+                                    if (callLogs.length === 0 && !loadingCalls) {
+                                        setLoadingCalls(true);
+                                        fetchCallLogs();
+                                    }
+                                }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
                                     viewType === 'calls'
                                         ? 'bg-white text-primary-600 shadow-sm'
@@ -339,7 +331,16 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                 Call Logs
                             </button>
                             <button
-                                onClick={() => setViewType('all-events')}
+                                onClick={() => {
+                                    if (viewType === 'all-events') return;
+                                    setViewType('all-events');
+                                    setLimit(50);
+                                    // Only fetch if no data yet
+                                    if (allEvents.length === 0 && !loadingAllEvents) {
+                                        setLoadingAllEvents(true);
+                                        fetchAllEvents();
+                                    }
+                                }}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
                                     viewType === 'all-events'
                                         ? 'bg-white text-primary-600 shadow-sm'
@@ -372,11 +373,6 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                     <Search className="w-4 h-4"/>
                                     Filters
                                 </h4>
-                                {formatTimeRange(dateTimeGte, dateTimeLte) && (
-                                    <span className="text-xs text-gray-500">
-                                        Showing logs for last {formatTimeRange(dateTimeGte, dateTimeLte)}
-                                    </span>
-                                )}
                             </div>
                             <div className="flex flex-wrap gap-1 sm:gap-2">
                                 <Button
@@ -396,104 +392,75 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                     )}
                                 </Button>
                                 <Button
-                                    onClick={() => setOrder(order === 'desc' ? 'asc' : 'desc')}
+                                    onClick={clearFilters}
                                     variant="outline"
                                     size="sm"
-                                    title="Toggle sort order"
                                     className="text-xs sm:text-sm px-2 sm:px-3"
                                 >
-                                    <span className="sm:hidden">{order === 'desc' ? 'Newest' : 'Oldest'}</span>
-                                    <span className="hidden sm:inline">{order === 'desc' ? 'Newest first' : 'Oldest first'}</span>
-                                </Button>
-                                <Button
-                                    onClick={() => {
-                                        const limits = [50, 100, 200, 500];
-                                        const currentIndex = limits.indexOf(limit);
-                                        const nextIndex = (currentIndex + 1) % limits.length;
-                                        setLimit(limits[nextIndex]);
-                                    }}
-                                    variant="outline"
-                                    size="sm"
-                                    title="Change limit"
-                                    className="text-xs sm:text-sm px-2 sm:px-3"
-                                >
-                                    {limit}{' '}<span className="hidden sm:inline">{viewType === 'calls' ? 'calls' : 'events'}</span>
+                                    Clear Filters
                                 </Button>
                             </div>
                         </div>
 
                         {/* Collapsible filters on mobile, always visible on desktop */}
                         <div className={`${isFiltersExpanded ? 'block' : 'hidden'} sm:block mt-3 sm:mt-4`}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                            {/* Common filters for both tabs */}
-                            <div lang="en-GB">
+                            <div className="flex flex-wrap items-end gap-3">
+                            {/* Date Range Picker */}
+                            <div className="flex-1 min-w-[200px]">
                                 <label className="block text-xs font-medium text-gray-500 mb-1">
-                                    Date From
+                                    Date Range
                                 </label>
-                                <input
-                                    type="datetime-local"
-                                    value={dateTimeGte}
-                                    onChange={handleDateTimeGteChange}
-                                    lang="en-GB"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                />
-                            </div>
-                            <div lang="en-GB">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">
-                                    Date To
-                                </label>
-                                <input
-                                    type="datetime-local"
-                                    value={dateTimeLte}
-                                    onChange={handleDateTimeLteChange}
-                                    lang="en-GB"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                <DateTimeRangePicker
+                                    dateTimeGte={dateTimeGte}
+                                    dateTimeLte={dateTimeLte}
+                                    onDateTimeGteChange={setDateTimeGte}
+                                    onDateTimeLteChange={setDateTimeLte}
                                 />
                             </div>
 
                             {/* Filters specific to Call Logs tab */}
                             {viewType === 'calls' && (
                                 <>
-                                    <div>
+                                    <div className="flex-1 min-w-[180px]">
                                         <label className="block text-xs font-medium text-gray-500 mb-1">
                                             From
                                         </label>
-                                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
-                                            <span className="px-2 py-2 bg-gray-100 text-gray-500 text-sm border-r border-gray-300">sip:</span>
+                                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 bg-white">
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-r border-gray-300">sip:</span>
                                             <input
                                                 type="text"
                                                 value={filterFrom}
                                                 onChange={(e) => setFilterFrom(extractSipUser(e.target.value))}
                                                 placeholder="user"
-                                                className="flex-1 px-2 py-2 text-sm focus:outline-none min-w-0"
+                                                className="flex-1 px-1.5 py-1.5 text-sm focus:outline-none min-w-0"
                                             />
-                                            <span className="px-2 py-2 bg-gray-100 text-gray-500 text-sm border-l border-gray-300 truncate max-w-[120px]" title={`@${sipDomain}`}>@{sipDomain}</span>
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-l border-gray-300 truncate max-w-[100px]" title={`@${sipDomain}`}>@{sipDomain}</span>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className="flex-1 min-w-[180px]">
                                         <label className="block text-xs font-medium text-gray-500 mb-1">
                                             To
                                         </label>
-                                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
-                                            <span className="px-2 py-2 bg-gray-100 text-gray-500 text-sm border-r border-gray-300">sip:</span>
+                                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 bg-white">
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-r border-gray-300">sip:</span>
                                             <input
                                                 type="text"
                                                 value={filterTo}
                                                 onChange={(e) => setFilterTo(extractSipUser(e.target.value))}
                                                 placeholder="user"
-                                                className="flex-1 px-2 py-2 text-sm focus:outline-none min-w-0"
+                                                className="flex-1 px-1.5 py-1.5 text-sm focus:outline-none min-w-0"
                                             />
-                                            <span className="px-2 py-2 bg-gray-100 text-gray-500 text-sm border-l border-gray-300 truncate max-w-[120px]" title={`@${sipDomain}`}>@{sipDomain}</span>
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-l border-gray-300 truncate max-w-[100px]" title={`@${sipDomain}`}>@{sipDomain}</span>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className="flex-1 min-w-[120px]">
                                         <label className="block text-xs font-medium text-gray-500 mb-1">
                                             Status
                                         </label>
                                         <select
                                             value={filterStatus}
                                             onChange={(e) => setFilterStatus(e.target.value as 'all' | 'answered' | 'missed')}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                            className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-white"
                                         >
                                             <option value="all">All</option>
                                             <option value="answered">Answered</option>
@@ -505,34 +472,27 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
 
                             {/* Filters specific to All SIP Events tab */}
                             {viewType === 'all-events' && (
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        App Type
-                                    </label>
-                                    <select
-                                        value={filterAppType}
-                                        onChange={(e) => setFilterAppType(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                    >
-                                        <option value="">All App Types</option>
-                                        <option value="android">Android</option>
-                                        <option value="ios">iOS</option>
-                                        <option value="web">Web</option>
-                                    </select>
-                                </div>
+                                <>
+                                    <div className="flex-1 min-w-[180px]">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                                            App Type
+                                        </label>
+                                        <select
+                                            value={filterAppType}
+                                            onChange={(e) => setFilterAppType(e.target.value)}
+                                            className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-white"
+                                        >
+                                            <option value="">All</option>
+                                            <option value="android">Android</option>
+                                            <option value="ios">iOS</option>
+                                            <option value="web">Web</option>
+                                        </select>
+                                    </div>
+                                    {/* Spacers to match Call Logs layout */}
+                                    <div className="flex-1 min-w-[180px]"></div>
+                                    <div className="flex-1 min-w-[120px]"></div>
+                                </>
                             )}
-
-                            {/* Clear Filters Button */}
-                            <div className="flex items-end">
-                                <Button
-                                    onClick={clearFilters}
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full"
-                                >
-                                    Clear Filters
-                                </Button>
-                            </div>
                             </div>
                         </div>
                     </div>
@@ -577,6 +537,11 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                     <CallLogsTable
                                         calls={callLogs}
                                         onViewCallFlow={handleViewCallFlow}
+                                        onLoadMore={handleLoadMoreCalls}
+                                        hasMore={callLogs.length >= limit}
+                                        isLoadingMore={loadingMoreCalls}
+                                        order={order}
+                                        onToggleOrder={() => setOrder(order === 'desc' ? 'asc' : 'desc')}
                                     />
                                 )}
                             </div>
@@ -621,6 +586,11 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                         onEventClick={(event) => setSelectedAllEvent(event)}
                                         expandedEventIds={expandedAllEventIds}
                                         onToggleExpand={handleToggleExpandAllEvent}
+                                        onLoadMore={handleLoadMoreEvents}
+                                        hasMore={allEvents.length >= limit}
+                                        isLoadingMore={loadingMoreEvents}
+                                        order={order}
+                                        onToggleOrder={() => setOrder(order === 'desc' ? 'asc' : 'desc')}
                                     />
                                 )}
                             </div>

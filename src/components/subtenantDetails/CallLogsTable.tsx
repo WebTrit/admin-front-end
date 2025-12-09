@@ -1,14 +1,37 @@
-import {useState} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import {CallLog} from '@/types';
-import {PhoneIncoming, PhoneMissed, GitBranch, Clock, ChevronDown, ChevronRight, Hash, Activity} from 'lucide-react';
+import {PhoneIncoming, PhoneMissed, GitBranch, Clock, ChevronDown, ChevronRight, Hash, Activity, Loader2, ArrowDownWideNarrow, ArrowUpWideNarrow} from 'lucide-react';
 
 interface CallLogsTableProps {
     calls: CallLog[];
     onViewCallFlow: (call: CallLog) => void;
+    onLoadMore?: () => void;
+    hasMore?: boolean;
+    isLoadingMore?: boolean;
+    order?: 'asc' | 'desc';
+    onToggleOrder?: () => void;
 }
 
-export const CallLogsTable = ({calls, onViewCallFlow}: CallLogsTableProps) => {
+export const CallLogsTable = ({calls, onViewCallFlow, onLoadMore, hasMore, isLoadingMore, order = 'desc', onToggleOrder}: CallLogsTableProps) => {
     const [expandedCallIds, setExpandedCallIds] = useState<Set<string>>(new Set());
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollPositionRef = useRef<number>(0);
+    const prevCallsLengthRef = useRef<number>(calls.length);
+
+    // Restore scroll position after loading more
+    useEffect(() => {
+        if (calls.length > prevCallsLengthRef.current && scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTop = scrollPositionRef.current;
+        }
+        prevCallsLengthRef.current = calls.length;
+    }, [calls.length]);
+
+    const handleLoadMore = () => {
+        if (scrollContainerRef.current) {
+            scrollPositionRef.current = scrollContainerRef.current.scrollTop;
+        }
+        onLoadMore?.();
+    };
 
     const formatDuration = (call: CallLog) => {
         if (!call.accepted_at || !call.end_at) return null;
@@ -44,11 +67,24 @@ export const CallLogsTable = ({calls, onViewCallFlow}: CallLogsTableProps) => {
     };
 
     return (
-        <div className="h-full overflow-auto bg-gray-50">
+        <div ref={scrollContainerRef} className="h-full overflow-auto bg-gray-50">
             <div className="p-4">
                 <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase flex items-center gap-2 sticky top-0 bg-gray-50 py-2">
                     <Activity className="w-4 h-4" />
                     Call Logs ({calls.length})
+                    {onToggleOrder && (
+                        <button
+                            onClick={onToggleOrder}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors ml-1"
+                            title={order === 'desc' ? 'Newest first' : 'Oldest first'}
+                        >
+                            {order === 'desc' ? (
+                                <ArrowDownWideNarrow className="w-4 h-4 text-gray-500" />
+                            ) : (
+                                <ArrowUpWideNarrow className="w-4 h-4 text-gray-500" />
+                            )}
+                        </button>
+                    )}
                 </h4>
                 {calls.map((call) => {
                     const wasAccepted = !!call.accepted_at;
@@ -66,12 +102,12 @@ export const CallLogsTable = ({calls, onViewCallFlow}: CallLogsTableProps) => {
                             className={`border-l-4 p-4 mb-2 transition-all ${colorClasses} hover:shadow-md`}
                         >
                             {/* Compact Summary */}
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                                <div className="flex items-center gap-3">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-4 mb-2">
+                                <div className="flex items-center gap-2 sm:gap-3">
                                     {/* Chevron for expand/collapse */}
                                     <button
                                         onClick={() => handleToggleExpand(call.call_id)}
-                                        className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                        className="p-1 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
                                         aria-label={isExpanded ? "Collapse" : "Expand"}
                                     >
                                         {isExpanded ? (
@@ -94,13 +130,13 @@ export const CallLogsTable = ({calls, onViewCallFlow}: CallLogsTableProps) => {
                                         {duration && <span className="ml-2">• {duration}</span>}
                                     </span>
                                 </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
+                                <div className="text-[10px] sm:text-xs text-gray-500 flex items-center gap-1 ml-8 sm:ml-0">
+                                    <Clock className="w-3 h-3 hidden sm:block" />
                                     {formatFullDateTime(call.start_at)}
                                 </div>
                             </div>
 
-                            {/* From/To - Compact */}
+                            {/* From/To/Call-ID - Compact */}
                             <div className="space-y-1 text-xs mb-2 ml-9">
                                 <div>
                                     <span className="font-medium text-gray-600">From:</span>
@@ -110,6 +146,12 @@ export const CallLogsTable = ({calls, onViewCallFlow}: CallLogsTableProps) => {
                                     <span className="font-medium text-gray-600">To:</span>
                                     <span className="ml-2 text-gray-700 font-mono">{call.to || 'Unknown'}</span>
                                 </div>
+                                {call.call_id && (
+                                    <div className="break-all">
+                                        <span className="font-medium text-gray-600">Call-ID:</span>
+                                        <span className="ml-2 text-gray-700 font-mono">{call.call_id}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Expanded Details */}
@@ -200,6 +242,26 @@ export const CallLogsTable = ({calls, onViewCallFlow}: CallLogsTableProps) => {
                         </div>
                     );
                 })}
+
+                {/* Show More Button */}
+                {hasMore && onLoadMore && (
+                    <div className="flex justify-center py-4">
+                        <button
+                            onClick={handleLoadMore}
+                            disabled={isLoadingMore}
+                            className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {isLoadingMore ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Loading...
+                                </>
+                            ) : (
+                                'Show more'
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
