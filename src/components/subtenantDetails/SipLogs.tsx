@@ -1,43 +1,85 @@
 import {useEffect, useState} from 'react';
 import {CallLog, CallLogsParams, EventLog, EventLogsParams} from '@/types';
 import {toast} from 'react-toastify';
-import {Activity, ChevronDown, ChevronUp, Loader2, Phone, RefreshCw} from 'lucide-react';
+import {Activity, ChevronDown, ChevronUp, Loader2, Network, Phone, RefreshCw, Search} from 'lucide-react';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
+import {DateTimeRangePicker} from '@/components/ui/DateTimeRangePicker';
 import api from '@/lib/axios';
+import {CallLogsTable} from './CallLogsTable';
+import {CallFlowModal} from './CallFlowModal';
+import {SipMessageDetails} from './SipMessageDetails';
 
-type LogType = 'calls' | 'events';
+type LogViewType = 'calls' | 'all-events';
+
+// Helper to extract user part from SIP URI or return as-is
+// e.g. "sip:12065551003@demo-sip.webtrit.com" -> "12065551003"
+const extractSipUser = (input: string): string => {
+    const trimmed = input.trim();
+    // Match sip:user@domain pattern
+    const match = trimmed.match(/^sip:([^@]+)@.+$/i);
+    if (match) {
+        return match[1];
+    }
+    // Remove sip: prefix if present
+    if (trimmed.toLowerCase().startsWith('sip:')) {
+        return trimmed.slice(4);
+    }
+    return trimmed;
+};
 
 interface SipLogsProps {
     tenantId: string;
+    sipDomain: string;
 }
 
-export const SipLogs = ({tenantId}: SipLogsProps) => {
-    const [logType, setLogType] = useState<LogType>('calls');
+export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
+    const [viewType, setViewType] = useState<LogViewType>('calls');
     const [callLogs, setCallLogs] = useState<CallLog[]>([]);
     const [eventLogs, setEventLogs] = useState<EventLog[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [hasError, setHasError] = useState(false);
+    const [allEvents, setAllEvents] = useState<EventLog[]>([]);
+    const [loadingCalls, setLoadingCalls] = useState(false);
+    const [loadingEvents, setLoadingEvents] = useState(false);
+    const [loadingAllEvents, setLoadingAllEvents] = useState(false);
+    const [loadingMoreCalls, setLoadingMoreCalls] = useState(false);
+    const [loadingMoreEvents, setLoadingMoreEvents] = useState(false);
+    const [hasCallsError, setHasCallsError] = useState(false);
+    const [hasEventsError, setHasEventsError] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isFiltersExpanded, setIsFiltersExpanded] = useState(false);
+
+    // Call Flow Modal state
+    const [isCallFlowModalOpen, setIsCallFlowModalOpen] = useState(false);
+    const [callFlowCall, setCallFlowCall] = useState<CallLog | null>(null);
+
+    // Selected event for all events view
+    const [selectedAllEvent, setSelectedAllEvent] = useState<EventLog | null>(null);
+    const [expandedAllEventIds, setExpandedAllEventIds] = useState<Set<number>>(new Set());
 
     // Common filter states
-    const [limit, setLimit] = useState(100);
+    const [limit, setLimit] = useState(50);
     const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+
+    // No date filter by default - show all logs
     const [dateTimeGte, setDateTimeGte] = useState('');
     const [dateTimeLte, setDateTimeLte] = useState('');
-    const [appType, setAppType] = useState('');
-    const [appIdentifier, setAppIdentifier] = useState('');
-    const [bundleId, setBundleId] = useState('');
 
-    // Call-specific filters
+    // Filters for Calls tab (filters_from, filters_to)
     const [filterFrom, setFilterFrom] = useState('');
     const [filterTo, setFilterTo] = useState('');
+    const [filterStatus, setFilterStatus] = useState<'all' | 'answered' | 'missed'>('all');
 
-    // Event-specific filters
-    const [filterEventType, setFilterEventType] = useState('');
-    const [filterSessionId, setFilterSessionId] = useState('');
-    const [filterHandleId, setFilterHandleId] = useState('');
-    const [filterCallId, setFilterCallId] = useState('');
+    // Filters for All SIP Events tab
+    const [filterAppType, setFilterAppType] = useState('');
+
+    // Handler for opening Call Flow modal
+    const handleViewCallFlow = async (call: CallLog) => {
+        setCallFlowCall(call);
+        setIsCallFlowModalOpen(true);
+        // Fetch event logs for this call
+        if (call.call_id) {
+            await fetchEventLogsForCall(call.call_id);
+        }
+    };
 
     // Helper to convert datetime-local to ISO string
     const toISOString = (dateTimeLocal: string) => {
@@ -45,294 +87,184 @@ export const SipLogs = ({tenantId}: SipLogsProps) => {
         return new Date(dateTimeLocal).toISOString();
     };
 
-    // Helper to set time to start of day (00:00:00)
-    const handleDateTimeGteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        if (!value) {
-            setDateTimeGte('');
-            return;
-        }
-
-        // Extract date part and check if date changed
-        const datePart = value.split('T')[0];
-        const currentDatePart = dateTimeGte.split('T')[0];
-
-        // If date changed or was empty, set time to 00:00
-        if (datePart !== currentDatePart) {
-            setDateTimeGte(`${datePart}T00:00`);
-        } else {
-            setDateTimeGte(value);
-        }
-    };
-
-    // Helper to set time to end of day (23:59:59)
-    const handleDateTimeLteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        if (!value) {
-            setDateTimeLte('');
-            return;
-        }
-
-        // Extract date part and check if date changed
-        const datePart = value.split('T')[0];
-        const currentDatePart = dateTimeLte.split('T')[0];
-
-        // If date changed or was empty, set time to 23:59
-        if (datePart !== currentDatePart) {
-            setDateTimeLte(`${datePart}T23:59`);
-        } else {
-            setDateTimeLte(value);
-        }
-    };
-
-    const fetchLogs = async () => {
+    const fetchCallLogs = async (newLimit?: number, isLoadMore = false) => {
         if (!tenantId) return;
 
-        setLoading(true);
-        setHasError(false);
+        if (isLoadMore) {
+            setLoadingMoreCalls(true);
+        } else {
+            setLoadingCalls(true);
+        }
+        setHasCallsError(false);
         try {
-            if (logType === 'calls') {
-                const params: CallLogsParams = {
-                    filters_tenant_id: tenantId,
-                    limit,
-                    order,
-                    ...(dateTimeGte && {date_time_gte: toISOString(dateTimeGte)}),
-                    ...(dateTimeLte && {date_time_lte: toISOString(dateTimeLte)}),
-                    ...(filterFrom && {filters_from: filterFrom}),
-                    ...(filterTo && {filters_to: filterTo}),
-                    ...(appType && {filters_app_type: appType}),
-                    ...(appIdentifier && {filters_app_identifier: appIdentifier}),
-                    ...(bundleId && {filters_bundle_id: bundleId}),
-                };
+            // Build full SIP URI from user input
+            const buildSipUri = (user: string) => {
+                if (!user.trim()) return '';
+                return `sip:${user.trim()}@${sipDomain}`;
+            };
 
-                const response = await api.get('/logs/calls', {params});
-                const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-                // Backend returns {calls: [...]} so we need to extract the array
-                const callLogsData = Array.isArray(data) ? data : (data.calls || []);
-                setCallLogs(callLogsData);
-            } else {
-                const params: EventLogsParams = {
-                    filters_tenant: tenantId,
-                    limit,
-                    order,
-                    ...(dateTimeGte && {date_time_gte: toISOString(dateTimeGte)}),
-                    ...(dateTimeLte && {date_time_lte: toISOString(dateTimeLte)}),
-                    ...(filterEventType && {filters_event_type: filterEventType}),
-                    ...(filterSessionId && {filters_session_id: Number(filterSessionId)}),
-                    ...(filterHandleId && {filters_handle_id: Number(filterHandleId)}),
-                    ...(filterCallId && {filters_call_id: filterCallId}),
-                    ...(appType && {filters_app_type: appType}),
-                    ...(appIdentifier && {filters_app_identifier: appIdentifier}),
-                    ...(bundleId && {filters_bundle_id: bundleId}),
-                };
+            const effectiveLimit = newLimit ?? limit;
+            const params: CallLogsParams = {
+                filters_tenant_id: tenantId,
+                limit: effectiveLimit,
+                order,
+                ...(dateTimeGte && {date_time_gte: toISOString(dateTimeGte)}),
+                ...(dateTimeLte && {date_time_lte: toISOString(dateTimeLte)}),
+                ...(filterFrom && {filters_from: buildSipUri(filterFrom)}),
+                ...(filterTo && {filters_to: buildSipUri(filterTo)}),
+            };
 
-                const response = await api.get('/logs/events', {params});
-                const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-                // Backend returns {events: [...]} so we need to extract the array
-                const eventLogsData = Array.isArray(data) ? data : (data.events || []);
-                setEventLogs(eventLogsData);
-            }
-        } catch (error: any) {
-            console.error('Failed to fetch logs:', error);
-            setHasError(true);
-            // Show toast only once, not on every retry
-            if (!hasError) {
-                toast.error('Failed to fetch SIP logs', {
-                    toastId: 'sip-logs-error', // Prevent duplicate toasts
+            const response = await api.get('/logs/calls', {params});
+            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            let callLogsData = Array.isArray(data) ? data : (data.calls || []);
+
+            // Apply status filter locally
+            if (filterStatus !== 'all') {
+                callLogsData = callLogsData.filter((call: CallLog) => {
+                    const wasAccepted = !!call.accepted_at;
+                    return filterStatus === 'answered' ? wasAccepted : !wasAccepted;
                 });
             }
+
+            setCallLogs(callLogsData);
+        } catch (error: any) {
+            console.error('Failed to fetch call logs:', error);
+            setHasCallsError(true);
+            toast.error('Failed to fetch call logs', {
+                toastId: 'sip-logs-error',
+            });
         } finally {
-            setLoading(false);
+            setLoadingCalls(false);
+            setLoadingMoreCalls(false);
         }
     };
 
-    // Auto-fetch logs when accordion is expanded or logType changes
-    useEffect(() => {
-        if (!isExpanded) return; // Only fetch when expanded
+    const handleLoadMoreCalls = () => {
+        const newLimit = limit + 100;
+        setLimit(newLimit);
+        fetchCallLogs(newLimit, true);
+    };
 
-        setHasError(false); // Reset error state when changing log type
-        fetchLogs();
+    const fetchEventLogsForCall = async (callId: string) => {
+        if (!tenantId || !callId) return;
+
+        setLoadingEvents(true);
+        try {
+            const params: EventLogsParams = {
+                filters_tenant: tenantId,
+                filters_call_id: callId,
+                limit: 1000,
+                order: 'asc',
+            };
+
+            const response = await api.get('/logs/events', {params});
+            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const eventLogsData = Array.isArray(data) ? data : (data.events || []);
+            setEventLogs(eventLogsData);
+        } catch (error: any) {
+            console.error('Failed to fetch event logs:', error);
+            toast.error('Failed to fetch SIP messages for this call');
+            setEventLogs([]);
+        } finally {
+            setLoadingEvents(false);
+        }
+    };
+
+    const handleToggleExpandAllEvent = (eventId: number) => {
+        setExpandedAllEventIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(eventId)) {
+                newSet.delete(eventId);
+            } else {
+                newSet.add(eventId);
+            }
+            return newSet;
+        });
+    };
+
+    const fetchAllEvents = async (newLimit?: number, isLoadMore = false) => {
+        if (!tenantId) return;
+
+        if (isLoadMore) {
+            setLoadingMoreEvents(true);
+        } else {
+            setLoadingAllEvents(true);
+        }
+        setHasEventsError(false);
+        try {
+            const effectiveLimit = newLimit ?? limit;
+            const params: EventLogsParams = {
+                filters_tenant: tenantId,
+                limit: effectiveLimit,
+                order,
+                ...(dateTimeGte && {date_time_gte: toISOString(dateTimeGte)}),
+                ...(dateTimeLte && {date_time_lte: toISOString(dateTimeLte)}),
+                ...(filterAppType && {filters_app_type: filterAppType}),
+            };
+
+            const response = await api.get('/logs/events', {params});
+            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const eventLogsData = Array.isArray(data) ? data : (data.events || []);
+            setAllEvents(eventLogsData);
+        } catch (error: any) {
+            console.error('Failed to fetch all events:', error);
+            setHasEventsError(true);
+            toast.error('Failed to fetch SIP events', {
+                toastId: 'sip-events-error',
+            });
+        } finally {
+            setLoadingAllEvents(false);
+            setLoadingMoreEvents(false);
+        }
+    };
+
+    const handleLoadMoreEvents = () => {
+        const newLimit = limit + 100;
+        setLimit(newLimit);
+        fetchAllEvents(newLimit, true);
+    };
+
+    // Track if filters changed (not just view type)
+    const currentFiltersKey = `${order}-${dateTimeGte}-${dateTimeLte}-${filterFrom}-${filterTo}-${filterStatus}-${filterAppType}`;
+    const [filtersKey, setFiltersKey] = useState('');
+    const [initialFetchDone, setInitialFetchDone] = useState(false);
+
+    // Auto-fetch data when accordion is expanded (only calls on initial open)
+    useEffect(() => {
+        if (!isExpanded || initialFetchDone) return;
+        setHasCallsError(false);
+        setFiltersKey(currentFiltersKey);
+        setInitialFetchDone(true);
+        fetchCallLogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tenantId, logType, isExpanded]);
+    }, [isExpanded]);
 
-    // Auto-fetch when filters change with debounce (only if no error and expanded)
+    // Auto-fetch when filters change with debounce
     useEffect(() => {
-        if (!isExpanded) return; // Only fetch when expanded
-        if (hasError) return; // Don't auto-retry if there was an error
+        if (!isExpanded || !initialFetchDone) return;
+        if (filtersKey === currentFiltersKey) return;
 
         const timeoutId = setTimeout(() => {
-            fetchLogs();
+            setFiltersKey(currentFiltersKey);
+            if (viewType === 'calls') {
+                if (!hasCallsError) fetchCallLogs();
+            } else {
+                if (!hasEventsError) fetchAllEvents();
+            }
         }, 500);
 
         return () => clearTimeout(timeoutId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
-        limit,
-        order,
-        dateTimeGte,
-        dateTimeLte,
-        filterFrom,
-        filterTo,
-        filterEventType,
-        filterSessionId,
-        filterHandleId,
-        filterCallId,
-        appType,
-        appIdentifier,
-        bundleId,
-    ]);
+    }, [currentFiltersKey, viewType, isExpanded, initialFetchDone]);
 
-    const renderCallLogs = () => {
-        if (!callLogs.length) {
-            return (
-                <div className="text-center py-8 text-gray-500">
-                    No call logs found for this tenant
-                </div>
-            );
-        }
-
-        return (
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Started
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Duration
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            From
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            To
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Status
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            App Type
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Details
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                    {callLogs.map((log, index) => {
-                        const duration = log.accepted_at && log.end_at
-                            ? Math.round((new Date(log.end_at).getTime() - new Date(log.accepted_at).getTime()) / 1000)
-                            : null;
-                        const wasAccepted = !!log.accepted_at;
-
-                        return (
-                            <tr key={log.call_id || index} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                    {log.start_at ? new Date(log.start_at).toLocaleString() : 'N/A'}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                    {duration !== null ? `${duration}s` : 'N/A'}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                    {log.from || 'N/A'}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                    {log.to || 'N/A'}
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            wasAccepted
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
-                                            {wasAccepted ? 'Answered' : 'Missed'}
-                                        </span>
-                                </td>
-                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                    {log.app_type || 'N/A'}
-                                </td>
-                                <td className="px-4 py-3 text-sm text-gray-500">
-                                    <details className="cursor-pointer">
-                                        <summary className="text-primary-600 hover:text-primary-700">
-                                            View JSON
-                                        </summary>
-                                        <pre className="mt-2 text-xs overflow-auto max-w-md p-2 bg-gray-50 rounded">
-                                                {JSON.stringify(log, null, 2)}
-                                            </pre>
-                                    </details>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                    </tbody>
-                </table>
-            </div>
-        );
-    };
-
-    const renderEventLogs = () => {
-        if (!eventLogs.length) {
-            return (
-                <div className="text-center py-8 text-gray-500">
-                    No event logs found for this tenant
-                </div>
-            );
-        }
-
-        return (
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Time
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Event Type
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Call ID
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Session/Handle
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                            Details
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                    {eventLogs.map((log, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'N/A'}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                {log.event_type || 'N/A'}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono text-xs">
-                                {log.call_id || 'N/A'}
-                            </td>
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                {log.session_id || 'N/A'} / {log.handle_id || 'N/A'}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-500">
-                                <details className="cursor-pointer">
-                                    <summary className="text-primary-600 hover:text-primary-700">
-                                        View JSON
-                                    </summary>
-                                    <pre className="mt-2 text-xs overflow-auto max-w-md p-2 bg-gray-50 rounded">
-                                            {JSON.stringify(log, null, 2)}
-                                        </pre>
-                                </details>
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
-        );
+    const clearFilters = () => {
+        setDateTimeGte('');
+        setDateTimeLte('');
+        setFilterFrom('');
+        setFilterTo('');
+        setFilterStatus('all');
+        setFilterAppType('');
+        setLimit(50); // Reset to default
     };
 
     return (
@@ -353,347 +285,331 @@ export const SipLogs = ({tenantId}: SipLogsProps) => {
                         </span>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
-                    {isExpanded && (
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                fetchLogs();
-                            }}
-                            disabled={loading}
-                            variant="outline"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin"/>
-                                    Loading...
-                                </>
-                            ) : (
-                                <>
-                                    <RefreshCw className="w-4 h-4 mr-2"/>
-                                    Refresh
-                                </>
-                            )}
-                        </Button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(!isExpanded);
+                    }}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
+                    aria-label={isExpanded ? "Collapse" : "Expand"}
+                >
+                    {isExpanded ? (
+                        <ChevronUp className="w-5 h-5 text-gray-600"/>
+                    ) : (
+                        <ChevronDown className="w-5 h-5 text-gray-600"/>
                     )}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsExpanded(!isExpanded);
-                        }}
-                        className="p-1 hover:bg-gray-100 rounded transition-colors cursor-pointer"
-                        aria-label={isExpanded ? "Collapse" : "Expand"}
-                    >
-                        {isExpanded ? (
-                            <ChevronUp className="w-5 h-5 text-gray-600"/>
-                        ) : (
-                            <ChevronDown className="w-5 h-5 text-gray-600"/>
-                        )}
-                    </button>
-                </div>
+                </button>
             </div>
 
             {/* Content */}
             {isExpanded && (
-                <div className="p-6">
-                    {/* Filters */}
-                    <div className="mb-6 space-y-4">
-                        {/* Top Row: Tabs and Basic Filters */}
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            {/* Log Type Tabs */}
-                            <div className="flex bg-gray-100 rounded-lg p-1 w-fit">
-                                <button
-                                    onClick={() => setLogType('calls')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-                                        logType === 'calls'
-                                            ? 'bg-white text-primary-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Phone className="w-4 h-4"/>
-                                    Call Logs
-                                </button>
-                                <button
-                                    onClick={() => setLogType('events')}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-                                        logType === 'events'
-                                            ? 'bg-white text-primary-600 shadow-sm'
-                                            : 'text-gray-600 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Activity className="w-4 h-4"/>
-                                    Event Logs
-                                </button>
-                            </div>
-
-                            {/* Basic Filters */}
-                            <div className="flex flex-wrap items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium text-gray-700">Limit:</label>
-                                    <select
-                                        value={limit}
-                                        onChange={(e) => setLimit(Number(e.target.value))}
-                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                    >
-                                        <option value={10}>10</option>
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
-                                        <option value={200}>200</option>
-                                        <option value={500}>500</option>
-                                        <option value={1000}>1000</option>
-                                    </select>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <label className="text-sm font-medium text-gray-700">Order:</label>
-                                    <select
-                                        value={order}
-                                        onChange={(e) => setOrder(e.target.value as 'asc' | 'desc')}
-                                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                                    >
-                                        <option value="desc">Newest First</option>
-                                        <option value="asc">Oldest First</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* All Filters */}
-                        {logType === 'calls' ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Date From
-                                    </label>
-                                    <Input
-                                        type="datetime-local"
-                                        value={dateTimeGte}
-                                        onChange={handleDateTimeGteChange}
-                                        className="[&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Date To
-                                    </label>
-                                    <Input
-                                        type="datetime-local"
-                                        value={dateTimeLte}
-                                        onChange={handleDateTimeLteChange}
-                                        className="[&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        From (SIP)
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={filterFrom}
-                                        onChange={(e) => setFilterFrom(e.target.value)}
-                                        placeholder="sip:user@domain.com"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        To (SIP)
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={filterTo}
-                                        onChange={(e) => setFilterTo(e.target.value)}
-                                        placeholder="sip:user@domain.com"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        App Type
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={appType}
-                                        onChange={(e) => setAppType(e.target.value)}
-                                        placeholder="android, ios, web"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        App Identifier
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={appIdentifier}
-                                        onChange={(e) => setAppIdentifier(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Bundle ID
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={bundleId}
-                                        onChange={(e) => setBundleId(e.target.value)}
-                                        placeholder="com.example.app"
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Date From
-                                    </label>
-                                    <Input
-                                        type="datetime-local"
-                                        value={dateTimeGte}
-                                        onChange={handleDateTimeGteChange}
-                                        className="[&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Date To
-                                    </label>
-                                    <Input
-                                        type="datetime-local"
-                                        value={dateTimeLte}
-                                        onChange={handleDateTimeLteChange}
-                                        className="[&::-webkit-calendar-picker-indicator]:ml-auto [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Event Type
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={filterEventType}
-                                        onChange={(e) => setFilterEventType(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Session ID
-                                    </label>
-                                    <Input
-                                        type="number"
-                                        value={filterSessionId}
-                                        onChange={(e) => setFilterSessionId(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Handle ID
-                                    </label>
-                                    <Input
-                                        type="number"
-                                        value={filterHandleId}
-                                        onChange={(e) => setFilterHandleId(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Call ID
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={filterCallId}
-                                        onChange={(e) => setFilterCallId(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        App Type
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={appType}
-                                        onChange={(e) => setAppType(e.target.value)}
-                                        placeholder="android, ios, web"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        App Identifier
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={appIdentifier}
-                                        onChange={(e) => setAppIdentifier(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">
-                                        Bundle ID
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={bundleId}
-                                        onChange={(e) => setBundleId(e.target.value)}
-                                        placeholder="com.example.app"
-                                    />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Clear Filters Button */}
-                        <div className="flex justify-end">
-                            <Button
+                <div className="flex flex-col h-[600px] sm:h-[800px]">
+                    {/* View Type Tabs */}
+                    <div className="p-4 border-b border-gray-200 bg-white">
+                        <div className="flex bg-gray-100 rounded-lg p-1 w-fit">
+                            <button
                                 onClick={() => {
-                                    setDateTimeGte('');
-                                    setDateTimeLte('');
-                                    setFilterFrom('');
-                                    setFilterTo('');
-                                    setFilterEventType('');
-                                    setFilterSessionId('');
-                                    setFilterHandleId('');
-                                    setFilterCallId('');
-                                    setAppType('');
-                                    setAppIdentifier('');
-                                    setBundleId('');
+                                    if (viewType === 'calls') return;
+                                    setViewType('calls');
+                                    setLimit(50);
+                                    fetchCallLogs();
                                 }}
-                                variant="outline"
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                                    viewType === 'calls'
+                                        ? 'bg-white text-primary-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                }`}
                             >
-                                Clear Filters
-                            </Button>
+                                <Phone className="w-4 h-4"/>
+                                Call Logs
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (viewType === 'all-events') return;
+                                    setViewType('all-events');
+                                    setLimit(50);
+                                    fetchAllEvents();
+                                }}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                                    viewType === 'all-events'
+                                        ? 'bg-white text-primary-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                }`}
+                            >
+                                <Network className="w-4 h-4"/>
+                                All SIP Events
+                            </button>
                         </div>
                     </div>
 
-                    {/* Logs Content */}
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
-                        {loading ? (
-                            <div className="flex justify-center items-center py-12">
-                                <Loader2 className="w-8 h-8 animate-spin text-primary-600"/>
+                    {/* Filters */}
+                    <div className="p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <button
+                                onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+                                className="sm:hidden flex items-center gap-2 text-xs font-semibold text-gray-700 uppercase"
+                            >
+                                <Search className="w-4 h-4"/>
+                                Filters
+                                {isFiltersExpanded ? (
+                                    <ChevronUp className="w-4 h-4"/>
+                                ) : (
+                                    <ChevronDown className="w-4 h-4"/>
+                                )}
+                            </button>
+                            <div className="hidden sm:flex items-center gap-3">
+                                <h4 className="text-sm font-semibold text-gray-700 uppercase flex items-center gap-2">
+                                    <Search className="w-4 h-4"/>
+                                    Filters
+                                </h4>
                             </div>
-                        ) : hasError ? (
-                            <div className="flex flex-col items-center justify-center py-12 px-4">
-                                <div className="text-red-500 mb-4">
-                                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                </div>
-                                <p className="text-gray-900 font-medium mb-2">Failed to fetch SIP logs</p>
-                                <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
-                                <Button onClick={fetchLogs} variant="outline">
-                                    <RefreshCw className="w-4 h-4 mr-2"/>
-                                    Retry
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
+                                <Button
+                                    onClick={viewType === 'calls' ? fetchCallLogs : fetchAllEvents}
+                                    disabled={viewType === 'calls' ? loadingCalls : loadingAllEvents}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs sm:text-sm px-2 sm:px-3"
+                                >
+                                    {(viewType === 'calls' ? loadingCalls : loadingAllEvents) ? (
+                                        <Loader2 className="w-4 h-4 animate-spin"/>
+                                    ) : (
+                                        <>
+                                            <RefreshCw className="w-4 h-4 sm:mr-1"/>
+                                            <span className="hidden sm:inline">Refresh</span>
+                                        </>
+                                    )}
+                                </Button>
+                                <Button
+                                    onClick={clearFilters}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs sm:text-sm px-2 sm:px-3"
+                                >
+                                    Clear Filters
                                 </Button>
                             </div>
-                        ) : logType === 'calls' ? (
-                            renderCallLogs()
+                        </div>
+
+                        {/* Collapsible filters on mobile, always visible on desktop */}
+                        <div className={`${isFiltersExpanded ? 'block' : 'hidden'} sm:block mt-3 sm:mt-4`}>
+                            <div className="flex flex-wrap items-end gap-3">
+                            {/* Date Range Picker */}
+                            <div className="flex-1 min-w-[200px]">
+                                <label className="block text-xs font-medium text-gray-500 mb-1">
+                                    Date Range
+                                </label>
+                                <DateTimeRangePicker
+                                    dateTimeGte={dateTimeGte}
+                                    dateTimeLte={dateTimeLte}
+                                    onDateTimeGteChange={setDateTimeGte}
+                                    onDateTimeLteChange={setDateTimeLte}
+                                />
+                            </div>
+
+                            {/* Filters specific to Call Logs tab */}
+                            {viewType === 'calls' && (
+                                <>
+                                    <div className="flex-1 min-w-[180px]">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                                            From
+                                        </label>
+                                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 bg-white">
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-r border-gray-300">sip:</span>
+                                            <input
+                                                type="text"
+                                                value={filterFrom}
+                                                onChange={(e) => setFilterFrom(extractSipUser(e.target.value))}
+                                                placeholder="user"
+                                                className="flex-1 px-1.5 py-1.5 text-sm focus:outline-none min-w-0"
+                                            />
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-l border-gray-300 truncate max-w-[100px]" title={`@${sipDomain}`}>@{sipDomain}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-[180px]">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                                            To
+                                        </label>
+                                        <div className="flex items-center border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 bg-white">
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-r border-gray-300">sip:</span>
+                                            <input
+                                                type="text"
+                                                value={filterTo}
+                                                onChange={(e) => setFilterTo(extractSipUser(e.target.value))}
+                                                placeholder="user"
+                                                className="flex-1 px-1.5 py-1.5 text-sm focus:outline-none min-w-0"
+                                            />
+                                            <span className="px-1.5 py-1.5 bg-gray-100 text-gray-500 text-xs border-l border-gray-300 truncate max-w-[100px]" title={`@${sipDomain}`}>@{sipDomain}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-[120px]">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                                            Status
+                                        </label>
+                                        <select
+                                            value={filterStatus}
+                                            onChange={(e) => setFilterStatus(e.target.value as 'all' | 'answered' | 'missed')}
+                                            className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-white"
+                                        >
+                                            <option value="all">All</option>
+                                            <option value="answered">Answered</option>
+                                            <option value="missed">Missed</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Filters specific to All SIP Events tab */}
+                            {viewType === 'all-events' && (
+                                <>
+                                    <div className="flex-1 min-w-[180px]">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                                            App Type
+                                        </label>
+                                        <select
+                                            value={filterAppType}
+                                            onChange={(e) => setFilterAppType(e.target.value)}
+                                            className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm bg-white"
+                                        >
+                                            <option value="">All</option>
+                                            <option value="android">Android</option>
+                                            <option value="ios">iOS</option>
+                                            <option value="web">Web</option>
+                                        </select>
+                                    </div>
+                                    {/* Spacers to match Call Logs layout */}
+                                    <div className="flex-1 min-w-[180px]"></div>
+                                    <div className="flex-1 min-w-[120px]"></div>
+                                </>
+                            )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Master-Detail Layout */}
+                    <div className="flex-1 flex overflow-hidden">
+                        {viewType === 'calls' ? (
+                            // Call Logs View - Only show list of calls
+                            <div className="w-full overflow-auto bg-white">
+                                {loadingCalls ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <Loader2 className="w-8 h-8 animate-spin text-primary-600 mb-4"/>
+                                        <p className="text-sm">Loading calls...</p>
+                                    </div>
+                                ) : hasCallsError ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <div className="text-red-500 mb-4">
+                                            <svg className="w-12 h-12" fill="none" stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <p className="text-gray-900 font-medium mb-2">Failed to fetch calls</p>
+                                        <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
+                                        <Button onClick={fetchCallLogs} variant="outline" size="sm">
+                                            <RefreshCw className="w-4 h-4 mr-2"/>
+                                            Retry
+                                        </Button>
+                                    </div>
+                                ) : callLogs.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        </svg>
+                                        <p className="text-lg font-medium">No calls found</p>
+                                        <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+                                    </div>
+                                ) : (
+                                    <CallLogsTable
+                                        calls={callLogs}
+                                        onViewCallFlow={handleViewCallFlow}
+                                        onLoadMore={handleLoadMoreCalls}
+                                        hasMore={callLogs.length >= limit}
+                                        isLoadingMore={loadingMoreCalls}
+                                        order={order}
+                                        onToggleOrder={() => setOrder(order === 'desc' ? 'asc' : 'desc')}
+                                    />
+                                )}
+                            </div>
                         ) : (
-                            renderEventLogs()
+                            // All SIP Events View - Only show list of events (no diagram)
+                            <div className="w-full overflow-auto bg-white">
+                                {loadingAllEvents ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <Loader2 className="w-8 h-8 animate-spin text-primary-600 mb-4"/>
+                                        <p className="text-sm">Loading SIP events...</p>
+                                    </div>
+                                ) : hasEventsError ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <div className="text-red-500 mb-4">
+                                            <svg className="w-12 h-12" fill="none" stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        </div>
+                                        <p className="text-gray-900 font-medium mb-2">Failed to fetch SIP events</p>
+                                        <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
+                                        <Button onClick={fetchAllEvents} variant="outline" size="sm">
+                                            <RefreshCw className="w-4 h-4 mr-2"/>
+                                            Retry
+                                        </Button>
+                                    </div>
+                                ) : allEvents.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                        </svg>
+                                        <p className="text-lg font-medium">No SIP events found</p>
+                                        <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+                                    </div>
+                                ) : (
+                                    <SipMessageDetails
+                                        events={allEvents}
+                                        selectedEvent={selectedAllEvent}
+                                        onEventClick={(event) => setSelectedAllEvent(event)}
+                                        expandedEventIds={expandedAllEventIds}
+                                        onToggleExpand={handleToggleExpandAllEvent}
+                                        onLoadMore={handleLoadMoreEvents}
+                                        hasMore={allEvents.length >= limit}
+                                        isLoadingMore={loadingMoreEvents}
+                                        order={order}
+                                        onToggleOrder={() => setOrder(order === 'desc' ? 'asc' : 'desc')}
+                                    />
+                                )}
+                            </div>
                         )}
                     </div>
 
-                    {/* Info Text */}
-                    <p className="mt-4 text-sm text-gray-500">
-                        Showing {logType === 'calls' ? 'call' : 'event'} logs for tenant ID: {tenantId}
-                    </p>
+                    {/* Footer Info */}
+                    <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-600">
+                        <span>
+                            {viewType === 'calls' ? (
+                                <>Showing {callLogs.length} call{callLogs.length !== 1 ? 's' : ''} for
+                                    tenant: {tenantId}</>
+                            ) : (
+                                <>Showing {allEvents.length} SIP event{allEvents.length !== 1 ? 's' : ''} for
+                                    tenant: {tenantId}</>
+                            )}
+                        </span>
+                    </div>
                 </div>
+            )}
+
+            {/* Call Flow Modal */}
+            {callFlowCall && (
+                <CallFlowModal
+                    call={callFlowCall}
+                    isOpen={isCallFlowModalOpen}
+                    onClose={() => setIsCallFlowModalOpen(false)}
+                    eventLogs={eventLogs}
+                    isLoadingEvents={loadingEvents}
+                />
             )}
         </div>
     );

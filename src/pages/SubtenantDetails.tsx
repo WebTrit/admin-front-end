@@ -325,9 +325,9 @@ function SubtenantDetails() {
                 setValidationErrors={setVoipValidationErrors}
             />
 
-            <UsersTable maxUsers={tenantInfo.max_users || 0}/>
+            <SipLogs tenantId={tenantId!} sipDomain={tenantInfo.sip?.host || ''}/>
 
-            <SipLogs tenantId={tenantId!}/>
+            <UsersTable maxUsers={tenantInfo.max_users || 0}/>
         </div>
     )
 }
