@@ -365,7 +365,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                             </div>
                             <div className="flex flex-wrap gap-1 sm:gap-2">
                                 <Button
-                                    onClick={viewType === 'calls' ? fetchCallLogs : fetchAllEvents}
+                                    onClick={() => viewType === 'calls' ? fetchCallLogs() : fetchAllEvents()}
                                     disabled={viewType === 'calls' ? loadingCalls : loadingAllEvents}
                                     variant="outline"
                                     size="sm"
