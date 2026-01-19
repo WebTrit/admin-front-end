@@ -3,6 +3,7 @@ import {TenantInfo} from "@/components/shared/TenantInfo"
 import {VoipConfig} from "@/components/shared/VoipConfig"
 import {UsersTable} from "@/components/subtenantDetails/UsersTable"
 import {SipLogs} from "@/components/subtenantDetails/SipLogs"
+import {UpgradeMaxUsers} from "@/components/subtenantDetails/UpgradeMaxUsers"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import api from "@/lib/axios.ts";
 import {useParams} from "react-router-dom";
@@ -328,6 +329,11 @@ function SubtenantDetails() {
             <SipLogs tenantId={tenantId!} sipDomain={tenantInfo.sip?.host || ''}/>
 
             <UsersTable maxUsers={tenantInfo.max_users || 0}/>
+
+            <UpgradeMaxUsers
+                tenantId={tenantId!}
+                currentMaxUsers={tenantInfo.max_users || 0}
+            />
         </div>
     )
 }
