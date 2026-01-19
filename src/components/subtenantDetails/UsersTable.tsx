@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button"
 import {useAppStore} from "@/lib/store"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
 import {CopyableText} from "@/components/ui/CopyableText.tsx"
+import {LinkActions} from "@/components/ui/LinkActions.tsx"
 import {config} from "@/config/runtime"
 
 interface UsersTableProps {
@@ -273,8 +274,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             )}
                                         </td>
                                         {DIALER_URL && (
-                                            <td className="px-4 py-3 text-sm text-gray-500 max-w-[250px]">
-                                                <CopyableText tooltip={getLoginLink(tenantId, user.email)}/>
+                                            <td className="px-4 py-3 text-sm text-gray-500">
+                                                <LinkActions url={getLoginLink(tenantId, user.email)}/>
                                             </td>
                                         )}
                                         <td className="px-4 py-3 text-sm text-gray-500 text-right">
@@ -398,8 +399,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                         {DIALER_URL && (
                                             <>
                                                 <div className="text-gray-500">Web-dialer Link</div>
-                                                <div className="text-gray-900 break-all">
-                                                    <CopyableText tooltip={getLoginLink(tenantId, user.email)}/>
+                                                <div className="text-gray-900">
+                                                    <LinkActions url={getLoginLink(tenantId, user.email)}/>
                                                 </div>
                                             </>
                                         )}
