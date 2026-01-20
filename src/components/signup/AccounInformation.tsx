@@ -1,13 +1,15 @@
 import type {UseFormRegister, FieldErrors} from "react-hook-form";
+import {Link} from "react-router-dom";
 import Input from "@/components/ui/Input";
 import {SignupFormData} from "@/types.ts";
 
 interface AccountInformationProps {
     register: UseFormRegister<SignupFormData>;
     errors: FieldErrors<SignupFormData>;
+    emailAlreadyRegistered?: boolean;
 }
 
-export const AccountInformation = ({register, errors}: AccountInformationProps) => {
+export const AccountInformation = ({register, errors, emailAlreadyRegistered}: AccountInformationProps) => {
     return (
         <div>
             <h3 className="text-lg font-medium text-gray-900">Account Information</h3>
@@ -33,6 +35,15 @@ export const AccountInformation = ({register, errors}: AccountInformationProps) 
                     </div>
                     {errors.email && (
                         <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                    )}
+                    {emailAlreadyRegistered && (
+                        <p className="mt-1 text-sm text-red-600">
+                            This email is already registered. Please{" "}
+                            <Link to="/login" className="text-primary-500 underline">
+                                log in
+                            </Link>
+                            {" "}or use a different email.
+                        </p>
                     )}
                 </div>
 
