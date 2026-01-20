@@ -17,6 +17,7 @@ import {config} from "@/config/runtime";
 export const SignupForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showOTPField, setShowOTPField] = useState(false)
+    const [emailAlreadyRegistered, setEmailAlreadyRegistered] = useState(false)
     const [submittedEmail, setSubmittedEmail] = useState("")
     const [otpId, setOtpId] = useState("")
     const [resendDisabled, setResendDisabled] = useState(false)
@@ -67,6 +68,7 @@ export const SignupForm = () => {
     const sendOTP = async (formData: SignupFormData) => {
         try {
             setIsSubmitting(true)
+            setEmailAlreadyRegistered(false)
 
             const validateRes = await api.get("/info/email", {
                 params: {email: formData.email},
@@ -91,7 +93,11 @@ export const SignupForm = () => {
             startResendTimer()
         } catch (error) {
             console.error("Error sending OTP:", error)
-            toast.error("Failed to create account. Please try again.")
+            if (axios.isAxiosError(error) && error.response?.status === 409) {
+                setEmailAlreadyRegistered(true)
+            } else {
+                toast.error("Failed to create account. Please try again.")
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -157,7 +163,7 @@ export const SignupForm = () => {
                         {(isCompanyName || isCompanySite) &&
                             <CompanyInformation register={registerSignup} errors={signupErrors}/>}
                         <PersonalInformation register={registerSignup} errors={signupErrors}/>
-                        <AccountInformation register={registerSignup} errors={signupErrors}/>
+                        <AccountInformation register={registerSignup} errors={signupErrors} emailAlreadyRegistered={emailAlreadyRegistered}/>
                     </div>
 
                     <div className="space-y-4">
