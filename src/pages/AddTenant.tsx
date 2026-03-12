@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import {useNavigate} from "react-router-dom";
 import {v4 as uuid} from "uuid";
+import {ROUTES} from "@/routes/paths";
 import {useAuthStore} from "@/lib/authStore";
 
 interface TenantFormData {
@@ -55,7 +56,7 @@ export default function AddTenant() {
             return response.data;
         },
         onSuccess: () => {
-            navigate("/subtenants");
+            navigate(ROUTES.SUBTENANTS);
         },
         onError: (error: any) => {
             if (error.response?.data?.errors) {

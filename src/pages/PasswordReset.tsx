@@ -6,6 +6,7 @@ import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {toast} from "react-toastify"
 import {useLocation, useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import api from "@/lib/axios"
@@ -82,7 +83,7 @@ const PasswordReset = () => {
 
             login({token: access_token, tenantId: tenant_id || null, isSuperTenant: false, isAdmin: false})
             toast.success("Password reset successful!")
-            navigate("/dashboard", {replace: true})
+            navigate(ROUTES.DASHBOARD, {replace: true})
         } catch (err: unknown) {
             const status = (err as {response?: {status?: number}})?.response?.status
             if (status === 401) {
@@ -172,7 +173,7 @@ const PasswordReset = () => {
                                 type="button"
                                 variant="ghost"
                                 className="w-full hover:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
-                                onClick={() => navigate("/login")}
+                                onClick={() => navigate(ROUTES.LOGIN)}
                             >
                                 To login page
                             </Button>

@@ -7,6 +7,7 @@ import {toast} from "react-toastify";
 import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
 import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/routes/paths";
 
 type UserDetails = {
     first_name: string;
@@ -209,7 +210,7 @@ function Invite() {
                 We've sent an invitation to {invitedUser.email}
             </p>
             <Button className="mr-4"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate(ROUTES.DASHBOARD)}
             >
                 To dashboard
             </Button>
@@ -255,7 +256,7 @@ function Invite() {
                             <Button
                                 variant="ghost"
                                 type="button"
-                                onClick={step === 1 ? () => navigate('/dashboard') : handleBack}
+                                onClick={step === 1 ? () => navigate(ROUTES.DASHBOARD) : handleBack}
                                 className="flex items-center"
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2"/>

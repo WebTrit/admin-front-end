@@ -3,6 +3,7 @@ import {useState} from "react"
 import {useQuery} from "@tanstack/react-query"
 import {Loader2, Plus} from "lucide-react"
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import api from "@/lib/axios"
 import {SubtenantsFilter} from "@/components/subtenants/SubtenantsFilter.tsx"
 import {SubtenantsListMobile} from "@/components/subtenants/SubtenantsListMobile.tsx"
@@ -130,7 +131,7 @@ const Subtenants = () => {
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-xl font-bold">Tenants</h1>
                 <button
-                    onClick={() => navigate("/add-subtenant")}
+                    onClick={() => navigate(ROUTES.ADD_SUBTENANT)}
                     className="bg-primary-500 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-primary-600"
                 >
                     <Plus className="w-4 h-4"/>

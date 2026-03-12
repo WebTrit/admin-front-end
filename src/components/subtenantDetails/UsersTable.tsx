@@ -11,6 +11,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
 import {CopyableText} from "@/components/ui/CopyableText.tsx"
 import {LinkActions} from "@/components/ui/LinkActions.tsx"
 import {config} from "@/config/runtime"
+import {ROUTES} from "@/routes/paths"
 
 interface UsersTableProps {
     maxUsers: number
@@ -186,7 +187,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                 </div>
                 {canAddUsers && (
                     <Button className="w-full sm:w-auto mt-2 sm:mt-0"
-                            onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}>
+                            onClick={() => navigate(ROUTES.addUser(tenantId!))}>
                         <Plus className="h-4 w-4 mr-2"/>
                         Add User
                     </Button>
@@ -230,7 +231,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             {canAddUsers && (
                                                 <button
                                                     className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-                                                    onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}
+                                                    onClick={() => navigate(ROUTES.addUser(tenantId!))}
                                                 >
                                                     Add your first user
                                                 </button>
@@ -296,7 +297,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                     </Button>
                                                 )}
                                                 <Button variant="ghost" size="sm"
-                                                        onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}>
+                                                        onClick={() => navigate(ROUTES.editUser(tenantId!, user.user_id))}>
                                                     <Pencil className="h-4 w-4"/>
                                                 </Button>
                                                 {users[index].email !== currentTenant?.email &&
@@ -324,7 +325,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 {canAddUsers && (
                                     <button
                                         className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-                                        onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}
+                                        onClick={() => navigate(ROUTES.addUser(tenantId!))}
                                     >
                                         Add your first user
                                     </button>
@@ -362,7 +363,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}
+                                                    onClick={() => navigate(ROUTES.editUser(tenantId!, user.user_id))}
                                                     aria-label="Edit user"
                                                 >
                                                     <Pencil className="h-4 w-4"/>

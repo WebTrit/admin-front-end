@@ -3,6 +3,7 @@ import {useForm} from "react-hook-form"
 import {z} from "zod"
 import {toast} from "react-toastify"
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {Loader2} from "lucide-react"
 import {useAuthStore} from "@/lib/authStore"
 import {formatZodErrors} from "@/lib/validation"
@@ -78,7 +79,7 @@ const LoginAdmin = () => {
 
             login({token: access_token, tenantId: null, isSuperTenant: false, isAdmin: true})
             toast.success("Admin login successful!")
-            navigate("/subtenants", {replace: true})
+            navigate(ROUTES.SUBTENANTS, {replace: true})
         } catch {
             toast.error("Invalid username or password.")
         } finally {

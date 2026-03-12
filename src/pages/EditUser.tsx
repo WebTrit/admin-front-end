@@ -1,4 +1,5 @@
 import {useNavigate, useParams} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import {Loader2} from "lucide-react"
@@ -66,7 +67,7 @@ const EditUser = () => {
                         {error instanceof Error ? error.message : "Failed to load user data. Please try again."}
                     </p>
                     <button
-                        onClick={() => navigate("/users")}
+                        onClick={() => navigate(tenantId ? ROUTES.subtenant(tenantId) : ROUTES.SUBTENANTS)}
                         className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
                     >
                         Back to Users

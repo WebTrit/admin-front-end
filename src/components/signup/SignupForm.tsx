@@ -13,6 +13,7 @@ import {OTPFormData, SignupFormData} from "@/types.ts"
 import axios from "axios"
 import {toast} from "react-toastify";
 import {config} from "@/config/runtime";
+import {ROUTES} from "@/routes/paths";
 
 export const SignupForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -121,7 +122,7 @@ export const SignupForm = () => {
                 const {access_token, tenant_id} = response.data
                 login({token: access_token, tenantId: tenant_id, isSuperTenant: false, isAdmin: false})
 
-                navigate(`/dashboard`, {replace: true})
+                navigate(ROUTES.DASHBOARD, {replace: true})
             } else {
                 setError("otp", {type: "manual", message: "Invalid temporary password. Please try again."})
             }

@@ -3,6 +3,7 @@ import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useEffect, useRef, useState} from 'react';
+import {ROUTES} from "@/routes/paths";
 
 function Header() {
     const {clearAuth, isSuperTenant, isAdmin, tenantId} = useAuthStore();
@@ -14,7 +15,7 @@ function Header() {
     const navigationItems = [
         {
             name: 'Home',
-            path: '/dashboard',
+            path: ROUTES.DASHBOARD,
             icon: Home,
             isAvailable: !isAdmin,
         },
@@ -47,10 +48,10 @@ function Header() {
 
     function configurationPath() {
         if (isAdmin) {
-            return '/subtenants'
+            return ROUTES.SUBTENANTS
         }
 
-        return isSuperTenant ? '/subtenants' : `/subtenants/${tenantId}`
+        return isSuperTenant ? ROUTES.SUBTENANTS : ROUTES.subtenant(tenantId!)
     }
 
     const isActive = (path: string) => {
@@ -60,7 +61,7 @@ function Header() {
     const handleLogout = () => {
         clearAuth();
         setIsDropdownOpen(false);
-        navigate('/login');
+        navigate(ROUTES.LOGIN);
     };
 
     function menuItemsFilter(item: {name: string; path: string; isAvailable: boolean}) {
@@ -76,7 +77,7 @@ function Header() {
             <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center gap-x-8">
                     <div
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() => navigate(ROUTES.DASHBOARD)}
                         className="flex items-center gap-x-3 cursor-pointer"
                     >
                         <h1 className="text-2xl font-semibold text-gray-900">Tenant Portal</h1>

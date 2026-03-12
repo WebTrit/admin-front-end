@@ -4,6 +4,7 @@ import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
+import {ROUTES} from "@/routes/paths";
 
 interface Subtenant {
     tenant_id: string
@@ -140,7 +141,7 @@ export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> = (
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex justify-between gap-2">
                                             <button
-                                                onClick={() => navigate(`/subtenants/${tenant.tenant_id}`)}
+                                                onClick={() => navigate(ROUTES.subtenant(tenant.tenant_id))}
                                                 className="text-gray-500 hover:text-gray-700"
                                             >
                                                 <Pencil className="w-4 h-4"/>

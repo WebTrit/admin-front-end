@@ -3,6 +3,7 @@ import {useForm} from "react-hook-form"
 import {z} from "zod"
 import {toast} from "react-toastify"
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
 import {formatZodErrors} from "@/lib/validation"
@@ -72,12 +73,12 @@ const Login = () => {
                     login({token: access_token, tenantId: tenant_id, isSuperTenant: !!currentUserData.is_super_tenant, isAdmin: false})
 
                     if (currentUserData.basic_demo) {
-                        navigate('/dashboard', {replace: true})
+                        navigate(ROUTES.DASHBOARD, {replace: true})
                         return
                     }
 
                     if (currentUserData.is_super_tenant) {
-                        navigate("/subtenants", {replace: true})
+                        navigate(ROUTES.SUBTENANTS, {replace: true})
                     } else {
                         navigate(`/subtenants/${tenant_id}`, {replace: true})
                     }
@@ -109,7 +110,7 @@ const Login = () => {
                 {isSignupLink && <div>
                     <div>If you don't have an account click here to {' '}
                         <span
-                            onClick={() => navigate('/signup', {replace: true})}
+                            onClick={() => navigate(ROUTES.SIGNUP, {replace: true})}
                             className="text-blue-400 underline cursor-pointer"
                         >
                             sign up
@@ -172,7 +173,7 @@ const Login = () => {
                                 className="w-full hover:bg-transparent active:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
                                 onClick={() => {
                                     const email = getValues("login")
-                                    navigate('/password-reset', {state: {email}})
+                                    navigate(ROUTES.PASSWORD_RESET, {state: {email}})
                                 }}>
                                 Forgot password? Click here to reset.
                             </Button>

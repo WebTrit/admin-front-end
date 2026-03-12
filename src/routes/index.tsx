@@ -16,6 +16,7 @@ import Invite from "@/pages/Invite.tsx";
 import LoginAdmin from "@/pages/LoginAdmin.tsx";
 import {PbxSetupWizard} from "@/pages/PbxSetupWizard.tsx";
 import PasswordReset from "@/pages/PasswordReset.tsx";
+import {ROUTES} from "@/routes/paths";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
@@ -98,23 +99,23 @@ export const redirectRoutes: RouteObject[] = [
             const {currentTenant} = useTenantStore.getState();
 
             if (isAdmin) {
-                return <Navigate to="/subtenants" replace/>
+                return <Navigate to={ROUTES.SUBTENANTS} replace/>
             }
 
             if (currentTenant?.basic_demo) {
-                return <Navigate to="/dashboard" replace/>
+                return <Navigate to={ROUTES.DASHBOARD} replace/>
             }
 
             return (isSuperTenant) ? (
-                <Navigate to="/subtenants" replace/>
+                <Navigate to={ROUTES.SUBTENANTS} replace/>
             ) : (
-                <Navigate to={`/subtenants/${tenantId}`} replace/>
+                <Navigate to={ROUTES.subtenant(tenantId!)} replace/>
             );
         })(),
     },
     {
         path: "*",
-        element: <Navigate to={'/dashboard'} replace/>
+        element: <Navigate to={ROUTES.DASHBOARD} replace/>
     },
 ];
 

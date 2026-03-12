@@ -6,6 +6,7 @@ import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
 import Button from "@/components/ui/Button.tsx";
 import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/routes/paths";
 import {useEffect, useState} from "react";
 import {config} from "@/config/runtime";
 import DeveloperAccessDialog from "@/components/ui/DeveloperAccessDialog.tsx";
@@ -147,7 +148,7 @@ const Dashboard = () => {
                                     imageUrl="/images/dashboard/invite.png"
                                     additionalContent={
                                         <Button
-                                            onClick={() => navigate('/invite')}
+                                            onClick={() => navigate(ROUTES.INVITE)}
                                         >
                                             Invite your friends
                                         </Button>}
@@ -176,7 +177,7 @@ const Dashboard = () => {
                                             </div>
                                             {currentTenant?.basic_demo ? (
                                                 <Button
-                                                    onClick={() => navigate('/pbx-setup')}
+                                                    onClick={() => navigate(ROUTES.PBX_SETUP)}
                                                     className="mt-4"
                                                 >
                                                     Connect to your own PBX

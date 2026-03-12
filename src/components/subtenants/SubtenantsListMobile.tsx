@@ -4,6 +4,7 @@ import {useNavigate} from "react-router-dom"
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
 import {Tenant} from "@/types.ts";
+import {ROUTES} from "@/routes/paths";
 
 
 interface SubtenantsListDesktopViewProps {

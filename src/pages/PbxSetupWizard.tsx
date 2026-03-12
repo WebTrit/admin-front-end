@@ -1,4 +1,5 @@
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {ArrowLeft, ArrowRight, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 
@@ -32,7 +33,7 @@ function WizardContent() {
             // Submit the VoIP form
             voipFormRef.current.submitForm()
         } else if (currentStep === "complete") {
-            navigate("/dashboard")
+            navigate(ROUTES.DASHBOARD)
         }
     }
 
