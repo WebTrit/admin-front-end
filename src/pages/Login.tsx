@@ -183,7 +183,7 @@ const Login = () => {
                                 className="w-full hover:bg-transparent active:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
                                 onClick={() => {
                                     const email = getValues("login")
-                                    navigate(`/password-reset?email=${encodeURIComponent(email)}`)
+                                    navigate('/password-reset', {state: {email}})
                                 }}>
                                 Forgot password? Click here to reset.
                             </Button>

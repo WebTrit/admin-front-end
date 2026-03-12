@@ -42,7 +42,7 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        const pendingDeveloperAccess = localStorage.getItem('pendingDeveloperAccess');
+        const pendingDeveloperAccess = sessionStorage.getItem('pendingDeveloperAccess');
 
         if (pendingDeveloperAccess === 'true' && !isTenantLoading && currentTenant) {
             const showDialogTimer = setTimeout(() => {
@@ -66,7 +66,7 @@ const Dashboard = () => {
             });
         } catch (error: any) {
             toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
-            localStorage.removeItem('pendingDeveloperAccess');
+            sessionStorage.removeItem('pendingDeveloperAccess');
             setShowDevAccessDialog(false);
         } finally {
             setDevAccessProcessing(false);

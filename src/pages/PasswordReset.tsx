@@ -41,7 +41,7 @@ const PasswordReset = () => {
     const timer = useRef<number | null>(null)
 
     const navigate = useNavigate()
-    const location = useLocation()
+    const location = useLocation<{email?: string}>()
 
     const emailForm = useForm<EmailFormData>({
         resolver: zodResolver(emailSchema),
@@ -112,8 +112,7 @@ const PasswordReset = () => {
     useEffect(() => {
         if (hasRunRef.current) return
 
-        const params = new URLSearchParams(location.search)
-        const email = params.get("email")
+        const email = location.state?.email
 
         if (email && emailSchema.safeParse({email}).success) {
             hasRunRef.current = true

@@ -10,7 +10,7 @@ const Signup = () => {
     useEffect(() => {
         const developerParam = searchParams.get('developer')
         if (developerParam === 'true' || developerParam === '1') {
-            localStorage.setItem('pendingDeveloperAccess', 'true')
+            sessionStorage.setItem('pendingDeveloperAccess', 'true')
         }
     }, [searchParams])
 
