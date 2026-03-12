@@ -6,7 +6,7 @@ import {Loader2, Mail, Pencil, Plus, Trash2, Users} from "lucide-react"
 import api from "@/lib/axios"
 import {User} from "@/types"
 import Button from "@/components/ui/Button"
-import {useAppStore} from "@/lib/store"
+import {useTenantStore} from "@/lib/tenantStore"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
 import {CopyableText} from "@/components/ui/CopyableText.tsx"
 import {LinkActions} from "@/components/ui/LinkActions.tsx"
@@ -17,7 +17,7 @@ interface UsersTableProps {
 }
 
 export function UsersTable({maxUsers}: UsersTableProps) {
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
     const navigate = useNavigate()
     const queryClient = useQueryClient()
     const {tenantId} = useParams()

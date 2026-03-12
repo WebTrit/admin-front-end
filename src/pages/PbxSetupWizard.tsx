@@ -2,7 +2,7 @@ import {useNavigate} from "react-router-dom"
 import {ArrowLeft, ArrowRight, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 
-import {useAppStore} from "@/lib/store"
+import {useTenantStore} from "@/lib/tenantStore"
 import {useWizard, WizardProvider} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {PbxSetupIntro} from "@/components/pbxSetupWizard/PbxSetupIntro.tsx";
 import {VoipConfigStep} from "@/components/pbxSetupWizard/VoipConfigStep.tsx";
@@ -12,7 +12,7 @@ import {UsersStep} from "@/components/pbxSetupWizard/UsersStep.tsx";
 function WizardContent() {
     const navigate = useNavigate()
     const {currentStep, setCurrentStep, tenantFormRef, voipFormRef, isLoading} = useWizard()
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
 
 
     const handleProceedFromIntro = async () => {
@@ -31,7 +31,6 @@ function WizardContent() {
         } else if (currentStep === "voip-config" && voipFormRef?.current) {
             // Submit the VoIP form
             voipFormRef.current.submitForm()
-            //TODO fix type errors
         } else if (currentStep === "complete") {
             navigate("/dashboard")
         }
@@ -190,7 +189,7 @@ function WizardContent() {
 }
 
 export function PbxSetupWizard() {
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
     if (!currentTenant) {
         return
     }

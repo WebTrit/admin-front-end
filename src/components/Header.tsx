@@ -1,18 +1,12 @@
 import {Home, LogOut, Settings, User} from 'lucide-react';
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useEffect, useRef, useState} from 'react';
 
 function Header() {
-    const {
-        clearAuth,
-        isSuperTenant,
-        isAdmin,
-        currentTenant,
-        isTenantLoading,
-        tenantId,
-        fetchTenant
-    } = useAppStore();
+    const {clearAuth, isSuperTenant, isAdmin, tenantId} = useAuthStore();
+    const {currentTenant, isTenantLoading, fetchTenant} = useTenantStore();
     const navigate = useNavigate();
     const location = useLocation();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -45,7 +39,7 @@ function Header() {
 
     useEffect(() => {
         if (!currentTenant && tenantId) {
-            fetchTenant();
+            fetchTenant(tenantId);
         }
 
     }, [tenantId]);

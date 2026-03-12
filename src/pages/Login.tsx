@@ -6,7 +6,7 @@ import {useNavigate} from "react-router-dom"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
 import {formatZodErrors} from "@/lib/validation"
-import {useAppStore} from "@/lib/store"
+import {useAuthStore} from "@/lib/authStore"
 import Input from "@/components/ui/Input.tsx";
 import Button from "@/components/ui/Button.tsx";
 import {config} from "@/config/runtime";
@@ -25,7 +25,7 @@ const Login = () => {
     const navigate = useNavigate()
     const isSignupLink = config.IS_SIGNUP;
 
-    const {setTenantId, setToken, setIsSuperTenant, setIsAdmin} = useAppStore()
+    const {setToken, login} = useAuthStore()
 
     const {
         register,
@@ -64,16 +64,12 @@ const Login = () => {
             }
 
             setToken(access_token)
-            setIsAdmin(false)
             toast.success("Login successful!")
 
             if (tenant_id) {
-                setTenantId(tenant_id)
-
                 try {
                     const {data: currentUserData} = await api.get(`/tenants/${tenant_id}`)
-                    console.log("Current user data:", currentUserData)
-                    setIsSuperTenant(currentUserData.is_super_tenant)
+                    login({token: access_token, tenantId: tenant_id, isSuperTenant: !!currentUserData.is_super_tenant, isAdmin: false})
 
                     if (currentUserData.basic_demo) {
                         navigate('/dashboard', {replace: true})
@@ -85,16 +81,14 @@ const Login = () => {
                     } else {
                         navigate(`/subtenants/${tenant_id}`, {replace: true})
                     }
-                } catch (err) {
-                    console.error("Failed to fetch tenant details:", err)
+                } catch {
                     toast.error("Failed to verify tenant status.")
                     navigate(`/subtenants/${tenant_id}`, {replace: true})
                 }
             } else {
                 navigate(`/subtenants/${tenant_id}`, {replace: true})
             }
-        } catch (error) {
-            console.error("Login error:", error)
+        } catch {
             toast.error("Invalid login or password. Please try again.")
         } finally {
             setIsSubmitting(false)

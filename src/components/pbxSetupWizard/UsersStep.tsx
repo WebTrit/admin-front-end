@@ -3,7 +3,8 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {ArrowLeft, ArrowRight, Loader2, Users} from "lucide-react"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
-import {useAppStore} from "@/lib/store"
+import {useAuthStore} from "@/lib/authStore"
+import {useTenantStore} from "@/lib/tenantStore"
 import Button from "@/components/ui/Button"
 import {UserForm, type UserFormData} from "@/components/shared/UserForm"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx"
@@ -26,7 +27,8 @@ const userSchema = z.object({
 })
 
 export function UsersStep() {
-    const {tenantId, usersList, currentTenant, setUsersList} = useAppStore()
+    const {tenantId} = useAuthStore()
+    const {usersList, currentTenant, setUsersList} = useTenantStore()
     const {setCurrentStep} = useWizard()
     const [currentUserIndex, setCurrentTenantIndex] = useState(0)
     const queryClient = useQueryClient()

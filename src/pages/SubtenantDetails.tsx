@@ -79,8 +79,8 @@ function SubtenantDetails() {
     const [tenantValidationErrors, setTenantValidationErrors] = useState<Record<string, string>>({});
 
     const {data: tenantInfo, isLoading, error} = useQuery({
-        //TODO cash tenants
         queryKey: ["tenant", tenantId],
+        staleTime: 5 * 60 * 1000,
         queryFn: async () => {
             if (!tenantId) throw new Error("No tenant ID found")
             const response = await api.get(`/tenants/${tenantId}`)

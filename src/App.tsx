@@ -3,7 +3,7 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query"
 import {ToastContainer} from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 import {useEffect} from "react"
-import {useAppStore} from "./lib/store"
+import {useAuthStore} from "./lib/authStore"
 import routes from "@/routes";
 import {config} from "@/config/runtime";
 
@@ -21,7 +21,7 @@ const AppRoutes = () => {
 }
 
 function App() {
-    const {checkAuth} = useAppStore()
+    const {checkAuth} = useAuthStore()
 
     // Check authentication on app load
     useEffect(() => {

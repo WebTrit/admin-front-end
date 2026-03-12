@@ -8,7 +8,8 @@ import Subtenants from "@/pages/Subtenants";
 import Layout from "@/components/Layout";
 import AddTenant from "@/pages/AddTenant.tsx";
 import Dashboard from "@/pages/Dashboard";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import PrivateRouteGuard from "@/components/guards/PrivateRouteGuard.tsx";
 import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
 import Invite from "@/pages/Invite.tsx";
@@ -93,7 +94,8 @@ export const redirectRoutes: RouteObject[] = [
     {
         path: "/",
         element: (() => {
-            const {isSuperTenant, currentTenant, isAdmin, tenantId} = useAppStore.getState();
+            const {isSuperTenant, isAdmin, tenantId} = useAuthStore.getState();
+            const {currentTenant} = useTenantStore.getState();
 
             if (isAdmin) {
                 return <Navigate to="/subtenants" replace/>

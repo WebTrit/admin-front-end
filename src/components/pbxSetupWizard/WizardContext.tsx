@@ -1,13 +1,11 @@
 import type React from "react"
 import {createContext, type ReactNode, useContext, useState} from "react"
 import {TenantInfoRef} from "@/components/shared/TenantInfo.tsx";
+import {VoipConfigRef} from "@/components/shared/VoipConfig.tsx";
 import type {Tenant} from "@/types";
 
 // Remove 'users' from the steps
 type SetupStep = "intro" | "tenant-info" | "voip-config" | "users" | "complete"
-
-class VoipConfigRef {
-}
 
 interface WizardContextType {
     currentStep: SetupStep

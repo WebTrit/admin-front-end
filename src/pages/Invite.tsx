@@ -4,7 +4,8 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import api from "@/lib/axios.ts";
 import {toast} from "react-toastify";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import {useNavigate} from "react-router-dom";
 
 type UserDetails = {
@@ -14,7 +15,8 @@ type UserDetails = {
 };
 
 function Invite() {
-    const {currentTenant, tenantId} = useAppStore(); // Get currentUser from the store
+    const {tenantId} = useAuthStore()
+    const {currentTenant} = useTenantStore()
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
@@ -49,8 +51,6 @@ function Invite() {
                 newErrors.email = 'Invalid email address';
             }
         }
-
-        console.log('Step:', stepNumber, 'Errors:', newErrors);
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;

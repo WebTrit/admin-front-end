@@ -1,6 +1,7 @@
 import {Code, Download, ExternalLink, Globe, Loader2, Phone,} from "lucide-react";
 import {DashboardCard} from "@/components/dashboard/DashboardCard.tsx";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
 import Button from "@/components/ui/Button.tsx";
@@ -20,7 +21,8 @@ const Dashboard = () => {
     const IS_CONNECT_PBX_ENABLED = config.APP_IS_DASHBOARD_CONNECT_PBX;
     const IS_DEVELOPER_ACCESS_ENABLED = config.APP_IS_DASHBOARD_DEVELOPER_ACCESS;
 
-    const {tenantId, currentTenant, isTenantLoading, tenantError} = useAppStore();
+    const {tenantId} = useAuthStore();
+    const {currentTenant, isTenantLoading, tenantError} = useTenantStore();
 
     const [whitelistIps, setWhitelistIps] = useState<string[] | null>(null);
     const [showDevAccessDialog, setShowDevAccessDialog] = useState(false);
@@ -74,7 +76,7 @@ const Dashboard = () => {
     };
 
     const handleCloseDeveloperAccessDialog = () => {
-        localStorage.removeItem('pendingDeveloperAccess');
+        sessionStorage.removeItem('pendingDeveloperAccess');
         setShowDevAccessDialog(false);
     };
 

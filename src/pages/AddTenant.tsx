@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import {useNavigate} from "react-router-dom";
 import {v4 as uuid} from "uuid";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
 
 interface TenantFormData {
     company_name: string;
@@ -22,7 +22,7 @@ interface FormErrors {
 }
 
 export default function AddTenant() {
-    const {tenantId, isAdmin} = useAppStore();
+    const {tenantId, isAdmin} = useAuthStore();
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState<TenantFormData>({

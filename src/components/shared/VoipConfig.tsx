@@ -47,7 +47,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             reset,
             setError,
             formState: {errors},
-        } = useForm<VoipFormData & { custom_voip_type?: string }>({
+        } = useForm<VoipFormData & {custom_voip_type?: string}>({
             defaultValues: {
                 voip_system_type: "",
                 host: "",
@@ -60,8 +60,6 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 outbound_proxy_port: "5060",
             },
         })
-        //TODO fix schema mismatch
-
         const isOtherVoip = tenantData?.voip_system?.type && !VOIP_SYSTEM_TYPES.includes(tenantData.voip_system.type)
         const voipSystemType = watch("voip_system_type")
         const skipHostnameValidation = watch("skip_hostname_validation")

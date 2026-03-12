@@ -1,7 +1,8 @@
 import {useState} from "react"
 import {useNavigate, useParams} from "react-router-dom"
 import {toast} from "react-toastify"
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import {UserForm, UserFormData} from "@/components/shared/UserForm.tsx";
 import api from "@/lib/axios.ts";
 
@@ -9,7 +10,8 @@ const AddUser = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const navigate = useNavigate()
     const {tenantId} = useParams()
-    const {currentTenant, isSuperTenant} = useAppStore()
+    const {isSuperTenant} = useAuthStore()
+    const {currentTenant} = useTenantStore()
 
     const handleSubmit = async (data: UserFormData) => {
         try {

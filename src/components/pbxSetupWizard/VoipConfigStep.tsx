@@ -6,7 +6,8 @@ import {formatZodErrors} from "@/lib/validation"
 import {VoipConfig, VoipConfigRef} from "@/components/shared/VoipConfig"
 import {voipConfigSchema, VoipFormData} from "@/pages/SubtenantDetails"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 
 
 export function VoipConfigStep() {
@@ -15,7 +16,8 @@ export function VoipConfigStep() {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const [isValidatingHost, setIsValidatingHost] = useState(false)
     const queryClient = useQueryClient()
-    const {currentTenant, setCurrentTenant, tenantId} = useAppStore()
+    const {tenantId} = useAuthStore()
+    const {currentTenant, setCurrentTenant} = useTenantStore()
 
     useEffect(() => {
         setVoipFormRef(formRef)

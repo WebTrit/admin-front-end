@@ -4,7 +4,7 @@ import {useNavigate} from "react-router-dom"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
 import Button from "@/components/ui/Button"
-import {useAppStore} from "@/lib/store"
+import {useAuthStore} from "@/lib/authStore"
 import {CompanyInformation} from "./CompanyInformation"
 import {PersonalInformation} from "@/components/signup/PersonalInformation.tsx"
 import {AccountInformation} from "@/components/signup/AccounInformation.tsx"
@@ -28,7 +28,7 @@ export const SignupForm = () => {
     const isCompanySite = config.IS_SIGNUP_COMPANY_SITE;
 
     const navigate = useNavigate()
-    const {setToken, setTenantId, setIsSuperTenant, setIsAdmin} = useAppStore()
+    const {login} = useAuthStore()
 
     const {
         register: registerSignup,
@@ -119,10 +119,7 @@ export const SignupForm = () => {
             })
             if (response.data) {
                 const {access_token, tenant_id} = response.data
-                setToken(access_token)
-                setTenantId(tenant_id)
-                setIsSuperTenant(false)
-                setIsAdmin(false)
+                login({token: access_token, tenantId: tenant_id, isSuperTenant: false, isAdmin: false})
 
                 navigate(`/dashboard`, {replace: true})
             } else {

@@ -1,8 +1,8 @@
 import {Navigate} from 'react-router-dom';
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
 
 function PrivateRouteGuard({children}: { children: React.ReactNode }) {
-    const isAuthenticated = useAppStore((state) => state.isAuthenticated)
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace/>

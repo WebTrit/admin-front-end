@@ -9,7 +9,7 @@ import {useLocation, useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import api from "@/lib/axios"
-import {useAppStore} from "@/lib/store.ts"
+import {useAuthStore} from "@/lib/authStore"
 
 const emailSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -30,7 +30,7 @@ type EmailFormData = z.infer<typeof emailSchema>
 type ResetFormData = z.infer<typeof resetSchema>
 
 const PasswordReset = () => {
-    const {setTenantId, setToken} = useAppStore()
+    const {login} = useAuthStore()
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [step, setStep] = useState<"request" | "verify">("request")
@@ -64,7 +64,6 @@ const PasswordReset = () => {
             toast.success("Reset code sent! Check your email.")
         } catch (err) {
             toast.error("Failed to send reset code. Please try again.")
-            console.error("Password reset request failed:", err)
         } finally {
             setIsSubmitting(false)
         }
@@ -81,23 +80,16 @@ const PasswordReset = () => {
 
             const {access_token, tenant_id} = response.data
 
-            setToken(access_token)
-
-            if (tenant_id) {
-                setTenantId(tenant_id)
-            }
-
+            login({token: access_token, tenantId: tenant_id || null, isSuperTenant: false, isAdmin: false})
             toast.success("Password reset successful!")
             navigate("/dashboard", {replace: true})
-        } catch (err) {
-            const status = err.response?.status || 'Unknown';
+        } catch (err: unknown) {
+            const status = (err as {response?: {status?: number}})?.response?.status
             if (status === 401) {
                 toast.error("Invalid verification code")
-            } else if (status !== 401 && String(status).startsWith("50")) {
+            } else if (status && String(status).startsWith("50")) {
                 toast.error("Failed to reset password. Please try again.")
             }
-
-            console.error("Password reset verification failed:", err)
         } finally {
             setIsSubmitting(false)
         }

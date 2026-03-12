@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import type {TenantFormData} from "@/pages/SubtenantDetails.tsx"
 import type {Tenant} from "@/types"
-import {useAppStore} from "@/lib/store.ts"
+import {useAuthStore} from "@/lib/authStore"
 
 export interface TenantInfoRef {
     submitForm: () => void
@@ -37,7 +37,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
         },
         ref,
     ) => {
-        const {isAdmin} = useAppStore()
+        const {isAdmin} = useAuthStore()
         const {
             register,
             handleSubmit,

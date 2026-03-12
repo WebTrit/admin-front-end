@@ -1,9 +1,9 @@
 import {Navigate} from 'react-router-dom';
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
 
 function SuperTenantGuard({children}: { children: React.ReactNode }) {
-    const isSuperTenant = useAppStore((state) => state.isSuperTenant)
-    const isAdmin = useAppStore((state) => state.isAdmin)
+    const isSuperTenant = useAuthStore((state) => state.isSuperTenant)
+    const isAdmin = useAuthStore((state) => state.isAdmin)
 
     if (isAdmin) {
         return children;

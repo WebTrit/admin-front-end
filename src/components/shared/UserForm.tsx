@@ -4,7 +4,7 @@ import {z} from "zod"
 import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx"
-import {useAppStore} from "@/lib/store.ts"
+import {useAuthStore} from "@/lib/authStore"
 import {formatZodErrors} from "@/lib/validation"
 
 const userSchema = z.object({
@@ -62,7 +62,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
     ) => {
         const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
         const navigate = useNavigate()
-        const {isAdmin} = useAppStore()
+        const {isAdmin} = useAuthStore()
 
         const {register, handleSubmit, setValue, reset, control} = useForm<UserFormData>({
             defaultValues: {

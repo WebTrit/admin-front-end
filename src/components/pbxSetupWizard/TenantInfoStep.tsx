@@ -8,11 +8,11 @@ import type {Tenant} from "@/types"
 
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {useEffect, useRef, useState} from "react";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
 
 export function TenantInfoStep() {
     const {tenantData, setCurrentStep, setTenantFormRef, updateTenantData} = useWizard()
-    const {tenantId} = useAppStore()
+    const {tenantId} = useAuthStore()
     const formRef = useRef<TenantInfoRef>(null)
     const queryClient = useQueryClient()
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
