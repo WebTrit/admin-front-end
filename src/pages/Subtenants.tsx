@@ -9,11 +9,11 @@ import {SubtenantsFilter} from "@/components/subtenants/SubtenantsFilter.tsx"
 import {SubtenantsListMobile} from "@/components/subtenants/SubtenantsListMobile.tsx"
 import {SubtenantsListDesktop} from "@/components/subtenants/SubtenantsListDesktop.tsx"
 
-interface Subtenant {
+export interface Subtenant {
     tenant_id: string
-    email: string
+    email: string | null
     login: string
-    company_name: string
+    company_name: string | null
     basic_demo: boolean
     sip: { host: string; port: number } | null
     registrar_server: string | null
@@ -21,7 +21,8 @@ interface Subtenant {
     voip_system?: { type: string }
 }
 
-interface FilterParams {
+export interface FilterParams {
+    [key: string]: string | undefined
     tenant_id?: string
     email?: string
     except_tenant_id?: string
@@ -159,7 +160,7 @@ const Subtenants = () => {
                         deletingTenantId={deletingTenantId}
                         onDelete={handleDelete}
                         onCancelDelete={() => setDeletingTenantId(null)}
-                        onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
+                        onDeleteClick={(tenantId: string) => setDeletingTenantId(tenantId)}
                         appliedFilters={appliedFilters}
                         onClearFilters={clearFilters}
                     />
@@ -168,7 +169,7 @@ const Subtenants = () => {
                         deletingTenantId={deletingTenantId}
                         onDelete={handleDelete}
                         onCancelDelete={() => setDeletingTenantId(null)}
-                        onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
+                        onDeleteClick={(tenantId: string) => setDeletingTenantId(tenantId)}
                         appliedFilters={appliedFilters}
                         onClearFilters={clearFilters}
                     />

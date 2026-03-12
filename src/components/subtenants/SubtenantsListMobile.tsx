@@ -3,16 +3,15 @@ import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
-import {Tenant} from "@/types.ts";
-import {ROUTES} from "@/routes/paths";
-
+import type {Subtenant, FilterParams} from "@/pages/Subtenants";
 
 interface SubtenantsListDesktopViewProps {
-    subtenants: Tenant[]
+    subtenants: Subtenant[]
     deletingTenantId: string | null
     onDelete: (tenantId: string) => void
     onCancelDelete: () => void
-    appliedFilters: Record<string, string>
+    onDeleteClick: (tenantId: string) => void
+    appliedFilters: FilterParams
     onClearFilters: () => void
 }
 
@@ -26,10 +25,10 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
          onClearFilters,
      }) => {
         const navigate = useNavigate();
-        const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
+        const [tenantToDelete, setTenantToDelete] = useState<Subtenant | null>(null);
         const [isModalOpen, setIsModalOpen] = useState(false);
 
-        const handleDeleteClick = (tenant: Tenant) => {
+        const handleDeleteClick = (tenant: Subtenant) => {
             setTenantToDelete(tenant);
             setIsModalOpen(true);
         };
@@ -82,7 +81,7 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
 
                                 <div className="text-xs font-medium text-gray-500 col-span-1">Email</div>
                                 <div className="text-sm text-gray-700 col-span-2">
-                                    <CopyableText tooltip={tenant.email}/>
+                                    <CopyableText tooltip={tenant.email || ''}/>
                                 </div>
 
                                 <div className="text-xs font-medium text-gray-500 col-span-1">Company</div>

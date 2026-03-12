@@ -132,10 +132,7 @@ export function UsersStep() {
 
     const handleSaveUser = async () => {
         if (usersList.items && currentUserIndex < usersList.items.length) {
-            const isValid = await formRef.current.submitForm()
-            if (!isValid) {
-                toast.error("Please fix validation errors before proceeding")
-            }
+            formRef.current?.submitForm()
         }
     }
 
@@ -214,10 +211,9 @@ export function UsersStep() {
             {usersList.items[currentUserIndex] && (
                 <UserForm
                     ref={formRef}
-                    initialData={usersList.items[currentUserIndex]}
-                    onSubmit={updateUserMutation.mutate}
+                    initialData={{...usersList.items[currentUserIndex], email: usersList.items[currentUserIndex].email || '', use_phone_as_username: true}}
+                    onSubmit={async (data) => { await updateUserMutation.mutateAsync(data) }}
                     isSubmitting={updateUserMutation.isPending}
-                    tenantId={tenantId || ""}
                     hideControls={true}
                 />
             )}

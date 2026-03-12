@@ -40,7 +40,7 @@ const EditUser = () => {
             queryClient.invalidateQueries({queryKey: ["users", tenantId]})
             queryClient.invalidateQueries({queryKey: ["user", tenantId, userId]})
             toast.success("User updated successfully!")
-            navigate(`/subtenants/${tenantId}`)
+            navigate(ROUTES.subtenant(tenantId!))
         },
         onError: (error) => {
             console.error("Error updating user:", error)
@@ -80,7 +80,7 @@ const EditUser = () => {
     return (
         <UserForm
             initialData={userData}
-            onSubmit={updateUserMutation.mutate}
+            onSubmit={async (data) => { await updateUserMutation.mutateAsync(data) }}
             isSubmitting={updateUserMutation.isPending}
             title="Edit User"
             submitButtonText="Update User"

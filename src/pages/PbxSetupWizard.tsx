@@ -75,6 +75,7 @@ function WizardContent() {
                         }}
                         onProceed={handleProceedFromIntro}
                         onCancel={handleCancel}
+                        isLoading={isLoading}
                     />
                 )
             case "tenant-info":
@@ -92,7 +93,7 @@ function WizardContent() {
                         </p>
                         <p className="text-gray-600 mb-8">Users can now log in to the WebTrit app with their updated
                             settings.</p>
-                        <Button onClick={() => navigate(`/subtenants/${currentTenant?.tenant_id}`)} className="px-8">
+                        <Button onClick={() => navigate(ROUTES.subtenant(currentTenant?.tenant_id || ''))} className="px-8">
                             Go to Configuration
                         </Button>
                     </div>

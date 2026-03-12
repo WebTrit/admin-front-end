@@ -6,17 +6,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import {ROUTES} from "@/routes/paths";
 
-interface Subtenant {
-    tenant_id: string
-    email: string
-    login: string
-    company_name: string
-    basic_demo: boolean
-    sip: { host: string; port: number } | null
-    registrar_server: string | null
-    transport_protocol: string
-    voip_system?: { type: string }
-}
+import type {Subtenant, FilterParams} from "@/pages/Subtenants";
 
 interface SubtenantsListDesktopProps {
     subtenants: Subtenant[]
@@ -24,7 +14,7 @@ interface SubtenantsListDesktopProps {
     onDelete: (tenantId: string) => void
     onCancelDelete: () => void
     onDeleteClick: (tenantId: string) => void
-    appliedFilters: Record<string, string>
+    appliedFilters: FilterParams
     onClearFilters: () => void
 }
 

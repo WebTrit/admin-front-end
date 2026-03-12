@@ -507,7 +507,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                         </div>
                                         <p className="text-gray-900 font-medium mb-2">Failed to fetch calls</p>
                                         <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
-                                        <Button onClick={fetchCallLogs} variant="outline" size="sm">
+                                        <Button onClick={() => fetchCallLogs()} variant="outline" size="sm">
                                             <RefreshCw className="w-4 h-4 mr-2"/>
                                             Retry
                                         </Button>
@@ -553,7 +553,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                         </div>
                                         <p className="text-gray-900 font-medium mb-2">Failed to fetch SIP events</p>
                                         <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
-                                        <Button onClick={fetchAllEvents} variant="outline" size="sm">
+                                        <Button onClick={() => fetchAllEvents()} variant="outline" size="sm">
                                             <RefreshCw className="w-4 h-4 mr-2"/>
                                             Retry
                                         </Button>
