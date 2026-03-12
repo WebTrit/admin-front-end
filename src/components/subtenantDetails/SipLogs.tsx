@@ -127,8 +127,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             }
 
             setCallLogs(callLogsData);
-        } catch (error: any) {
-            console.error('Failed to fetch call logs:', error);
+        } catch {
             setHasCallsError(true);
             toast.error('Failed to fetch call logs', {
                 toastId: 'sip-logs-error',
@@ -161,8 +160,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
             const eventLogsData = Array.isArray(data) ? data : (data.events || []);
             setEventLogs(eventLogsData);
-        } catch (error: any) {
-            console.error('Failed to fetch event logs:', error);
+        } catch {
             toast.error('Failed to fetch SIP messages for this call');
             setEventLogs([]);
         } finally {
@@ -206,8 +204,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
             const eventLogsData = Array.isArray(data) ? data : (data.events || []);
             setAllEvents(eventLogsData);
-        } catch (error: any) {
-            console.error('Failed to fetch all events:', error);
+        } catch {
             setHasEventsError(true);
             toast.error('Failed to fetch SIP events', {
                 toastId: 'sip-events-error',

@@ -1,54 +1,49 @@
-import {useState} from "react"
 import {useNavigate, useParams} from "react-router-dom"
+import {useMutation} from "@tanstack/react-query"
 import {toast} from "react-toastify"
-import {useAuthStore} from "@/lib/authStore";
-import {useTenantStore} from "@/lib/tenantStore";
-import {UserForm, UserFormData} from "@/components/shared/UserForm.tsx";
-import api from "@/lib/axios.ts";
-import {ROUTES} from "@/routes/paths";
+import {useAuthStore} from "@/lib/authStore"
+import {useTenantStore} from "@/lib/tenantStore"
+import {UserForm, UserFormData} from "@/components/shared/UserForm.tsx"
+import api from "@/lib/axios.ts"
+import {ROUTES} from "@/routes/paths"
 
 const AddUser = () => {
-    const [isSubmitting, setIsSubmitting] = useState(false)
     const navigate = useNavigate()
     const {tenantId} = useParams()
     const {isSuperTenant} = useAuthStore()
     const {currentTenant} = useTenantStore()
 
-    const handleSubmit = async (data: UserFormData) => {
-        try {
-            setIsSubmitting(true)
+    const addUserMutation = useMutation({
+        mutationFn: async (data: UserFormData) => {
+            if (!tenantId) throw new Error("Tenant ID not found.")
 
-            if (!tenantId) {
-                toast.error("Tenant ID not found. Please log in again.")
-                return
+            const payload: Omit<UserFormData, 'use_phone_as_username'> & { basic_demo: boolean } = {
+                ...data,
+                basic_demo: !isSuperTenant && typeof currentTenant?.basic_demo === 'boolean'
+                    ? currentTenant.basic_demo
+                    : false,
             }
 
-            const payload: any = {...data}
-
-            if (!isSuperTenant && typeof currentTenant?.basic_demo === 'boolean') {
-                payload.basic_demo = currentTenant.basic_demo
-            } else {
-                payload.basic_demo = false
-            }
-
-            await api.post(`/tenants/${tenantId}/users`, payload)
+            const response = await api.post(`/tenants/${tenantId}/users`, payload)
+            return response.data
+        },
+        onSuccess: () => {
             toast.success("User added successfully!")
             navigate(ROUTES.subtenant(tenantId!))
-        } catch (error) {
-            console.error("Error adding user:", error)
+        },
+        onError: () => {
             toast.error("Failed to add user. Please try again.")
-        } finally {
-            setIsSubmitting(false)
-        }
-    }
+        },
+    })
 
     if (!tenantId) {
         return null
     }
+
     return (
         <UserForm
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
+            onSubmit={async (data) => { await addUserMutation.mutateAsync(data) }}
+            isSubmitting={addUserMutation.isPending}
             title="Add New User"
             submitButtonText="Add User"
         />

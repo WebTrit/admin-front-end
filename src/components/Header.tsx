@@ -4,10 +4,12 @@ import {useTenantStore} from "@/lib/tenantStore";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useEffect, useRef, useState} from 'react';
 import {ROUTES} from "@/routes/paths";
+import {useTenantQuery} from "@/hooks/useTenantQuery";
 
 function Header() {
     const {clearAuth, isSuperTenant, isAdmin, tenantId} = useAuthStore();
-    const {currentTenant, isTenantLoading, fetchTenant} = useTenantStore();
+    const {currentTenant} = useTenantStore();
+    const {isLoading: isTenantLoading} = useTenantQuery();
     const navigate = useNavigate();
     const location = useLocation();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -37,14 +39,6 @@ function Header() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    useEffect(() => {
-        if (!currentTenant && tenantId) {
-            fetchTenant(tenantId);
-        }
-
-    }, [tenantId]);
-
 
     function configurationPath() {
         if (isAdmin) {

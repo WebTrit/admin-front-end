@@ -7,7 +7,7 @@ import Button from "@/components/ui/Button"
 import {useAuthStore} from "@/lib/authStore"
 import {CompanyInformation} from "./CompanyInformation"
 import {PersonalInformation} from "@/components/signup/PersonalInformation.tsx"
-import {AccountInformation} from "@/components/signup/AccounInformation.tsx"
+import {AccountInformation} from "@/components/signup/AccountInformation.tsx"
 import {OTPVerification} from "@/components/signup/OTPVerification.tsx"
 import {OTPFormData, SignupFormData} from "@/lib/schemas"
 import axios from "axios"
@@ -93,7 +93,6 @@ export const SignupForm = () => {
             setShowOTPField(true)
             startResendTimer()
         } catch (error) {
-            console.error("Error sending OTP:", error)
             if (axios.isAxiosError(error) && error.response?.status === 409) {
                 setEmailAlreadyRegistered(true)
             } else {
@@ -140,7 +139,6 @@ export const SignupForm = () => {
             } else {
                 setError("otp", {type: "manual", message: "Failed to verify temporary password. Please try again."})
             }
-            console.error("Error verifying temporary password:", error)
         } finally {
             setIsSubmitting(false)
         }

@@ -2,6 +2,7 @@ import {Code, Download, ExternalLink, Globe, Loader2, Phone,} from "lucide-react
 import {DashboardCard} from "@/components/dashboard/DashboardCard.tsx";
 import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
+import {useTenantQuery} from "@/hooks/useTenantQuery";
 import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
 import Button from "@/components/ui/Button.tsx";
@@ -23,7 +24,8 @@ const Dashboard = () => {
     const IS_DEVELOPER_ACCESS_ENABLED = config.APP_IS_DASHBOARD_DEVELOPER_ACCESS;
 
     const {tenantId} = useAuthStore();
-    const {currentTenant, isTenantLoading, tenantError} = useTenantStore();
+    const {currentTenant} = useTenantStore();
+    const {isLoading: isTenantLoading, error: tenantError} = useTenantQuery();
 
     const [whitelistIps, setWhitelistIps] = useState<string[] | null>(null);
     const [showDevAccessDialog, setShowDevAccessDialog] = useState(false);
@@ -67,8 +69,9 @@ const Dashboard = () => {
             await api.put(`/tenants/${currentTenant.tenant_id}/developer`, {
                 email: currentTenant.email,
             });
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
+        } catch (error: unknown) {
+            const axiosError = error as { response?: { data?: { message?: string } } };
+            toast.error(axiosError?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
             sessionStorage.removeItem('pendingDeveloperAccess');
             setShowDevAccessDialog(false);
         } finally {
@@ -89,7 +92,7 @@ const Dashboard = () => {
                         <Loader2 size={40} className="mr-2 animate-spin"/>
                     </div>
                 ) : tenantError ? (
-                    <div className="text-red-600 text-center">{tenantError}</div>
+                    <div className="text-red-600 text-center">{tenantError?.message || "Failed to load tenant"}</div>
                 ) : (
                     <div className="space-y-8">
                         <div className="text-center md:text-left">

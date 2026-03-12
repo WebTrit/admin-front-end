@@ -42,8 +42,7 @@ const EditUser = () => {
             toast.success("User updated successfully!")
             navigate(ROUTES.subtenant(tenantId!))
         },
-        onError: (error) => {
-            console.error("Error updating user:", error)
+        onError: () => {
             toast.error("Failed to update user. Please try again.")
         },
     })

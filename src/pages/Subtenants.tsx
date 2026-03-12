@@ -1,6 +1,7 @@
 import type React from "react"
 import {useState} from "react"
 import {useQuery} from "@tanstack/react-query"
+import {toast} from "react-toastify"
 import {Loader2, Plus} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import {ROUTES} from "@/routes/paths"
@@ -77,8 +78,8 @@ const Subtenants = () => {
             await api.delete(`/tenants/${tenantId}`)
             setDeletingTenantId(null)
             refetch()
-        } catch (error) {
-            console.error("Error deleting tenant:", error)
+        } catch {
+            toast.error("Failed to delete tenant. Please try again.")
         }
     }
 

@@ -8,6 +8,7 @@ import {voipConfigSchema, VoipFormData} from "@/lib/schemas"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
+import type {Tenant} from "@/types";
 
 
 export function VoipConfigStep() {
@@ -50,7 +51,7 @@ export function VoipConfigStep() {
     }
 
     const updateVoipMutation = useMutation({
-        mutationFn: async (updatedData: any) => {
+        mutationFn: async (updatedData: Partial<Tenant>) => {
             if (!tenantId) throw new Error("No tenant ID found")
             const response = await api.post(`/tenants/${tenantId}/convert-to-pbx`, {
                 ...currentTenant,
@@ -60,7 +61,7 @@ export function VoipConfigStep() {
             setCurrentTenant({
                 ...currentTenant,
                 ...updatedData,
-            })
+            } as Tenant)
             return response.data
         },
         onSuccess: () => {

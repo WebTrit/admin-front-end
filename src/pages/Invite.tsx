@@ -84,8 +84,9 @@ function Invite() {
                 await api.post(`/tenants/${tenantId}/invite`, data);
                 toast.success(`Invitation sent successfully to ${invitedUser.email}!`);
                 setStep(3);
-            } catch (error: any) {
-                if (error?.response?.status === 409) {
+            } catch (error: unknown) {
+                const axiosError = error as { response?: { status?: number } };
+                if (axiosError?.response?.status === 409) {
                     toast.info(`The user with email ${invitedUser.email} already uses WebTrit.`);
                 } else {
                     toast.error(`Failed to send invitation to ${invitedUser.email}. Please try again.`);

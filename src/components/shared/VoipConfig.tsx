@@ -137,7 +137,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             )
         }
 
-        function handleFormSubmit(data: any) {
+        function handleFormSubmit(data: VoipFormData & {custom_voip_type?: string}) {
             if (data.voip_system_type === "Other - not listed here" && !data.custom_voip_type?.trim()) {
                 setError("custom_voip_type", {
                     type: "manual",

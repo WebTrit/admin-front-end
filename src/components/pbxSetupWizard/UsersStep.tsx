@@ -93,7 +93,6 @@ export function UsersStep() {
         },
         onError: (error) => {
             setIsUserUpdating(false)
-            console.error("Error updating user:", error)
             if (error instanceof Error && error.message === "Validation failed") {
                 toast.error("Please fix validation errors before proceeding")
             } else {
