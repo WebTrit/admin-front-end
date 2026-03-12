@@ -41,7 +41,7 @@ const PasswordReset = () => {
     const timer = useRef<number | null>(null)
 
     const navigate = useNavigate()
-    const location = useLocation<{email?: string}>()
+    const location = useLocation()
 
     const emailForm = useForm<EmailFormData>({
         resolver: zodResolver(emailSchema),
@@ -63,7 +63,7 @@ const PasswordReset = () => {
             setStep("verify")
             toast.success("Reset code sent! Check your email.")
         } catch (err) {
-            toast.success("Failed to send reset code. Please try again.")
+            toast.error("Failed to send reset code. Please try again.")
             console.error("Password reset request failed:", err)
         } finally {
             setIsSubmitting(false)
@@ -112,7 +112,7 @@ const PasswordReset = () => {
     useEffect(() => {
         if (hasRunRef.current) return
 
-        const email = location.state?.email
+        const email = (location.state as {email?: string} | null)?.email
 
         if (email && emailSchema.safeParse({email}).success) {
             hasRunRef.current = true
