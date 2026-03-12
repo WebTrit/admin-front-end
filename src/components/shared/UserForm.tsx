@@ -5,6 +5,7 @@ import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx"
 import {useAppStore} from "@/lib/store.ts"
+import {formatZodErrors} from "@/lib/validation"
 
 const userSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
@@ -84,7 +85,8 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
         useEffect(() => {
             if (initialData) {
                 const transformedData = Object.keys(initialData).reduce((acc, key) => {
-                    acc[key] = initialData[key] === null ? "" : initialData[key];
+                    const k = key as keyof UserFormData;
+                    (acc as Record<string, unknown>)[k] = initialData[k] === null ? "" : initialData[k];
                     return acc;
                 }, {} as UserFormData);
 
@@ -137,13 +139,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
         const validateForm = (data: UserFormData) => {
             const result = userSchema.safeParse(data)
             if (!result.success) {
-                const formattedErrors: Record<string, string> = {}
-                result.error.errors.forEach((error) => {
-                    if (error.path.length > 0) {
-                        formattedErrors[error.path[0].toString()] = error.message
-                    }
-                })
-                setValidationErrors(formattedErrors)
+                setValidationErrors(formatZodErrors(result.error))
                 return false
             }
             setValidationErrors({})

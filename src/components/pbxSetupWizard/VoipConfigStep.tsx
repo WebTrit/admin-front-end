@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from "react"
 import {useMutation, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
+import {formatZodErrors} from "@/lib/validation"
 import {VoipConfig, VoipConfigRef} from "@/components/shared/VoipConfig"
 import {voipConfigSchema, VoipFormData} from "@/pages/SubtenantDetails"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
@@ -14,7 +15,7 @@ export function VoipConfigStep() {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const [isValidatingHost, setIsValidatingHost] = useState(false)
     const queryClient = useQueryClient()
-    const {currentTenant, setCurrentTenant} = useAppStore()
+    const {currentTenant, setCurrentTenant, tenantId} = useAppStore()
 
     useEffect(() => {
         setVoipFormRef(formRef)
@@ -24,13 +25,7 @@ export function VoipConfigStep() {
     const validateForm = (data: VoipFormData) => {
         const result = voipConfigSchema.safeParse(data)
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {}
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message
-                }
-            })
-            setValidationErrors(formattedErrors)
+            setValidationErrors(formatZodErrors(result.error))
             return false
         }
         setValidationErrors({})
@@ -54,8 +49,8 @@ export function VoipConfigStep() {
 
     const updateVoipMutation = useMutation({
         mutationFn: async (updatedData: any) => {
-            if (!tenantData.tenant_id) throw new Error("No tenant ID found")
-            const response = await api.post(`/tenants/${tenantData.tenant_id}/convert-to-pbx`, {
+            if (!tenantId) throw new Error("No tenant ID found")
+            const response = await api.post(`/tenants/${tenantId}/convert-to-pbx`, {
                 ...currentTenant,
                 ...updatedData,
             })
@@ -67,7 +62,7 @@ export function VoipConfigStep() {
             return response.data
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["tenant", tenantData.tenant_id]})
+            queryClient.invalidateQueries({queryKey: ["tenant", tenantId]})
             setValidationErrors({})
             toast.success("VoIP settings updated successfully")
             setCurrentStep("users")
@@ -143,7 +138,7 @@ export function VoipConfigStep() {
                 port: String(changes.sip?.port ?? tenantData.sip?.port),
                 use_tcp: data.transport_protocol.toLowerCase() === "tcp"
             },
-            transport_protocol: data.transport_protocol ?? tenantData.sip?.transport_protocol,
+            transport_protocol: data.transport_protocol ?? tenantData.transport_protocol,
             basic_demo: false
         }
 

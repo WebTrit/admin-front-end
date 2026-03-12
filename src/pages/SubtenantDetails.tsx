@@ -5,6 +5,7 @@ import {UsersTable} from "@/components/subtenantDetails/UsersTable"
 import {SipLogs} from "@/components/subtenantDetails/SipLogs"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import api from "@/lib/axios.ts";
+import {formatZodErrors} from "@/lib/validation";
 import {useParams} from "react-router-dom";
 import {z} from "zod";
 import {useState} from "react";
@@ -90,13 +91,7 @@ function SubtenantDetails() {
     const validateTenantForm = (data: TenantFormData) => {
         const result = tenantSchema.safeParse(data);
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {};
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message;
-                }
-            });
-            setTenantValidationErrors(formattedErrors);
+            setTenantValidationErrors(formatZodErrors(result.error));
             return false;
         }
         setTenantValidationErrors({});
@@ -106,13 +101,7 @@ function SubtenantDetails() {
     const validateForm = (data: VoipFormData) => {
         const result = voipConfigSchema.safeParse(data);
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {};
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message;
-                }
-            });
-            setVoipValidationErrors(formattedErrors);
+            setVoipValidationErrors(formatZodErrors(result.error));
             return false;
         }
         setVoipValidationErrors({});

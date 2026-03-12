@@ -30,10 +30,15 @@ interface AppState {
 }
 
 
+interface JwtPayload {
+    sub: string
+    exp: number
+}
+
 // Helper function to check if token is expired
 const isTokenExpired = (token: string): boolean => {
     try {
-        const decoded: any = jwtDecode(token)
+        const decoded = jwtDecode<JwtPayload>(token)
         const currentTime = Date.now() / 1000
         return decoded.exp < currentTime
     } catch {

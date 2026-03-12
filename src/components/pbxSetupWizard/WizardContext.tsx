@@ -1,7 +1,7 @@
 import type React from "react"
 import {createContext, type ReactNode, useContext, useState} from "react"
-import type {TenantFormData} from "@/pages/SubtenantDetails"
 import {TenantInfoRef} from "@/components/shared/TenantInfo.tsx";
+import type {Tenant} from "@/types";
 
 // Remove 'users' from the steps
 type SetupStep = "intro" | "tenant-info" | "voip-config" | "users" | "complete"
@@ -12,8 +12,8 @@ class VoipConfigRef {
 interface WizardContextType {
     currentStep: SetupStep
     setCurrentStep: (step: SetupStep) => void
-    tenantData: any
-    updateTenantData: (data: any) => void
+    tenantData: Partial<Tenant>
+    updateTenantData: (data: Partial<Tenant>) => void
     isLoading: boolean
     setIsLoading: (loading: boolean) => void
     errors: Record<string, string>
@@ -28,16 +28,16 @@ interface WizardContextType {
 
 const WizardContext = createContext<WizardContextType | undefined>(undefined)
 
-export function WizardProvider({children, initialData}: { children: ReactNode; initialData?: any }) {
+export function WizardProvider({children, initialData}: { children: ReactNode; initialData?: Partial<Tenant> }) {
     const [currentStep, setCurrentStep] = useState<SetupStep>("intro")
-    const [tenantData, setTenantData] = useState(initialData || {})
+    const [tenantData, setTenantData] = useState<Partial<Tenant>>(initialData || {})
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
     const [tenantFormRef, setTenantFormRef] = useState<React.RefObject<TenantInfoRef> | null>(null)
     const [voipFormRef, setVoipFormRef] = useState<React.RefObject<VoipConfigRef> | null>(null)
 
-    const updateTenantData = (data: Partial<TenantFormData>) => {
-        setTenantData((prev: any) => ({...prev, ...data}))
+    const updateTenantData = (data: Partial<Tenant>) => {
+        setTenantData((prev) => ({...prev, ...data}))
     }
 
 

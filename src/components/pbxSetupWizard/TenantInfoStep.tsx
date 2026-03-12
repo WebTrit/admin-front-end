@@ -1,13 +1,18 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
+import {formatZodErrors} from "@/lib/validation"
 import {TenantInfo, TenantInfoRef} from "@/components/shared/TenantInfo"
 import {TenantFormData, tenantSchema} from "@/pages/SubtenantDetails"
+import type {Tenant} from "@/types"
+
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {useEffect, useRef, useState} from "react";
+import {useAppStore} from "@/lib/store.ts";
 
 export function TenantInfoStep() {
     const {tenantData, setCurrentStep, setTenantFormRef, updateTenantData} = useWizard()
+    const {tenantId} = useAppStore()
     const formRef = useRef<TenantInfoRef>(null)
     const queryClient = useQueryClient()
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
@@ -19,13 +24,13 @@ export function TenantInfoStep() {
     }, [setTenantFormRef])
 
     const updateTenantMutation = useMutation({
-        mutationFn: async (updatedData: Partial<TenantFormData>) => {
-            if (!tenantData.tenant_id) throw new Error("No tenant ID found")
-            const response = await api.patch(`/tenants/${tenantData.tenant_id}`, updatedData)
+        mutationFn: async (updatedData: Partial<Tenant>) => {
+            if (!tenantId) throw new Error("No tenant ID found")
+            const response = await api.patch(`/tenants/${tenantId}`, updatedData)
             return response.data
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["tenant", tenantData.tenant_id]})
+            queryClient.invalidateQueries({queryKey: ["tenant", tenantId]})
             toast.success("Personal Information updated successfully")
             setCurrentStep("voip-config")
         },
@@ -37,13 +42,7 @@ export function TenantInfoStep() {
     const validateForm = (data: TenantFormData) => {
         const result = tenantSchema.safeParse(data)
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {}
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message
-                }
-            })
-            setValidationErrors(formattedErrors)
+            setValidationErrors(formatZodErrors(result.error))
             return false
         }
         setValidationErrors({})
@@ -55,12 +54,12 @@ export function TenantInfoStep() {
 
         if (!tenantData) return
 
-        const changes: Partial<TenantFormData> = {}
+        const changes: Partial<Tenant> = {}
         if (data.company_name !== tenantData.company_name) changes.company_name = data.company_name
         if (data.first_name !== tenantData.first_name) changes.first_name = data.first_name
         if (data.last_name !== tenantData.last_name) changes.last_name = data.last_name
 
-        changes.sip = {port: '5060'}
+        changes.sip = {port: 5060, host: '', use_tcp: false}
         updateTenantData({...changes})
 
         if (Object.keys(changes).length > 0) {

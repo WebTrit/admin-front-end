@@ -5,6 +5,7 @@ import {toast} from "react-toastify"
 import {useNavigate} from "react-router-dom"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
+import {formatZodErrors} from "@/lib/validation"
 import {useAppStore} from "@/lib/store"
 import Input from "@/components/ui/Input.tsx";
 import Button from "@/components/ui/Button.tsx";
@@ -40,13 +41,7 @@ const Login = () => {
     const validateForm = (data: LoginFormData) => {
         const result = loginSchema.safeParse(data)
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {}
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message
-                }
-            })
-            setValidationErrors(formattedErrors)
+            setValidationErrors(formatZodErrors(result.error))
             return false
         }
         setValidationErrors({})

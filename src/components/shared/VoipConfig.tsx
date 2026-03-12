@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select.tsx"
 import type {VoipFormData} from "@/pages/SubtenantDetails"
+import type {Tenant} from "@/types"
 
 export interface VoipConfigRef {
     submitForm: () => void
@@ -13,14 +14,14 @@ export interface VoipConfigRef {
 }
 
 interface VoipConfigProps {
-    tenantData: any
+    tenantData: Partial<Tenant> | null
     onSubmit: (data: VoipFormData) => Promise<void>
     isMutationPending: boolean
     isEditing: boolean
     handleEdit: (val: boolean) => void
     isValidatingHost: boolean
-    validationErrors: any
-    setValidationErrors: (errors: any) => void
+    validationErrors: Record<string, string>
+    setValidationErrors: (errors: Record<string, string>) => void
     hideControls?: boolean
 }
 
@@ -93,7 +94,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                 reset({
                     voip_system_type: isOtherVoip ? "Other - not listed here" : tenantData.voip_system?.type || "",
-                    custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
+                    custom_voip_type: isOtherVoip ? (tenantData.voip_system?.type ?? undefined) : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
                     transport_protocol: tenantData?.transport_protocol,
@@ -120,7 +121,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                 reset({
                     voip_system_type: isOtherVoip ? "Other - not listed here" : tenantData.voip_system?.type || "",
-                    custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
+                    custom_voip_type: isOtherVoip ? (tenantData.voip_system?.type ?? undefined) : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
                     transport_protocol: tenantData?.transport_protocol,

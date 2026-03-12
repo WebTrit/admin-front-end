@@ -2,7 +2,6 @@ import axios, {AxiosError} from 'axios';
 import {toast} from 'react-toastify';
 import {jwtDecode} from 'jwt-decode';
 import {useAppStore} from './store';
-import {v4 as uuid} from 'uuid';
 import {config} from '../config/runtime';
 
 const API_BASE_URL = config.BACKEND_URL;
@@ -31,9 +30,6 @@ const isTokenExpired = (token: string) => {
 api.interceptors.request.use((config) => {
     const token = useAppStore.getState().token;
 
-    const requestId = uuid();
-    config.headers['x-request-id'] = requestId;
-
     if (token) {
         if (isTokenExpired(token)) {
             toast.error('Session expired. Please log in again.');
@@ -42,26 +38,13 @@ api.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
 
-    console.log('🚀 API Request:', {
-        id: requestId,
-        backendURL: API_BASE_URL,
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        headers: {...config.headers},
-        data: config.data
-    });
-
     return config;
 });
 
 api.interceptors.response.use(
-    (response) => {
-        console.log('✅ API Response:', response.status, response.data);
-        return response;
-    },
+    (response) => response,
     (error: AxiosError) => {
         const status = error.response?.status || 'Unknown';
-        console.error(`❌ API Error ${status}:`, error.message);
 
         if (status === 401) {
             useAppStore.getState().clearAuth();

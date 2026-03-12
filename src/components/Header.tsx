@@ -69,7 +69,7 @@ function Header() {
         navigate('/login');
     };
 
-    function menuItemsFilter(item: any) {
+    function menuItemsFilter(item: {name: string; path: string; isAvailable: boolean}) {
         if (isAdmin && item.name !== 'Home') {
             return true;
         }

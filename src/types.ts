@@ -1,63 +1,57 @@
 import {z} from "zod"
 
+export interface SIPServerInfo {
+    host: string;
+    port: number;
+    use_tcp: boolean;
+}
+
+export interface VoIPSystemInfo {
+    type: string | null;
+    vendor: string | null;
+    name: string | null;
+    url: string | null;
+}
+
 export interface Tenant {
-    created_at: string;
-    created_by: string;
-    last_updated: string;
-    updated_by: string;
+    tenant_id: string;
+    created_at: string | null;
+    created_by: string | null;
+    last_updated: string | null;
+    updated_by: string | null;
     basic_demo: boolean;
     special_user: boolean;
-    custom_attributes: {
-        signedup_via: string;
-    };
-    company_name: string;
-    website: string;
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-    comment: string;
-    email: string;
+    custom_attributes: Record<string, unknown>;
+    company_name: string | null;
+    website: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    phone_number: string | null;
+    comment: string | null;
+    email: string | null;
     email_validated: boolean;
-    login: string;
-    password: string;
+    login: string | null;
+    password: string | null;
     password_reset_requested: boolean;
     first_time_login: string | null;
-    api_token: string;
-    token_expires: string;
+    api_token: string | null;
+    token_expires: string | null;
     role: string | null;
     otp_sent: string | null;
     otp_id: string | null;
     otp_expires: string | null;
     validation_url: string | null;
-    tenant_id: string;
-    is_super_tenant: boolean;
+    is_super_tenant: boolean | null;
     super_tenant_id: string | null;
     adapter_url: string | null;
-    voip_system: {
-        type: string;
-        vendor: string | null;
-        name: string | null;
-        url: string | null;
-    };
+    voip_system: VoIPSystemInfo | null;
     instance_id: string | null;
     transport_protocol: string;
-    sip: {
-        host: string;
-        port: number;
-        use_tcp: boolean;
-    };
-    registrar_server: {
-        host: string;
-        port: number;
-        use_tcp: boolean;
-    } | null;
-    outbound_proxy_server: {
-        host: string;
-        port: number;
-        use_tcp: boolean;
-    } | null;
-    max_users: number;
-    users: [];
+    sip: SIPServerInfo | null;
+    registrar_server: SIPServerInfo | null;
+    outbound_proxy_server: SIPServerInfo | null;
+    max_users: number | null;
+    users: User[];
 }
 
 export interface User {
@@ -89,7 +83,7 @@ export interface User {
     email_validated: boolean
     password_reset_requested: boolean
     first_time_login: string | null
-    sip_registered: boolean
+    sip_registered: boolean | null
     sip_registered_updated_at: string | null
     api_token: string | null
     token_expires: string | null
