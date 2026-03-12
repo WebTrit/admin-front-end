@@ -1,20 +1,7 @@
 import {create} from "zustand"
 import {persist} from "zustand/middleware"
-import {jwtDecode} from "jwt-decode"
 import {useTenantStore} from "./tenantStore"
-
-interface JwtPayload {
-    sub: string
-    exp: number
-}
-
-const isTokenExpired = (token: string): boolean => {
-    try {
-        return jwtDecode<JwtPayload>(token).exp < Date.now() / 1000
-    } catch {
-        return true
-    }
-}
+import {isTokenExpired} from "./auth"
 
 export interface LoginParams {
     token: string

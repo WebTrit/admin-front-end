@@ -2,7 +2,7 @@ import type {FieldErrors, UseFormRegister} from "react-hook-form"
 import {Loader2} from "lucide-react"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
-import {OTPFormData} from "@/types.ts";
+import {OTPFormData} from "@/lib/schemas";
 
 interface OTPVerificationProps {
     register: UseFormRegister<OTPFormData>

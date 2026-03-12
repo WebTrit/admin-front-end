@@ -3,7 +3,7 @@ import {useForm} from "react-hook-form"
 import {Building2, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
-import type {TenantFormData} from "@/pages/SubtenantDetails.tsx"
+import type {TenantFormData} from "@/lib/schemas"
 import type {Tenant} from "@/types"
 import {useAuthStore} from "@/lib/authStore"
 

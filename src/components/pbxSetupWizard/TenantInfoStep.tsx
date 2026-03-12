@@ -3,7 +3,7 @@ import {toast} from "react-toastify"
 import api from "@/lib/axios"
 import {formatZodErrors} from "@/lib/validation"
 import {TenantInfo, TenantInfoRef} from "@/components/shared/TenantInfo"
-import {TenantFormData, tenantSchema} from "@/pages/SubtenantDetails"
+import {TenantFormData, tenantSchema} from "@/lib/schemas"
 import type {Tenant} from "@/types"
 
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";

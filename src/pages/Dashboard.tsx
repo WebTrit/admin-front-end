@@ -186,8 +186,8 @@ const Dashboard = () => {
                                                 <Button
                                                     className="mt-4"
                                                     onClick={() => currentTenant?.is_super_tenant ?
-                                                        navigate(`/subtenants`) :
-                                                        navigate(`/subtenants/${tenantId}`)}
+                                                        navigate(ROUTES.SUBTENANTS) :
+                                                        navigate(ROUTES.subtenant(tenantId!))}
                                                 >
                                                     To configuration page
                                                 </Button>

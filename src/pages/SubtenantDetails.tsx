@@ -6,53 +6,8 @@ import {SipLogs} from "@/components/subtenantDetails/SipLogs"
 import {useQuery} from "@tanstack/react-query"
 import api from "@/lib/axios.ts"
 import {useParams} from "react-router-dom"
-import {z} from "zod"
 import {useVoipConfig} from "@/hooks/useVoipConfig"
 import {useTenantInfo} from "@/hooks/useTenantInfo"
-
-export const voipConfigSchema = z.object({
-    voip_system_type: z.string().min(1, "VoIP system type is required"),
-    host: z.string(),
-    port: z.string().refine((val) => {
-        const port = Number.parseInt(val)
-        return !isNaN(port) && port >= 1 && port <= 65535
-    }, "Port must be between 1 and 65535"),
-    transport_protocol: z.string().min(1, "Transport protocol is required"),
-    skip_hostname_validation: z.boolean().default(false),
-    outbound_proxy_enabled: z.boolean().default(false),
-    outbound_proxy_host: z.string().optional(),
-    outbound_proxy_port: z.string().optional().refine((val) => {
-        if (!val || val === "") return true
-        const port = Number.parseInt(val)
-        return !isNaN(port) && port >= 1 && port <= 65535
-    }, "Port must be between 1 and 65535"),
-}).superRefine((data, ctx) => {
-    if (!data.skip_hostname_validation && !data.outbound_proxy_enabled) {
-        if (!data.host || data.host.trim().length === 0) {
-            ctx.addIssue({code: z.ZodIssueCode.custom, message: "SIP Server Hostname / IP is required", path: ["host"]})
-            return
-        }
-        const hostnameRegex = /^(?:\d{1,3}\.){3}\d{1,3}$|^(?=.{1,253}$)(?!-)[a-zA-Z0-9-]{1,63}(?<!-)(\.(?!-)[a-zA-Z0-9-]{1,63}(?<!-))*\.[a-zA-Z]{2,}$/
-        if (!hostnameRegex.test(data.host)) {
-            ctx.addIssue({code: z.ZodIssueCode.custom, message: "Invalid SIP Server Hostname / IP", path: ["host"]})
-        }
-    }
-    if (data.outbound_proxy_enabled && (!data.outbound_proxy_host || data.outbound_proxy_host.trim() === "")) {
-        ctx.addIssue({code: z.ZodIssueCode.custom, message: "Outbound proxy host is required when outbound proxy is enabled", path: ["outbound_proxy_host"]})
-    }
-})
-
-export type VoipFormData = z.infer<typeof voipConfigSchema>
-
-export const tenantSchema = z.object({
-    company_name: z.string().optional(),
-    first_name: z.string().min(1, "First name is required"),
-    last_name: z.string().min(1, "Last name is required"),
-    email: z.string().optional(),
-    basic_demo: z.boolean().optional(),
-})
-
-export type TenantFormData = z.infer<typeof tenantSchema & typeof voipConfigSchema>
 
 function SubtenantDetails() {
     const {tenantId} = useParams()

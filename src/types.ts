@@ -1,5 +1,3 @@
-import {z} from "zod"
-
 export interface SIPServerInfo {
     host: string;
     port: number;
@@ -94,29 +92,26 @@ export interface User {
     validation_url: string | null
 }
 
-export const signupSchema = z.object({
-    company_name: z.string().optional(),
-    website: z.string().url("Please enter a valid website URL").optional(),
-    first_name: z.string().min(1, "First name is required"),
-    last_name: z.string().min(1, "Last name is required"),
-    phone_number: z.string().min(1, "Phone number is required"),
-    email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-    acceptTerms: z.boolean().refine((val) => val === true, {
-        message: "You must accept the Terms and Conditions"
-    })
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"]
-});
+// Subtenant list item (lighter than full Tenant)
+export interface Subtenant {
+    tenant_id: string
+    email: string | null
+    login: string
+    company_name: string | null
+    basic_demo: boolean
+    sip: { host: string; port: number } | null
+    registrar_server: string | null
+    transport_protocol: string
+    voip_system?: { type: string }
+}
 
-export const otpSchema = z.object({
-    otp: z.string().length(6, "OTP must be 6 digits"),
-})
-
-export type SignupFormData = z.infer<typeof signupSchema>
-export type OTPFormData = z.infer<typeof otpSchema>
+export interface FilterParams {
+    [key: string]: string | undefined
+    tenant_id?: string
+    email?: string
+    except_tenant_id?: string
+    super_tenant_id?: string
+}
 
 // Logs API types based on actual API endpoints
 export interface CallLogsParams {

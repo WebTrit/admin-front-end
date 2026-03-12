@@ -1,7 +1,7 @@
 import type {UseFormRegister, FieldErrors} from "react-hook-form";
 import {Link} from "react-router-dom";
 import Input from "@/components/ui/Input";
-import {SignupFormData} from "@/types.ts";
+import {SignupFormData} from "@/lib/schemas";
 import {ROUTES} from "@/routes/paths";
 
 interface AccountInformationProps {

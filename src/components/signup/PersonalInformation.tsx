@@ -1,6 +1,6 @@
 import type {UseFormRegister, FieldErrors} from "react-hook-form"
 import Input from "@/components/ui/Input"
-import {SignupFormData} from "@/types.ts"
+import {SignupFormData} from "@/lib/schemas"
 import {config} from "@/config/runtime"
 
 interface PersonalInformationProps {

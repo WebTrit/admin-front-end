@@ -5,7 +5,7 @@ import {TRANSPORT_PROTOCOLS, VOIP_SYSTEM_TYPES} from "@/constants"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select.tsx"
-import type {VoipFormData} from "@/pages/SubtenantDetails"
+import type {VoipFormData} from "@/lib/schemas"
 import type {Tenant} from "@/types"
 
 export interface VoipConfigRef {

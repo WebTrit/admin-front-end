@@ -3,14 +3,14 @@ import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
-import type {Subtenant, FilterParams} from "@/pages/Subtenants";
+import type {Subtenant, FilterParams} from "@/types";
+import {ROUTES} from "@/routes/paths";
 
 interface SubtenantsListDesktopViewProps {
     subtenants: Subtenant[]
     deletingTenantId: string | null
     onDelete: (tenantId: string) => void
     onCancelDelete: () => void
-    onDeleteClick: (tenantId: string) => void
     appliedFilters: FilterParams
     onClearFilters: () => void
 }
@@ -61,7 +61,7 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
                             <div className="flex justify-end gap-2 mb-2">
                                 <button
                                     className="text-gray-500 hover:text-gray-700"
-                                    onClick={() => navigate(`/subtenants/${tenant.tenant_id}`)}
+                                    onClick={() => navigate(ROUTES.subtenant(tenant.tenant_id))}
                                 >
                                     <Pencil className="w-4 h-4"/>
                                 </button>

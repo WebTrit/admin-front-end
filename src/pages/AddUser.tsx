@@ -5,6 +5,7 @@ import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
 import {UserForm, UserFormData} from "@/components/shared/UserForm.tsx";
 import api from "@/lib/axios.ts";
+import {ROUTES} from "@/routes/paths";
 
 const AddUser = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -32,7 +33,7 @@ const AddUser = () => {
 
             await api.post(`/tenants/${tenantId}/users`, payload)
             toast.success("User added successfully!")
-            navigate(`/subtenants/${tenantId}`)
+            navigate(ROUTES.subtenant(tenantId!))
         } catch (error) {
             console.error("Error adding user:", error)
             toast.error("Failed to add user. Please try again.")

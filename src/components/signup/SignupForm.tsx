@@ -9,7 +9,7 @@ import {CompanyInformation} from "./CompanyInformation"
 import {PersonalInformation} from "@/components/signup/PersonalInformation.tsx"
 import {AccountInformation} from "@/components/signup/AccounInformation.tsx"
 import {OTPVerification} from "@/components/signup/OTPVerification.tsx"
-import {OTPFormData, SignupFormData} from "@/types.ts"
+import {OTPFormData, SignupFormData} from "@/lib/schemas"
 import axios from "axios"
 import {toast} from "react-toastify";
 import {config} from "@/config/runtime";

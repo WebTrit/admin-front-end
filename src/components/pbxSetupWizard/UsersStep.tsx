@@ -10,8 +10,8 @@ import {UserForm, type UserFormData} from "@/components/shared/UserForm"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx"
 import type {TenantInfoRef} from "@/components/shared/TenantInfo.tsx"
 import {z} from "zod"
-import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
-import {User} from "@/types.ts";
+import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
+import {useDeleteUser} from "@/hooks/useDeleteUser"
 
 // Add the userSchema definition (copy from UserForm.tsx)
 const userSchema = z.object({
@@ -35,9 +35,14 @@ export function UsersStep() {
     const formRef = useRef<TenantInfoRef>(null)
     const [isUserUpdating, setIsUserUpdating] = useState(false)
 
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-    const [userToDelete, setUserToDelete] = useState<User | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
+    const {
+        deleteModalOpen,
+        userToDelete,
+        isDeleting,
+        handleDeleteClick,
+        handleDeleteConfirm,
+        handleCloseDeleteModal,
+    } = useDeleteUser(tenantId)
 
     const {isLoading, error} = useQuery({
         queryKey: ["users", tenantId],
@@ -49,38 +54,6 @@ export function UsersStep() {
         },
         enabled: !!tenantId,
     })
-
-    const deleteMutation = useMutation({
-        mutationFn: async (userId: string) => {
-            if (!tenantId) throw new Error("No tenant ID found")
-            await api.delete(`/tenants/${tenantId}/users/${userId}`)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["users"]})
-            toast.success("User deleted successfully")
-            setDeleteModalOpen(false)
-            setUserToDelete(null)
-        },
-    })
-
-    //TODO refactor duplicated code fragment (create delete user hook)
-
-    const handleDeleteClick = (user: User) => {
-        setUserToDelete(user)
-        setDeleteModalOpen(true)
-    }
-    const handleDeleteConfirm = async () => {
-        if (!userToDelete) return
-        setIsDeleting(true)
-        try {
-            await deleteMutation.mutateAsync(userToDelete.user_id)
-        } catch (e) {
-            toast.error("Failed to delete user")
-        } finally {
-            setIsDeleting(false)
-        }
-    }
-
 
     const updateUserMutation = useMutation({
         mutationFn: async (data: UserFormData) => {
@@ -267,10 +240,7 @@ export function UsersStep() {
                 title="Delete User"
                 description={userToDelete ? `Are you sure you want to delete ${userToDelete.first_name} ${userToDelete.last_name}? This action cannot be undone.` : ""}
                 isOpen={deleteModalOpen}
-                onClose={() => {
-                    setDeleteModalOpen(false)
-                    setUserToDelete(null)
-                }}
+                onClose={handleCloseDeleteModal}
                 onConfirm={handleDeleteConfirm}
                 isProcessing={isDeleting}
                 confirmText="Delete"

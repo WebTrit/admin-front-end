@@ -80,14 +80,14 @@ const Login = () => {
                     if (currentUserData.is_super_tenant) {
                         navigate(ROUTES.SUBTENANTS, {replace: true})
                     } else {
-                        navigate(`/subtenants/${tenant_id}`, {replace: true})
+                        navigate(ROUTES.subtenant(tenant_id), {replace: true})
                     }
                 } catch {
                     toast.error("Failed to verify tenant status.")
-                    navigate(`/subtenants/${tenant_id}`, {replace: true})
+                    navigate(ROUTES.subtenant(tenant_id), {replace: true})
                 }
             } else {
-                navigate(`/subtenants/${tenant_id}`, {replace: true})
+                navigate(ROUTES.subtenant(tenant_id), {replace: true})
             }
         } catch {
             toast.error("Invalid login or password. Please try again.")

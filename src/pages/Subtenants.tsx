@@ -8,26 +8,7 @@ import api from "@/lib/axios"
 import {SubtenantsFilter} from "@/components/subtenants/SubtenantsFilter.tsx"
 import {SubtenantsListMobile} from "@/components/subtenants/SubtenantsListMobile.tsx"
 import {SubtenantsListDesktop} from "@/components/subtenants/SubtenantsListDesktop.tsx"
-
-export interface Subtenant {
-    tenant_id: string
-    email: string | null
-    login: string
-    company_name: string | null
-    basic_demo: boolean
-    sip: { host: string; port: number } | null
-    registrar_server: string | null
-    transport_protocol: string
-    voip_system?: { type: string }
-}
-
-export interface FilterParams {
-    [key: string]: string | undefined
-    tenant_id?: string
-    email?: string
-    except_tenant_id?: string
-    super_tenant_id?: string
-}
+import type {Subtenant, FilterParams} from "@/types"
 
 const Subtenants = () => {
     const navigate = useNavigate()
@@ -160,7 +141,7 @@ const Subtenants = () => {
                         deletingTenantId={deletingTenantId}
                         onDelete={handleDelete}
                         onCancelDelete={() => setDeletingTenantId(null)}
-                        onDeleteClick={(tenantId: string) => setDeletingTenantId(tenantId)}
+
                         appliedFilters={appliedFilters}
                         onClearFilters={clearFilters}
                     />
@@ -169,7 +150,7 @@ const Subtenants = () => {
                         deletingTenantId={deletingTenantId}
                         onDelete={handleDelete}
                         onCancelDelete={() => setDeletingTenantId(null)}
-                        onDeleteClick={(tenantId: string) => setDeletingTenantId(tenantId)}
+
                         appliedFilters={appliedFilters}
                         onClearFilters={clearFilters}
                     />

@@ -4,7 +4,7 @@ import {toast} from "react-toastify"
 import api from "@/lib/axios"
 import {formatZodErrors} from "@/lib/validation"
 import {VoipConfig, VoipConfigRef} from "@/components/shared/VoipConfig"
-import {voipConfigSchema, VoipFormData} from "@/pages/SubtenantDetails"
+import {voipConfigSchema, VoipFormData} from "@/lib/schemas"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";

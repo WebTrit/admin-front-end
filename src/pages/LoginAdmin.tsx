@@ -67,9 +67,6 @@ const LoginAdmin = () => {
                 grant_type: 'password',
                 username: formData.username,
                 password: formData.password,
-                scope: '',
-                client_id: 'string',
-                client_secret: 'string',
             });
 
             const response = await tokenApi.post("/token", data)

@@ -1,8 +1,8 @@
 import axios, {AxiosError} from 'axios';
 import {toast} from 'react-toastify';
-import {jwtDecode} from 'jwt-decode';
 import {useAuthStore} from './authStore';
 import {config} from '../config/runtime';
+import {isTokenExpired} from './auth';
 
 const API_BASE_URL = config.BACKEND_URL;
 export const API_VERSION = '/api/v1.0';
@@ -16,16 +16,6 @@ const api = axios.create({
     },
     timeout: 20000
 });
-
-const isTokenExpired = (token: string) => {
-    try {
-        const decoded = jwtDecode(token);
-        if (!decoded.exp) return true;
-        return decoded.exp < Date.now() / 1000;
-    } catch {
-        return true;
-    }
-};
 
 api.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;

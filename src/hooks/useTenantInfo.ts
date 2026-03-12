@@ -3,7 +3,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
 import {formatZodErrors} from "@/lib/validation"
-import {tenantSchema, TenantFormData} from "@/pages/SubtenantDetails"
+import {tenantSchema, TenantFormData} from "@/lib/schemas"
 import type {Tenant} from "@/types"
 
 export function useTenantInfo(tenantId: string | undefined, tenantInfo: Tenant | null) {

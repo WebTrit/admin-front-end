@@ -90,17 +90,14 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                     return acc;
                 }, {} as UserFormData);
 
-                const shouldUsePhoneAsUsername = transformedData?.sip_username === initialData?.main_number;
+                const shouldUsePhoneAsUsername = transformedData?.sip_username === transformedData?.main_number;
 
-                reset(transformedData);
-                setValue("ext_number", transformedData?.ext_number || "");
-                setValue("use_phone_as_username", shouldUsePhoneAsUsername);
-
-                if (shouldUsePhoneAsUsername && transformedData?.main_number) {
-                    setValue("sip_username", transformedData.main_number);
-                }
+                reset({
+                    ...transformedData,
+                    use_phone_as_username: shouldUsePhoneAsUsername,
+                });
             }
-        }, [initialData, reset, setValue]);
+        }, [initialData, reset]);
 
         useEffect(() => {
             if (usePhoneAsUsername && mainNumber) {

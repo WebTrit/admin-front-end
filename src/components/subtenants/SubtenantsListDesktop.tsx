@@ -6,14 +6,13 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import {ROUTES} from "@/routes/paths";
 
-import type {Subtenant, FilterParams} from "@/pages/Subtenants";
+import type {Subtenant, FilterParams} from "@/types";
 
 interface SubtenantsListDesktopProps {
     subtenants: Subtenant[]
     deletingTenantId: string | null
     onDelete: (tenantId: string) => void
     onCancelDelete: () => void
-    onDeleteClick: (tenantId: string) => void
     appliedFilters: FilterParams
     onClearFilters: () => void
 }

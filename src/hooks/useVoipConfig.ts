@@ -3,7 +3,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
 import {formatZodErrors} from "@/lib/validation"
-import {voipConfigSchema, VoipFormData} from "@/pages/SubtenantDetails"
+import {voipConfigSchema, VoipFormData} from "@/lib/schemas"
 import type {Tenant} from "@/types"
 
 export function useVoipConfig(tenantId: string | undefined, tenantInfo: Tenant | null) {
