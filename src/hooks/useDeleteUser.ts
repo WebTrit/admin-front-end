@@ -9,7 +9,6 @@ export function useDeleteUser(tenantId: string | undefined | null) {
 
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [userToDelete, setUserToDelete] = useState<User | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
 
     const deleteMutation = useMutation({
         mutationFn: async (userId: string) => {
@@ -31,13 +30,10 @@ export function useDeleteUser(tenantId: string | undefined | null) {
 
     const handleDeleteConfirm = async () => {
         if (!userToDelete) return
-        setIsDeleting(true)
         try {
             await deleteMutation.mutateAsync(userToDelete.user_id)
         } catch {
             toast.error("Failed to delete user")
-        } finally {
-            setIsDeleting(false)
         }
     }
 
@@ -49,7 +45,7 @@ export function useDeleteUser(tenantId: string | undefined | null) {
     return {
         deleteModalOpen,
         userToDelete,
-        isDeleting,
+        isDeleting: deleteMutation.isPending,
         handleDeleteClick,
         handleDeleteConfirm,
         handleCloseDeleteModal,

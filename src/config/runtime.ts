@@ -35,7 +35,7 @@ export function getConfig(key: string, required = false): string {
     // Fallback to build-time env
     const value = import.meta.env[key] || '';
     if (required && !value) {
-        console.warn(`[config] Required config "${key}" is not set`);
+        throw new Error(`[config] Required config "${key}" is not set`);
     }
     return value;
 }

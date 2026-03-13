@@ -86,8 +86,11 @@ function Invite() {
                 setStep(3);
             } catch (error: unknown) {
                 const axiosError = error as { response?: { status?: number } };
-                if (axiosError?.response?.status === 409) {
+                const status = axiosError?.response?.status;
+                if (status === 409) {
                     toast.info(`The user with email ${invitedUser.email} already uses WebTrit.`);
+                } else if (typeof status === 'number' && status >= 500) {
+                    toast.error("Server error. Please try again later.");
                 } else {
                     toast.error(`Failed to send invitation to ${invitedUser.email}. Please try again.`);
                 }

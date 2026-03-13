@@ -16,8 +16,8 @@ export const CopyableText: React.FC<CopyableTextProps> = ({tooltip = "", classNa
             await navigator.clipboard.writeText(tooltip)
             setShowCopied(true)
             setTimeout(() => setShowCopied(false), 2000)
-        } catch (err) {
-            console.error("Failed to copy text:", err)
+        } catch {
+            // clipboard write can fail silently (permissions, non-secure context)
         }
     }
 
@@ -31,7 +31,13 @@ export const CopyableText: React.FC<CopyableTextProps> = ({tooltip = "", classNa
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
         >
-      <span className="truncate cursor-pointer flex-grow" onClick={handleCopy}>
+      <span
+        className="truncate cursor-pointer flex-grow"
+        onClick={handleCopy}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleCopy()}
+      >
         {tooltip}
       </span>
             <button

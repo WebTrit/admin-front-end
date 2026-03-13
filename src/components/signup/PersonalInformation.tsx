@@ -74,4 +74,4 @@ export const PersonalInformation = ({register, errors}: PersonalInformationProps
             </div>
         </div>
     )
-}//yk.120301+1234123@gmail.com
+}

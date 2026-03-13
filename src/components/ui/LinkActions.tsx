@@ -14,13 +14,18 @@ export function LinkActions({url, label}: LinkActionsProps) {
             await navigator.clipboard.writeText(url)
             setShowCopied(true)
             setTimeout(() => setShowCopied(false), 2000)
-        } catch (err) {
-            console.error("Failed to copy:", err)
+        } catch {
+            // clipboard write can fail silently (permissions, non-secure context)
         }
     }
 
     const handleOpen = () => {
-        if (!url.startsWith('https://') && !url.startsWith('http://')) return
+        try {
+            const parsed = new URL(url)
+            if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return
+        } catch {
+            return
+        }
         window.open(url, "_blank", "noopener,noreferrer")
     }
 

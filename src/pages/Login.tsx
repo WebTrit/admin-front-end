@@ -6,6 +6,7 @@ import {useNavigate} from "react-router-dom"
 import {ROUTES} from "@/routes/paths"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
+import axios from "axios"
 import {formatZodErrors} from "@/lib/validation"
 import {useAuthStore} from "@/lib/authStore"
 import Input from "@/components/ui/Input.tsx";
@@ -90,8 +91,12 @@ const Login = () => {
             } else {
                 navigate(ROUTES.DASHBOARD, {replace: true})
             }
-        } catch {
-            toast.error("Invalid login or password. Please try again.")
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response && error.response.status >= 500) {
+                toast.error("Server error. Please try again later.")
+            } else {
+                toast.error("Invalid login or password. Please try again.")
+            }
         } finally {
             setIsSubmitting(false)
         }

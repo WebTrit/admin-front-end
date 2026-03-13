@@ -6,25 +6,10 @@ import api from "@/lib/axios"
 import {useAuthStore} from "@/lib/authStore"
 import {useTenantStore} from "@/lib/tenantStore"
 import Button from "@/components/ui/Button"
-import {UserForm, type UserFormData} from "@/components/shared/UserForm"
+import {UserForm, type UserFormData, type UserFormRef} from "@/components/shared/UserForm"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx"
-import type {TenantInfoRef} from "@/components/shared/TenantInfo.tsx"
-import {z} from "zod"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
 import {useDeleteUser} from "@/hooks/useDeleteUser"
-
-// Add the userSchema definition (copy from UserForm.tsx)
-const userSchema = z.object({
-    first_name: z.string().min(1, "First name is required"),
-    last_name: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    main_number: z.string().min(1, "Main number is required"),
-    password: z.string().min(8, "Password length must be at least 8 characters"),
-    ext_number: z.string().optional(),
-    sip_username: z.string().optional(),
-    sip_password: z.string().min(8, "Password length must be at least 8 characters"),
-    use_phone_as_username: z.boolean().default(true),
-})
 
 export function UsersStep() {
     const {tenantId} = useAuthStore()
@@ -32,7 +17,7 @@ export function UsersStep() {
     const {setCurrentStep} = useWizard()
     const [currentUserIndex, setCurrentTenantIndex] = useState(0)
     const queryClient = useQueryClient()
-    const formRef = useRef<TenantInfoRef>(null)
+    const formRef = useRef<UserFormRef>(null)
     const [isUserUpdating, setIsUserUpdating] = useState(false)
 
     const {
@@ -61,10 +46,6 @@ export function UsersStep() {
                 throw new Error("Tenant ID not found. Please log in again.")
             }
             setIsUserUpdating(true)
-            const result = userSchema.safeParse(data)
-            if (!result.success) {
-                throw new Error("Validation failed")
-            }
 
             const updatedUserList = {
                 ...usersList,
@@ -91,13 +72,9 @@ export function UsersStep() {
 
             setCurrentTenantIndex(currentUserIndex + 1)
         },
-        onError: (error) => {
+        onError: () => {
             setIsUserUpdating(false)
-            if (error instanceof Error && error.message === "Validation failed") {
-                toast.error("Please fix validation errors before proceeding")
-            } else {
-                toast.error("Failed to update user. Please try again.")
-            }
+            toast.error("Failed to update user. Please try again.")
         },
     })
 

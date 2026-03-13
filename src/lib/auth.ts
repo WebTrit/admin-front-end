@@ -6,6 +6,7 @@ interface JwtPayload {
 }
 
 export const isTokenExpired = (token: string): boolean => {
+    if (!token) return true
     try {
         const decoded = jwtDecode<JwtPayload>(token)
         if (!decoded.exp) return true

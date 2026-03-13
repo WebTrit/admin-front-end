@@ -128,7 +128,7 @@ export const SignupForm = () => {
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response && error.response.status === 401) {
-                    if (error.response.data && error.response.data.message.includes('already exists')) {
+                    if (error.response.data?.message?.includes('already exists')) {
                         setError("otp", {type: "manual", message: "User with this email already exists."})
                     } else {
                         setError("otp", {type: "manual", message: "Invalid OTP. Please try again."})

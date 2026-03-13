@@ -118,7 +118,7 @@ const PasswordReset = () => {
                 clearInterval(timer.current)
             }
         }
-    }, [location.search])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleResend = async () => {
         if (!resendDisabled && userEmail) {

@@ -44,9 +44,9 @@ export function VoipConfigStep() {
             setIsValidatingHost(true)
             setIsLoading(true)
             const response = await api.post("/info/hostname", {host, port, use_tcp}, {timeout: 30000})
-            toast(response.data.message)
+            toast.info(response.data.message)
             return response.data.status.toLowerCase() === "ok"
-        } catch (error) {
+        } catch {
             return false
         } finally {
             setIsValidatingHost(false)

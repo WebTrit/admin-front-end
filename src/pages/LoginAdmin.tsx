@@ -8,18 +8,7 @@ import {Loader2} from "lucide-react"
 import {useAuthStore} from "@/lib/authStore"
 import {formatZodErrors} from "@/lib/validation"
 import Input from "@/components/ui/Input.tsx"
-import axios from "axios";
-import {config} from "@/config/runtime";
-import {API_VERSION} from "@/lib/axios.ts";
-
-const tokenApi = axios.create({
-    baseURL: `${config.BACKEND_URL}${API_VERSION}`,
-    headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json',
-    },
-    timeout: 20000,
-});
+import api from "@/lib/axios";
 
 const adminLoginSchema = z.object({
     username: z.string().min(1, "Username is required"),
@@ -67,7 +56,9 @@ const LoginAdmin = () => {
                 password: formData.password,
             });
 
-            const response = await tokenApi.post("/token", data)
+            const response = await api.post("/token", data, {
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            })
             const {access_token} = response.data
 
             if (!access_token) throw new Error("No access token")

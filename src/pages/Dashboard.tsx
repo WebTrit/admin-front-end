@@ -5,6 +5,7 @@ import {useTenantStore} from "@/lib/tenantStore";
 import {useTenantQuery} from "@/hooks/useTenantQuery";
 import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
+import axios from "axios";
 import Button from "@/components/ui/Button.tsx";
 import {useNavigate} from "react-router-dom";
 import {ROUTES} from "@/routes/paths";
@@ -70,8 +71,10 @@ const Dashboard = () => {
                 email: currentTenant.email,
             });
         } catch (error: unknown) {
-            const axiosError = error as { response?: { data?: { message?: string } } };
-            toast.error(axiosError?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.message
+                : undefined;
+            toast.error(message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
             sessionStorage.removeItem('pendingDeveloperAccess');
             setShowDevAccessDialog(false);
         } finally {

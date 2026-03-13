@@ -11,6 +11,9 @@ import {SipMessageDetails} from './SipMessageDetails';
 
 type LogViewType = 'calls' | 'all-events';
 
+const parseResponseData = (data: unknown) =>
+    typeof data === 'string' ? JSON.parse(data) : data;
+
 // Helper to extract user part from SIP URI or return as-is
 // e.g. "sip:12065551003@demo-sip.webtrit.com" -> "12065551003"
 const extractSipUser = (input: string): string => {
@@ -115,7 +118,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             };
 
             const response = await api.get('/logs/calls', {params});
-            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const data = parseResponseData(response.data);
             let callLogsData = Array.isArray(data) ? data : (data.calls || []);
 
             // Apply status filter locally
@@ -157,7 +160,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             };
 
             const response = await api.get('/logs/events', {params});
-            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const data = parseResponseData(response.data);
             const eventLogsData = Array.isArray(data) ? data : (data.events || []);
             setEventLogs(eventLogsData);
         } catch {
@@ -201,7 +204,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             };
 
             const response = await api.get('/logs/events', {params});
-            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const data = parseResponseData(response.data);
             const eventLogsData = Array.isArray(data) ? data : (data.events || []);
             setAllEvents(eventLogsData);
         } catch {

@@ -77,7 +77,7 @@ export interface User {
     updated_by: string | null
     basic_demo: boolean
     special_user: boolean
-    custom_attributes: Record<string, any>
+    custom_attributes: Record<string, unknown>
     email_validated: boolean
     password_reset_requested: boolean
     first_time_login: string | null

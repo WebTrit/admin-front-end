@@ -10,6 +10,7 @@ import {ROUTES} from "@/routes/paths";
 import {useAuthStore} from "@/lib/authStore";
 import {addTenantSchema, type AddTenantFormData} from "@/lib/schemas";
 import {formatZodErrors} from "@/lib/validation";
+import axios from "axios";
 
 export default function AddTenant() {
     const {tenantId, isAdmin} = useAuthStore();
@@ -48,9 +49,8 @@ export default function AddTenant() {
             navigate(ROUTES.SUBTENANTS);
         },
         onError: (error: unknown) => {
-            const axiosError = error as { response?: { data?: { errors?: Record<string, string> } } };
-            if (axiosError.response?.data?.errors) {
-                setErrors(axiosError.response.data.errors);
+            if (axios.isAxiosError(error) && error.response?.data?.errors) {
+                setErrors(error.response.data.errors as Record<string, string>);
             } else {
                 setErrors({form: "Failed to create subtenant. Please try again."});
             }

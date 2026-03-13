@@ -31,7 +31,7 @@ const Subtenants = () => {
         queryFn: async () => {
             const params = new URLSearchParams()
             Object.entries(appliedFilters).forEach(([key, value]) => {
-                if (value) params.append(key, value)
+                if (value !== undefined && value !== '') params.append(key, value)
             })
 
             const queryString = params.toString() ? `?${params.toString()}` : ""

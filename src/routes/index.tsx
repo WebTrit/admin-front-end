@@ -95,9 +95,9 @@ function RootRedirect() {
 
     if (isAdmin) return <Navigate to={ROUTES.SUBTENANTS} replace/>
     if (currentTenant?.basic_demo) return <Navigate to={ROUTES.DASHBOARD} replace/>
-    return isSuperTenant
-        ? <Navigate to={ROUTES.SUBTENANTS} replace/>
-        : <Navigate to={ROUTES.subtenant(tenantId!)} replace/>
+    if (isSuperTenant) return <Navigate to={ROUTES.SUBTENANTS} replace/>
+    if (!tenantId) return <Navigate to={ROUTES.LOGIN} replace/>
+    return <Navigate to={ROUTES.subtenant(tenantId)} replace/>
 }
 
 // Redirect routes

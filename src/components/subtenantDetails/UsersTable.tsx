@@ -24,6 +24,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
     const queryClient = useQueryClient()
     const {tenantId} = useParams()
 
+    if (!tenantId) return null
+
     const {
         deleteModalOpen,
         userToDelete,
@@ -163,7 +165,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                 </div>
                 {canAddUsers && (
                     <Button className="w-full sm:w-auto mt-2 sm:mt-0"
-                            onClick={() => navigate(ROUTES.addUser(tenantId!))}>
+                            onClick={() => navigate(ROUTES.addUser(tenantId))}>
                         <Plus className="h-4 w-4 mr-2"/>
                         Add User
                     </Button>
@@ -207,7 +209,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             {canAddUsers && (
                                                 <button
                                                     className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-                                                    onClick={() => navigate(ROUTES.addUser(tenantId!))}
+                                                    onClick={() => navigate(ROUTES.addUser(tenantId))}
                                                 >
                                                     Add your first user
                                                 </button>
@@ -273,7 +275,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                     </Button>
                                                 )}
                                                 <Button variant="ghost" size="sm"
-                                                        onClick={() => navigate(ROUTES.editUser(tenantId!, user.user_id))}>
+                                                        onClick={() => navigate(ROUTES.editUser(tenantId, user.user_id))}>
                                                     <Pencil className="h-4 w-4"/>
                                                 </Button>
                                                 {users[index].email !== currentTenant?.email &&
@@ -301,7 +303,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 {canAddUsers && (
                                     <button
                                         className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-                                        onClick={() => navigate(ROUTES.addUser(tenantId!))}
+                                        onClick={() => navigate(ROUTES.addUser(tenantId))}
                                     >
                                         Add your first user
                                     </button>
@@ -339,7 +341,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(ROUTES.editUser(tenantId!, user.user_id))}
+                                                    onClick={() => navigate(ROUTES.editUser(tenantId, user.user_id))}
                                                     aria-label="Edit user"
                                                 >
                                                     <Pencil className="h-4 w-4"/>

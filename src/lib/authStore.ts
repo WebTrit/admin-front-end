@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
             isAdmin: false,
             login: ({token, tenantId, isSuperTenant, isAdmin}) =>
                 set({isAuthenticated: true, token, tenantId, isSuperTenant, isAdmin}),
-            setToken: (token) => set({token, isAuthenticated: true}),
+            setToken: (token) => set({token, isAuthenticated: !isTokenExpired(token)}),
             setTenantId: (tenantId) => set({tenantId}),
             setIsSuperTenant: (isSuperTenant) => set({isSuperTenant}),
             setIsAdmin: (isAdmin) => set({isAdmin}),

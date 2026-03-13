@@ -41,6 +41,7 @@ export const OTPVerification = (
                 <Input
                     id="otp"
                     type="text"
+                    inputMode="numeric"
                     error={!!errors.otp}
                     placeholder="Enter 6-digit password"
                     maxLength={6}
