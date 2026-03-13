@@ -12,6 +12,15 @@ import axios from "axios";
 import {config} from "@/config/runtime";
 import {API_VERSION} from "@/lib/axios.ts";
 
+const tokenApi = axios.create({
+    baseURL: `${config.BACKEND_URL}${API_VERSION}`,
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
+    },
+    timeout: 20000,
+});
+
 const adminLoginSchema = z.object({
     username: z.string().min(1, "Username is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -49,19 +58,8 @@ const LoginAdmin = () => {
     const onSubmit = async (formData: AdminLoginFormData) => {
         if (!validateForm(formData)) return
 
-        const API_BASE_URL = config.BACKEND_URL;
-
         try {
             setIsSubmitting(true)
-
-            const tokenApi = axios.create({
-                baseURL: `${API_BASE_URL}${API_VERSION}`,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept': 'application/json',
-                },
-                timeout: 20000,
-            });
 
             const data = new URLSearchParams({
                 grant_type: 'password',

@@ -37,7 +37,6 @@ export interface UserFormRef {
     resetForm: () => void
 }
 
-//todo merge types and zod schema
 interface UserFormProps {
     initialData?: UserFormData
     isSubmitting: boolean
@@ -76,7 +75,6 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                 sip_password: "",
                 use_phone_as_username: true,
                 basic_demo: false,
-                ...initialData,
             },
         })
         const usePhoneAsUsername = useWatch({name: "use_phone_as_username", control})
@@ -118,9 +116,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                             }
                             resolve(result)
                         },
-                        (errors) => {
-                            // On error (validation failed)
-                            console.log("Validation errors:", errors)
+                        () => {
                             resolve(false)
                         },
                     )()

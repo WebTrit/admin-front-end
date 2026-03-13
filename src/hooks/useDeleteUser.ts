@@ -17,7 +17,7 @@ export function useDeleteUser(tenantId: string | undefined | null) {
             await api.delete(`/tenants/${tenantId}/users/${userId}`)
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["users"]})
+            queryClient.invalidateQueries({queryKey: ["users", tenantId]})
             toast.success("User deleted successfully")
             setDeleteModalOpen(false)
             setUserToDelete(null)

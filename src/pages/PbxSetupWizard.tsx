@@ -26,12 +26,10 @@ function WizardContent() {
 
     // Handle next button click - now submits the form
     const handleNext = () => {
-        if (currentStep === "tenant-info" && tenantFormRef?.current) {
-            // Submit the tenant form
-            tenantFormRef.current.submitForm()
-        } else if (currentStep === "voip-config" && voipFormRef?.current) {
-            // Submit the VoIP form
-            voipFormRef.current.submitForm()
+        if (currentStep === "tenant-info" && tenantFormRef.current?.current) {
+            tenantFormRef.current.current.submitForm()
+        } else if (currentStep === "voip-config" && voipFormRef.current?.current) {
+            voipFormRef.current.current.submitForm()
         } else if (currentStep === "complete") {
             navigate(ROUTES.DASHBOARD)
         }
@@ -41,15 +39,11 @@ function WizardContent() {
     const handleBack = () => {
         switch (currentStep) {
             case "tenant-info":
-                if (tenantFormRef?.current) {
-                    tenantFormRef.current.resetForm()
-                }
+                tenantFormRef.current?.current?.resetForm()
                 setCurrentStep("intro")
                 break
             case "voip-config":
-                if (voipFormRef?.current) {
-                    voipFormRef.current.resetForm()
-                }
+                voipFormRef.current?.current?.resetForm()
                 setCurrentStep("tenant-info")
                 break
             case "users":

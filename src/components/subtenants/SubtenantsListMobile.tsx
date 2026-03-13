@@ -6,7 +6,7 @@ import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
 import type {Subtenant, FilterParams} from "@/types";
 import {ROUTES} from "@/routes/paths";
 
-interface SubtenantsListDesktopViewProps {
+interface SubtenantsListMobileProps {
     subtenants: Subtenant[]
     deletingTenantId: string | null
     onDelete: (tenantId: string) => void
@@ -15,7 +15,7 @@ interface SubtenantsListDesktopViewProps {
     onClearFilters: () => void
 }
 
-export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
+export const SubtenantsListMobile: React.FC<SubtenantsListMobileProps> =
     ({
          subtenants,
          deletingTenantId,

@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {CallLog, CallLogsParams, EventLog, EventLogsParams} from '@/types';
 import {toast} from 'react-toastify';
 import {Activity, ChevronDown, ChevronUp, Loader2, Network, Phone, RefreshCw, Search} from 'lucide-react';
@@ -224,21 +224,21 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
     // Track if filters changed (not just view type)
     const currentFiltersKey = `${order}-${dateTimeGte}-${dateTimeLte}-${filterFrom}-${filterTo}-${filterStatus}-${filterAppType}`;
     const [filtersKey, setFiltersKey] = useState('');
-    const [initialFetchDone, setInitialFetchDone] = useState(false);
+    const initialFetchDoneRef = useRef(false);
 
     // Auto-fetch data when accordion is expanded (only calls on initial open)
     useEffect(() => {
-        if (!isExpanded || initialFetchDone) return;
+        if (!isExpanded || initialFetchDoneRef.current) return;
         setHasCallsError(false);
         setFiltersKey(currentFiltersKey);
-        setInitialFetchDone(true);
+        initialFetchDoneRef.current = true;
         fetchCallLogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isExpanded]);
 
     // Auto-fetch when filters change with debounce
     useEffect(() => {
-        if (!isExpanded || !initialFetchDone) return;
+        if (!isExpanded || !initialFetchDoneRef.current) return;
         if (filtersKey === currentFiltersKey) return;
 
         const timeoutId = setTimeout(() => {
@@ -252,7 +252,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
 
         return () => clearTimeout(timeoutId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentFiltersKey, viewType, isExpanded, initialFetchDone]);
+    }, [currentFiltersKey, viewType, isExpanded]);
 
     const clearFilters = () => {
         setDateTimeGte('');

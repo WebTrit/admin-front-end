@@ -8,7 +8,7 @@ import {voipConfigSchema, VoipFormData} from "@/lib/schemas"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
-import type {Tenant} from "@/types";
+import type {SIPServerInfo, Tenant} from "@/types";
 
 
 export function VoipConfigStep() {
@@ -29,6 +29,10 @@ export function VoipConfigStep() {
         const result = voipConfigSchema.safeParse(data)
         if (!result.success) {
             setValidationErrors(formatZodErrors(result.error))
+            return false
+        }
+        if (!data.outbound_proxy_enabled && (!data.host || data.host.trim().length === 0)) {
+            setValidationErrors({host: "SIP Server Hostname / IP is required"})
             return false
         }
         setValidationErrors({})
@@ -105,25 +109,25 @@ export function VoipConfigStep() {
             }
         }
 
-        const changes: Record<string, any> = {}
+        const changes: Partial<Tenant> = {}
 
         if (tenantData) {
             if (data.voip_system_type !== tenantData.voip_system?.type) {
-                changes.voip_system = {type: data.voip_system_type}
+                changes.voip_system = {type: data.voip_system_type, vendor: null, name: null, url: null}
             }
             if (data.transport_protocol !== tenantData.transport_protocol) {
                 changes.transport_protocol = data.transport_protocol
             }
-            const sipChanges: Record<string, any> = {}
+            const sipChanges: Partial<SIPServerInfo> = {}
             if (data.host !== tenantData.sip?.host) sipChanges.host = data.host
-            if (String(data.port) !== String(tenantData.sip?.port)) sipChanges.port = data.port
+            if (String(data.port) !== String(tenantData.sip?.port)) sipChanges.port = Number(data.port)
 
-            if (Object.keys(sipChanges).length > 0) changes.sip = sipChanges
+            if (Object.keys(sipChanges).length > 0) changes.sip = sipChanges as SIPServerInfo
 
             if (data.outbound_proxy_enabled && data.outbound_proxy_host && data.outbound_proxy_host.trim() !== "") {
                 const outboundProxyPort = data.outbound_proxy_port ? Number.parseInt(data.outbound_proxy_port) : 5060;
                 const useTcp = data.transport_protocol.toLowerCase() === "tcp";
-                const proxyConfig = {
+                const proxyConfig: SIPServerInfo = {
                     host: data.outbound_proxy_host,
                     port: outboundProxyPort,
                     use_tcp: useTcp
@@ -134,11 +138,11 @@ export function VoipConfigStep() {
             }
         }
 
-        const finalData: Record<string, any> = {
-            voip_system: {type: changes.voip_system?.type ?? tenantData.voip_system?.type},
+        const finalData: Partial<Tenant> = {
+            voip_system: {type: changes.voip_system?.type ?? tenantData.voip_system?.type ?? null, vendor: null, name: null, url: null},
             sip: {
-                host: changes.sip?.host ?? tenantData.sip?.host,
-                port: String(changes.sip?.port ?? tenantData.sip?.port),
+                host: changes.sip?.host ?? tenantData.sip?.host ?? '',
+                port: Number(changes.sip?.port ?? tenantData.sip?.port ?? 5060),
                 use_tcp: data.transport_protocol.toLowerCase() === "tcp"
             },
             transport_protocol: data.transport_protocol ?? tenantData.transport_protocol,

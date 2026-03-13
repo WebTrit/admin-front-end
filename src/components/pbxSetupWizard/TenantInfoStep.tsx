@@ -59,7 +59,6 @@ export function TenantInfoStep() {
         if (data.first_name !== tenantData.first_name) changes.first_name = data.first_name
         if (data.last_name !== tenantData.last_name) changes.last_name = data.last_name
 
-        changes.sip = {port: 5060, host: '', use_tcp: false}
         updateTenantData({...changes})
 
         if (Object.keys(changes).length > 0) {

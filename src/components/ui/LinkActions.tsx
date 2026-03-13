@@ -20,6 +20,7 @@ export function LinkActions({url, label}: LinkActionsProps) {
     }
 
     const handleOpen = () => {
+        if (!url.startsWith('https://') && !url.startsWith('http://')) return
         window.open(url, "_blank", "noopener,noreferrer")
     }
 

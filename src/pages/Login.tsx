@@ -84,10 +84,11 @@ const Login = () => {
                     }
                 } catch {
                     toast.error("Failed to verify tenant status.")
-                    navigate(ROUTES.subtenant(tenant_id), {replace: true})
+                    login({token: access_token, tenantId: tenant_id, isSuperTenant: false, isAdmin: false})
+                    navigate(ROUTES.DASHBOARD, {replace: true})
                 }
             } else {
-                navigate(ROUTES.subtenant(tenant_id), {replace: true})
+                navigate(ROUTES.DASHBOARD, {replace: true})
             }
         } catch {
             toast.error("Invalid login or password. Please try again.")

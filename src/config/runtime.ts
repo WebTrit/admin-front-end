@@ -23,7 +23,7 @@ declare global {
 }
 
 // Helper function to get config value with fallback to build-time env
-export function getConfig(key: string): string {
+export function getConfig(key: string, required = false): string {
     // First check runtime config
     const runtimeValue = window.__RUNTIME_CONFIG__?.[key as keyof typeof window.__RUNTIME_CONFIG__];
 
@@ -33,7 +33,11 @@ export function getConfig(key: string): string {
     }
 
     // Fallback to build-time env
-    return import.meta.env[key] || '';
+    const value = import.meta.env[key] || '';
+    if (required && !value) {
+        console.warn(`[config] Required config "${key}" is not set`);
+    }
+    return value;
 }
 
 // Helper to parse boolean config values
@@ -44,7 +48,7 @@ export function getBooleanConfig(key: string): boolean {
 
 // Export commonly used config values
 export const config = {
-    BACKEND_URL: getConfig('VITE_BACKEND_URL'),
+    BACKEND_URL: getConfig('VITE_BACKEND_URL', true),
     WEBTRIT_GOOGLE_PLAY_URL: getConfig('VITE_WEBTRIT_GOOGLE_PLAY_URL'),
     WEBTRIT_APP_STORE_URL: getConfig('VITE_WEBTRIT_APP_STORE_URL'),
     IS_SIGNUP_COMPANY_SITE: getBooleanConfig('VITE_IS_SIGNUP_COMPANY_SITE'),

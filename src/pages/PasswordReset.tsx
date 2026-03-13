@@ -88,7 +88,7 @@ const PasswordReset = () => {
             const status = (err as {response?: {status?: number}})?.response?.status
             if (status === 401) {
                 toast.error("Invalid verification code")
-            } else if (status && String(status).startsWith("50")) {
+            } else if (status && status >= 500) {
                 toast.error("Failed to reset password. Please try again.")
             }
         } finally {

@@ -1,5 +1,5 @@
 import type React from "react"
-import {createContext, type ReactNode, useContext, useState} from "react"
+import {createContext, type ReactNode, useCallback, useContext, useRef, useState} from "react"
 import {TenantInfoRef} from "@/components/shared/TenantInfo.tsx";
 import {VoipConfigRef} from "@/components/shared/VoipConfig.tsx";
 import type {Tenant} from "@/types";
@@ -16,12 +16,10 @@ interface WizardContextType {
     setIsLoading: (loading: boolean) => void
     errors: Record<string, string>
     setErrors: (errors: Record<string, string>) => void
-    // Use refs for the form components
-    tenantFormRef: React.RefObject<TenantInfoRef> | null
+    tenantFormRef: React.MutableRefObject<React.RefObject<TenantInfoRef> | null>
     setTenantFormRef: (ref: React.RefObject<TenantInfoRef> | null) => void
-    voipFormRef: React.RefObject<VoipConfigRef> | null
+    voipFormRef: React.MutableRefObject<React.RefObject<VoipConfigRef> | null>
     setVoipFormRef: (ref: React.RefObject<VoipConfigRef> | null) => void
-
 }
 
 const WizardContext = createContext<WizardContextType | undefined>(undefined)
@@ -31,8 +29,17 @@ export function WizardProvider({children, initialData}: { children: ReactNode; i
     const [tenantData, setTenantData] = useState<Partial<Tenant>>(initialData || {})
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
-    const [tenantFormRef, setTenantFormRef] = useState<React.RefObject<TenantInfoRef> | null>(null)
-    const [voipFormRef, setVoipFormRef] = useState<React.RefObject<VoipConfigRef> | null>(null)
+
+    const tenantFormRef = useRef<React.RefObject<TenantInfoRef> | null>(null)
+    const voipFormRef = useRef<React.RefObject<VoipConfigRef> | null>(null)
+
+    const setTenantFormRef = useCallback((ref: React.RefObject<TenantInfoRef> | null) => {
+        tenantFormRef.current = ref
+    }, [])
+
+    const setVoipFormRef = useCallback((ref: React.RefObject<VoipConfigRef> | null) => {
+        voipFormRef.current = ref
+    }, [])
 
     const updateTenantData = (data: Partial<Tenant>) => {
         setTenantData((prev) => ({...prev, ...data}))

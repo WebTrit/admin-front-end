@@ -44,7 +44,7 @@ export const tenantSchema = z.object({
     basic_demo: z.boolean().optional(),
 })
 
-export type TenantFormData = z.infer<typeof tenantSchema & typeof voipConfigSchema>
+export type TenantFormData = z.infer<typeof tenantSchema>
 
 // === Signup schemas (moved from types.ts) ===
 

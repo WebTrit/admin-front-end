@@ -65,7 +65,6 @@ function Header() {
         return item.isAvailable && currentTenant && !isTenantLoading;
     }
 
-    // todo replace any with the actual type
     return (
         <header className="bg-white shadow-sm fixed w-full z-40">
             <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">

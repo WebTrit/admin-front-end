@@ -37,7 +37,6 @@ export const publicRoutes: RouteObject[] = [
         element: <Signup/>
     },
 ];
-//TODO create name based navigation
 
 // Protected routes (require authentication)
 export const protectedRoutes: RouteObject[] = [
@@ -90,28 +89,22 @@ export const protectedRoutes: RouteObject[] = [
     },
 ];
 
+function RootRedirect() {
+    const {isSuperTenant, isAdmin, tenantId} = useAuthStore()
+    const {currentTenant} = useTenantStore()
+
+    if (isAdmin) return <Navigate to={ROUTES.SUBTENANTS} replace/>
+    if (currentTenant?.basic_demo) return <Navigate to={ROUTES.DASHBOARD} replace/>
+    return isSuperTenant
+        ? <Navigate to={ROUTES.SUBTENANTS} replace/>
+        : <Navigate to={ROUTES.subtenant(tenantId!)} replace/>
+}
+
 // Redirect routes
 export const redirectRoutes: RouteObject[] = [
     {
         path: "/",
-        element: (() => {
-            const {isSuperTenant, isAdmin, tenantId} = useAuthStore.getState();
-            const {currentTenant} = useTenantStore.getState();
-
-            if (isAdmin) {
-                return <Navigate to={ROUTES.SUBTENANTS} replace/>
-            }
-
-            if (currentTenant?.basic_demo) {
-                return <Navigate to={ROUTES.DASHBOARD} replace/>
-            }
-
-            return (isSuperTenant) ? (
-                <Navigate to={ROUTES.SUBTENANTS} replace/>
-            ) : (
-                <Navigate to={ROUTES.subtenant(tenantId!)} replace/>
-            );
-        })(),
+        element: <RootRedirect/>,
     },
     {
         path: "*",
