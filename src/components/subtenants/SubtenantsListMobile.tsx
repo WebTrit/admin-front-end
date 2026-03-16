@@ -3,19 +3,19 @@ import {Pencil, Trash2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import {CopyableText} from "@/components/ui/CopyableText.tsx";
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
-import {Tenant} from "@/types.ts";
+import type {Subtenant, FilterParams} from "@/types";
+import {ROUTES} from "@/routes/paths";
 
-
-interface SubtenantsListDesktopViewProps {
-    subtenants: Tenant[]
+interface SubtenantsListMobileProps {
+    subtenants: Subtenant[]
     deletingTenantId: string | null
     onDelete: (tenantId: string) => void
     onCancelDelete: () => void
-    appliedFilters: Record<string, string>
+    appliedFilters: FilterParams
     onClearFilters: () => void
 }
 
-export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
+export const SubtenantsListMobile: React.FC<SubtenantsListMobileProps> =
     ({
          subtenants,
          deletingTenantId,
@@ -25,10 +25,10 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
          onClearFilters,
      }) => {
         const navigate = useNavigate();
-        const [tenantToDelete, setTenantToDelete] = useState<Tenant | null>(null);
+        const [tenantToDelete, setTenantToDelete] = useState<Subtenant | null>(null);
         const [isModalOpen, setIsModalOpen] = useState(false);
 
-        const handleDeleteClick = (tenant: Tenant) => {
+        const handleDeleteClick = (tenant: Subtenant) => {
             setTenantToDelete(tenant);
             setIsModalOpen(true);
         };
@@ -61,7 +61,7 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
                             <div className="flex justify-end gap-2 mb-2">
                                 <button
                                     className="text-gray-500 hover:text-gray-700"
-                                    onClick={() => navigate(`/subtenants/${tenant.tenant_id}`)}
+                                    onClick={() => navigate(ROUTES.subtenant(tenant.tenant_id))}
                                 >
                                     <Pencil className="w-4 h-4"/>
                                 </button>
@@ -81,7 +81,7 @@ export const SubtenantsListMobile: React.FC<SubtenantsListDesktopViewProps> =
 
                                 <div className="text-xs font-medium text-gray-500 col-span-1">Email</div>
                                 <div className="text-sm text-gray-700 col-span-2">
-                                    <CopyableText tooltip={tenant.email}/>
+                                    <CopyableText tooltip={tenant.email || ''}/>
                                 </div>
 
                                 <div className="text-xs font-medium text-gray-500 col-span-1">Company</div>

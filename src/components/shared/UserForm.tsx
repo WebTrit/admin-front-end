@@ -4,7 +4,8 @@ import {z} from "zod"
 import {ArrowLeft, Loader2} from "lucide-react"
 import {useNavigate} from "react-router-dom"
 import Input from "@/components/ui/Input.tsx"
-import {useAppStore} from "@/lib/store.ts"
+import {useAuthStore} from "@/lib/authStore"
+import {formatZodErrors} from "@/lib/validation"
 
 const userSchema = z.object({
     first_name: z.string().min(1, "First name is required"),
@@ -36,7 +37,6 @@ export interface UserFormRef {
     resetForm: () => void
 }
 
-//todo merge types and zod schema
 interface UserFormProps {
     initialData?: UserFormData
     isSubmitting: boolean
@@ -61,7 +61,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
     ) => {
         const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
         const navigate = useNavigate()
-        const {isAdmin} = useAppStore()
+        const {isAdmin} = useAuthStore()
 
         const {register, handleSubmit, setValue, reset, control} = useForm<UserFormData>({
             defaultValues: {
@@ -75,7 +75,6 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                 sip_password: "",
                 use_phone_as_username: true,
                 basic_demo: false,
-                ...initialData,
             },
         })
         const usePhoneAsUsername = useWatch({name: "use_phone_as_username", control})
@@ -84,21 +83,19 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
         useEffect(() => {
             if (initialData) {
                 const transformedData = Object.keys(initialData).reduce((acc, key) => {
-                    acc[key] = initialData[key] === null ? "" : initialData[key];
+                    const k = key as keyof UserFormData;
+                    (acc as Record<string, unknown>)[k] = initialData[k] === null ? "" : initialData[k];
                     return acc;
                 }, {} as UserFormData);
 
-                const shouldUsePhoneAsUsername = transformedData?.sip_username === initialData?.main_number;
+                const shouldUsePhoneAsUsername = transformedData?.sip_username === transformedData?.main_number;
 
-                reset(transformedData);
-                setValue("ext_number", transformedData?.ext_number || "");
-                setValue("use_phone_as_username", shouldUsePhoneAsUsername);
-
-                if (shouldUsePhoneAsUsername && transformedData?.main_number) {
-                    setValue("sip_username", transformedData.main_number);
-                }
+                reset({
+                    ...transformedData,
+                    use_phone_as_username: shouldUsePhoneAsUsername,
+                });
             }
-        }, [initialData, reset, setValue]);
+        }, [initialData, reset]);
 
         useEffect(() => {
             if (usePhoneAsUsername && mainNumber) {
@@ -119,9 +116,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
                             }
                             resolve(result)
                         },
-                        (errors) => {
-                            // On error (validation failed)
-                            console.log("Validation errors:", errors)
+                        () => {
                             resolve(false)
                         },
                     )()
@@ -137,13 +132,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(
         const validateForm = (data: UserFormData) => {
             const result = userSchema.safeParse(data)
             if (!result.success) {
-                const formattedErrors: Record<string, string> = {}
-                result.error.errors.forEach((error) => {
-                    if (error.path.length > 0) {
-                        formattedErrors[error.path[0].toString()] = error.message
-                    }
-                })
-                setValidationErrors(formattedErrors)
+                setValidationErrors(formatZodErrors(result.error))
                 return false
             }
             setValidationErrors({})

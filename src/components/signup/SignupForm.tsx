@@ -4,15 +4,16 @@ import {useNavigate} from "react-router-dom"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
 import Button from "@/components/ui/Button"
-import {useAppStore} from "@/lib/store"
+import {useAuthStore} from "@/lib/authStore"
 import {CompanyInformation} from "./CompanyInformation"
 import {PersonalInformation} from "@/components/signup/PersonalInformation.tsx"
-import {AccountInformation} from "@/components/signup/AccounInformation.tsx"
+import {AccountInformation} from "@/components/signup/AccountInformation.tsx"
 import {OTPVerification} from "@/components/signup/OTPVerification.tsx"
-import {OTPFormData, SignupFormData} from "@/types.ts"
+import {OTPFormData, SignupFormData} from "@/lib/schemas"
 import axios from "axios"
 import {toast} from "react-toastify";
 import {config} from "@/config/runtime";
+import {ROUTES} from "@/routes/paths";
 
 export const SignupForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -28,7 +29,7 @@ export const SignupForm = () => {
     const isCompanySite = config.IS_SIGNUP_COMPANY_SITE;
 
     const navigate = useNavigate()
-    const {setToken, setTenantId, setIsSuperTenant, setIsAdmin} = useAppStore()
+    const {login} = useAuthStore()
 
     const {
         register: registerSignup,
@@ -92,7 +93,6 @@ export const SignupForm = () => {
             setShowOTPField(true)
             startResendTimer()
         } catch (error) {
-            console.error("Error sending OTP:", error)
             if (axios.isAxiosError(error) && error.response?.status === 409) {
                 setEmailAlreadyRegistered(true)
             } else {
@@ -119,19 +119,16 @@ export const SignupForm = () => {
             })
             if (response.data) {
                 const {access_token, tenant_id} = response.data
-                setToken(access_token)
-                setTenantId(tenant_id)
-                setIsSuperTenant(false)
-                setIsAdmin(false)
+                login({token: access_token, tenantId: tenant_id, isSuperTenant: false, isAdmin: false})
 
-                navigate(`/dashboard`, {replace: true})
+                navigate(ROUTES.DASHBOARD, {replace: true})
             } else {
                 setError("otp", {type: "manual", message: "Invalid temporary password. Please try again."})
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response && error.response.status === 401) {
-                    if (error.response.data && error.response.data.message.includes('already exists')) {
+                    if (error.response.data?.message?.includes('already exists')) {
                         setError("otp", {type: "manual", message: "User with this email already exists."})
                     } else {
                         setError("otp", {type: "manual", message: "Invalid OTP. Please try again."})
@@ -142,7 +139,6 @@ export const SignupForm = () => {
             } else {
                 setError("otp", {type: "manual", message: "Failed to verify temporary password. Please try again."})
             }
-            console.error("Error verifying temporary password:", error)
         } finally {
             setIsSubmitting(false)
         }

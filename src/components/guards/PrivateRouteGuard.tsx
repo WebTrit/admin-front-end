@@ -1,11 +1,14 @@
 import {Navigate} from 'react-router-dom';
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {isTokenExpired} from "@/lib/auth";
+import {ROUTES} from "@/routes/paths";
 
 function PrivateRouteGuard({children}: { children: React.ReactNode }) {
-    const isAuthenticated = useAppStore((state) => state.isAuthenticated)
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+    const token = useAuthStore((state) => state.token)
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace/>
+    if (!isAuthenticated || !token || isTokenExpired(token)) {
+        return <Navigate to={ROUTES.LOGIN} replace/>
     }
 
     return children;

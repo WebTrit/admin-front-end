@@ -3,8 +3,9 @@ import {useForm} from "react-hook-form"
 import {Building2, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
-import type {TenantFormData} from "@/pages/SubtenantDetails.tsx"
-import {useAppStore} from "@/lib/store.ts"
+import type {TenantFormData} from "@/lib/schemas"
+import type {Tenant} from "@/types"
+import {useAuthStore} from "@/lib/authStore"
 
 export interface TenantInfoRef {
     submitForm: () => void
@@ -12,7 +13,7 @@ export interface TenantInfoRef {
 }
 
 interface TenantInfoProps {
-    tenantData: Partial<TenantFormData> | null
+    tenantData: Partial<Tenant> | null
     onSubmit: (data: TenantFormData) => void
     isMutationPending: boolean
     isEditing: boolean
@@ -36,7 +37,7 @@ export const TenantInfo = forwardRef<TenantInfoRef, TenantInfoProps>(
         },
         ref,
     ) => {
-        const {isAdmin} = useAppStore()
+        const {isAdmin} = useAuthStore()
         const {
             register,
             handleSubmit,

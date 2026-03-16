@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {CallLog, CallLogsParams, EventLog, EventLogsParams} from '@/types';
 import {toast} from 'react-toastify';
 import {Activity, ChevronDown, ChevronUp, Loader2, Network, Phone, RefreshCw, Search} from 'lucide-react';
@@ -10,6 +10,9 @@ import {CallFlowModal} from './CallFlowModal';
 import {SipMessageDetails} from './SipMessageDetails';
 
 type LogViewType = 'calls' | 'all-events';
+
+const parseResponseData = (data: unknown) =>
+    typeof data === 'string' ? JSON.parse(data) : data;
 
 // Helper to extract user part from SIP URI or return as-is
 // e.g. "sip:12065551003@demo-sip.webtrit.com" -> "12065551003"
@@ -115,7 +118,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             };
 
             const response = await api.get('/logs/calls', {params});
-            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const data = parseResponseData(response.data);
             let callLogsData = Array.isArray(data) ? data : (data.calls || []);
 
             // Apply status filter locally
@@ -127,8 +130,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             }
 
             setCallLogs(callLogsData);
-        } catch (error: any) {
-            console.error('Failed to fetch call logs:', error);
+        } catch {
             setHasCallsError(true);
             toast.error('Failed to fetch call logs', {
                 toastId: 'sip-logs-error',
@@ -158,11 +160,10 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             };
 
             const response = await api.get('/logs/events', {params});
-            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const data = parseResponseData(response.data);
             const eventLogsData = Array.isArray(data) ? data : (data.events || []);
             setEventLogs(eventLogsData);
-        } catch (error: any) {
-            console.error('Failed to fetch event logs:', error);
+        } catch {
             toast.error('Failed to fetch SIP messages for this call');
             setEventLogs([]);
         } finally {
@@ -203,11 +204,10 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
             };
 
             const response = await api.get('/logs/events', {params});
-            const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+            const data = parseResponseData(response.data);
             const eventLogsData = Array.isArray(data) ? data : (data.events || []);
             setAllEvents(eventLogsData);
-        } catch (error: any) {
-            console.error('Failed to fetch all events:', error);
+        } catch {
             setHasEventsError(true);
             toast.error('Failed to fetch SIP events', {
                 toastId: 'sip-events-error',
@@ -227,21 +227,21 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
     // Track if filters changed (not just view type)
     const currentFiltersKey = `${order}-${dateTimeGte}-${dateTimeLte}-${filterFrom}-${filterTo}-${filterStatus}-${filterAppType}`;
     const [filtersKey, setFiltersKey] = useState('');
-    const [initialFetchDone, setInitialFetchDone] = useState(false);
+    const initialFetchDoneRef = useRef(false);
 
     // Auto-fetch data when accordion is expanded (only calls on initial open)
     useEffect(() => {
-        if (!isExpanded || initialFetchDone) return;
+        if (!isExpanded || initialFetchDoneRef.current) return;
         setHasCallsError(false);
         setFiltersKey(currentFiltersKey);
-        setInitialFetchDone(true);
+        initialFetchDoneRef.current = true;
         fetchCallLogs();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isExpanded]);
 
     // Auto-fetch when filters change with debounce
     useEffect(() => {
-        if (!isExpanded || !initialFetchDone) return;
+        if (!isExpanded || !initialFetchDoneRef.current) return;
         if (filtersKey === currentFiltersKey) return;
 
         const timeoutId = setTimeout(() => {
@@ -255,7 +255,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
 
         return () => clearTimeout(timeoutId);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentFiltersKey, viewType, isExpanded, initialFetchDone]);
+    }, [currentFiltersKey, viewType, isExpanded]);
 
     const clearFilters = () => {
         setDateTimeGte('');
@@ -507,7 +507,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                         </div>
                                         <p className="text-gray-900 font-medium mb-2">Failed to fetch calls</p>
                                         <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
-                                        <Button onClick={fetchCallLogs} variant="outline" size="sm">
+                                        <Button onClick={() => fetchCallLogs()} variant="outline" size="sm">
                                             <RefreshCw className="w-4 h-4 mr-2"/>
                                             Retry
                                         </Button>
@@ -553,7 +553,7 @@ export const SipLogs = ({tenantId, sipDomain}: SipLogsProps) => {
                                         </div>
                                         <p className="text-gray-900 font-medium mb-2">Failed to fetch SIP events</p>
                                         <p className="text-gray-500 text-sm mb-4">The logs endpoint is not available</p>
-                                        <Button onClick={fetchAllEvents} variant="outline" size="sm">
+                                        <Button onClick={() => fetchAllEvents()} variant="outline" size="sm">
                                             <RefreshCw className="w-4 h-4 mr-2"/>
                                             Retry
                                         </Button>

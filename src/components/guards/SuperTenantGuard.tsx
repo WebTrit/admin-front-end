@@ -1,16 +1,17 @@
 import {Navigate} from 'react-router-dom';
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {ROUTES} from "@/routes/paths";
 
 function SuperTenantGuard({children}: { children: React.ReactNode }) {
-    const isSuperTenant = useAppStore((state) => state.isSuperTenant)
-    const isAdmin = useAppStore((state) => state.isAdmin)
+    const isSuperTenant = useAuthStore((state) => state.isSuperTenant)
+    const isAdmin = useAuthStore((state) => state.isAdmin)
 
     if (isAdmin) {
         return children;
     }
 
     if (!isSuperTenant) {
-        return <Navigate to="/" replace/>
+        return <Navigate to={ROUTES.DASHBOARD} replace/>
     }
 
     return children;

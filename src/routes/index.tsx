@@ -8,13 +8,15 @@ import Subtenants from "@/pages/Subtenants";
 import Layout from "@/components/Layout";
 import AddTenant from "@/pages/AddTenant.tsx";
 import Dashboard from "@/pages/Dashboard";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import PrivateRouteGuard from "@/components/guards/PrivateRouteGuard.tsx";
 import SuperTenantGuard from "@/components/guards/SuperTenantGuard.tsx";
 import Invite from "@/pages/Invite.tsx";
 import LoginAdmin from "@/pages/LoginAdmin.tsx";
 import {PbxSetupWizard} from "@/pages/PbxSetupWizard.tsx";
 import PasswordReset from "@/pages/PasswordReset.tsx";
+import {ROUTES} from "@/routes/paths";
 
 // Public routes (accessible without authentication)
 export const publicRoutes: RouteObject[] = [
@@ -35,7 +37,6 @@ export const publicRoutes: RouteObject[] = [
         element: <Signup/>
     },
 ];
-//TODO create name based navigation
 
 // Protected routes (require authentication)
 export const protectedRoutes: RouteObject[] = [
@@ -88,31 +89,26 @@ export const protectedRoutes: RouteObject[] = [
     },
 ];
 
+function RootRedirect() {
+    const {isSuperTenant, isAdmin, tenantId} = useAuthStore()
+    const {currentTenant} = useTenantStore()
+
+    if (isAdmin) return <Navigate to={ROUTES.SUBTENANTS} replace/>
+    if (currentTenant?.basic_demo) return <Navigate to={ROUTES.DASHBOARD} replace/>
+    if (isSuperTenant) return <Navigate to={ROUTES.SUBTENANTS} replace/>
+    if (!tenantId) return <Navigate to={ROUTES.LOGIN} replace/>
+    return <Navigate to={ROUTES.subtenant(tenantId)} replace/>
+}
+
 // Redirect routes
 export const redirectRoutes: RouteObject[] = [
     {
         path: "/",
-        element: (() => {
-            const {isSuperTenant, currentTenant, isAdmin, tenantId} = useAppStore.getState();
-
-            if (isAdmin) {
-                return <Navigate to="/subtenants" replace/>
-            }
-
-            if (currentTenant?.basic_demo) {
-                return <Navigate to="/dashboard" replace/>
-            }
-
-            return (isSuperTenant) ? (
-                <Navigate to="/subtenants" replace/>
-            ) : (
-                <Navigate to={`/subtenants/${tenantId}`} replace/>
-            );
-        })(),
+        element: <RootRedirect/>,
     },
     {
         path: "*",
-        element: <Navigate to={'/dashboard'} replace/>
+        element: <Navigate to={ROUTES.DASHBOARD} replace/>
     },
 ];
 

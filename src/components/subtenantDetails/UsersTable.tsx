@@ -1,4 +1,4 @@
-import React, {useState} from "react"
+import {useState} from "react"
 import {useNavigate, useParams} from "react-router-dom"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
@@ -6,25 +6,34 @@ import {Loader2, Mail, Pencil, Plus, Trash2, Users} from "lucide-react"
 import api from "@/lib/axios"
 import {User} from "@/types"
 import Button from "@/components/ui/Button"
-import {useAppStore} from "@/lib/store"
+import {useTenantStore} from "@/lib/tenantStore"
 import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
 import {CopyableText} from "@/components/ui/CopyableText.tsx"
 import {LinkActions} from "@/components/ui/LinkActions.tsx"
 import {config} from "@/config/runtime"
+import {ROUTES} from "@/routes/paths"
+import {useDeleteUser} from "@/hooks/useDeleteUser"
 
 interface UsersTableProps {
     maxUsers: number
 }
 
 export function UsersTable({maxUsers}: UsersTableProps) {
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
     const navigate = useNavigate()
     const queryClient = useQueryClient()
     const {tenantId} = useParams()
 
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-    const [userToDelete, setUserToDelete] = useState<User | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
+    if (!tenantId) return null
+
+    const {
+        deleteModalOpen,
+        userToDelete,
+        isDeleting,
+        handleDeleteClick,
+        handleDeleteConfirm,
+        handleCloseDeleteModal,
+    } = useDeleteUser(tenantId)
     const [resendingEmailUserId, setResendingEmailUserId] = useState<string | null>(null)
 
     const DIALER_URL = config.WEBTRIT_DIALER_URL
@@ -40,19 +49,6 @@ export function UsersTable({maxUsers}: UsersTableProps) {
             const response = await api.get(`/tenants/${tenantId}/users/`)
 
             return response.data as { items: User[], count: number }
-        },
-    })
-
-    const deleteMutation = useMutation({
-        mutationFn: async (userId: string) => {
-            if (!tenantId) throw new Error("No tenant ID found")
-            await api.delete(`/tenants/${tenantId}/users/${userId}`)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["users"]})
-            toast.success("User deleted successfully")
-            setDeleteModalOpen(false)
-            setUserToDelete(null)
         },
     })
 
@@ -97,23 +93,6 @@ export function UsersTable({maxUsers}: UsersTableProps) {
     const usersCount = users.length
     const canAddUsers = maxUsers > 0 && usersCount < maxUsers
     const hasReachedMaxUsers = maxUsers > 0 && usersCount >= maxUsers
-
-    const handleDeleteClick = (user: User) => {
-        setUserToDelete(user)
-        setDeleteModalOpen(true)
-    }
-
-    const handleDeleteConfirm = async () => {
-        if (!userToDelete) return
-        setIsDeleting(true)
-        try {
-            await deleteMutation.mutateAsync(userToDelete.user_id)
-        } catch (e) {
-            toast.error("Failed to delete user")
-        } finally {
-            setIsDeleting(false)
-        }
-    }
 
     const handleResendEmail = async (user: User) => {
         setResendingEmailUserId(user.user_id)
@@ -186,7 +165,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                 </div>
                 {canAddUsers && (
                     <Button className="w-full sm:w-auto mt-2 sm:mt-0"
-                            onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}>
+                            onClick={() => navigate(ROUTES.addUser(tenantId))}>
                         <Plus className="h-4 w-4 mr-2"/>
                         Add User
                     </Button>
@@ -230,7 +209,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                             {canAddUsers && (
                                                 <button
                                                     className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-                                                    onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}
+                                                    onClick={() => navigate(ROUTES.addUser(tenantId))}
                                                 >
                                                     Add your first user
                                                 </button>
@@ -296,7 +275,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                     </Button>
                                                 )}
                                                 <Button variant="ghost" size="sm"
-                                                        onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}>
+                                                        onClick={() => navigate(ROUTES.editUser(tenantId, user.user_id))}>
                                                     <Pencil className="h-4 w-4"/>
                                                 </Button>
                                                 {users[index].email !== currentTenant?.email &&
@@ -324,7 +303,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                 {canAddUsers && (
                                     <button
                                         className="text-primary-600 hover:text-primary-700 text-sm font-medium mt-2"
-                                        onClick={() => navigate(`/subtenants/${tenantId}/users/new`)}
+                                        onClick={() => navigate(ROUTES.addUser(tenantId))}
                                     >
                                         Add your first user
                                     </button>
@@ -362,7 +341,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => navigate(`/subtenants/${tenantId}/users/${user.user_id}/edit`)}
+                                                    onClick={() => navigate(ROUTES.editUser(tenantId, user.user_id))}
                                                     aria-label="Edit user"
                                                 >
                                                     <Pencil className="h-4 w-4"/>
@@ -417,10 +396,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                 title="Delete User"
                 description={userToDelete ? `Are you sure you want to delete ${userToDelete.first_name} ${userToDelete.last_name}? This action cannot be undone.` : ""}
                 isOpen={deleteModalOpen}
-                onClose={() => {
-                    setDeleteModalOpen(false)
-                    setUserToDelete(null)
-                }}
+                onClose={handleCloseDeleteModal}
                 onConfirm={handleDeleteConfirm}
                 isProcessing={isDeleting}
                 confirmText="Delete"

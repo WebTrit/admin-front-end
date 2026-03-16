@@ -4,8 +4,10 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import api from "@/lib/axios.ts";
 import {toast} from "react-toastify";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
 import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/routes/paths";
 
 type UserDetails = {
     first_name: string;
@@ -14,7 +16,8 @@ type UserDetails = {
 };
 
 function Invite() {
-    const {currentTenant, tenantId} = useAppStore(); // Get currentUser from the store
+    const {tenantId} = useAuthStore()
+    const {currentTenant} = useTenantStore()
     const navigate = useNavigate();
 
     const [step, setStep] = useState(1);
@@ -50,8 +53,6 @@ function Invite() {
             }
         }
 
-        console.log('Step:', stepNumber, 'Errors:', newErrors);
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -83,9 +84,13 @@ function Invite() {
                 await api.post(`/tenants/${tenantId}/invite`, data);
                 toast.success(`Invitation sent successfully to ${invitedUser.email}!`);
                 setStep(3);
-            } catch (error: any) {
-                if (error?.response?.status === 409) {
+            } catch (error: unknown) {
+                const axiosError = error as { response?: { status?: number } };
+                const status = axiosError?.response?.status;
+                if (status === 409) {
                     toast.info(`The user with email ${invitedUser.email} already uses WebTrit.`);
+                } else if (typeof status === 'number' && status >= 500) {
+                    toast.error("Server error. Please try again later.");
                 } else {
                     toast.error(`Failed to send invitation to ${invitedUser.email}. Please try again.`);
                 }
@@ -209,7 +214,7 @@ function Invite() {
                 We've sent an invitation to {invitedUser.email}
             </p>
             <Button className="mr-4"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate(ROUTES.DASHBOARD)}
             >
                 To dashboard
             </Button>
@@ -255,7 +260,7 @@ function Invite() {
                             <Button
                                 variant="ghost"
                                 type="button"
-                                onClick={step === 1 ? () => navigate('/dashboard') : handleBack}
+                                onClick={step === 1 ? () => navigate(ROUTES.DASHBOARD) : handleBack}
                                 className="flex items-center"
                             >
                                 <ArrowLeft className="w-4 h-4 mr-2"/>

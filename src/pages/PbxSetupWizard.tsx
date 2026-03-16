@@ -1,8 +1,9 @@
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {ArrowLeft, ArrowRight, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 
-import {useAppStore} from "@/lib/store"
+import {useTenantStore} from "@/lib/tenantStore"
 import {useWizard, WizardProvider} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {PbxSetupIntro} from "@/components/pbxSetupWizard/PbxSetupIntro.tsx";
 import {VoipConfigStep} from "@/components/pbxSetupWizard/VoipConfigStep.tsx";
@@ -12,7 +13,7 @@ import {UsersStep} from "@/components/pbxSetupWizard/UsersStep.tsx";
 function WizardContent() {
     const navigate = useNavigate()
     const {currentStep, setCurrentStep, tenantFormRef, voipFormRef, isLoading} = useWizard()
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
 
 
     const handleProceedFromIntro = async () => {
@@ -25,15 +26,12 @@ function WizardContent() {
 
     // Handle next button click - now submits the form
     const handleNext = () => {
-        if (currentStep === "tenant-info" && tenantFormRef?.current) {
-            // Submit the tenant form
-            tenantFormRef.current.submitForm()
-        } else if (currentStep === "voip-config" && voipFormRef?.current) {
-            // Submit the VoIP form
-            voipFormRef.current.submitForm()
-            //TODO fix type errors
+        if (currentStep === "tenant-info" && tenantFormRef.current?.current) {
+            tenantFormRef.current.current.submitForm()
+        } else if (currentStep === "voip-config" && voipFormRef.current?.current) {
+            voipFormRef.current.current.submitForm()
         } else if (currentStep === "complete") {
-            navigate("/dashboard")
+            navigate(ROUTES.DASHBOARD)
         }
     }
 
@@ -41,15 +39,11 @@ function WizardContent() {
     const handleBack = () => {
         switch (currentStep) {
             case "tenant-info":
-                if (tenantFormRef?.current) {
-                    tenantFormRef.current.resetForm()
-                }
+                tenantFormRef.current?.current?.resetForm()
                 setCurrentStep("intro")
                 break
             case "voip-config":
-                if (voipFormRef?.current) {
-                    voipFormRef.current.resetForm()
-                }
+                voipFormRef.current?.current?.resetForm()
                 setCurrentStep("tenant-info")
                 break
             case "users":
@@ -75,6 +69,7 @@ function WizardContent() {
                         }}
                         onProceed={handleProceedFromIntro}
                         onCancel={handleCancel}
+                        isLoading={isLoading}
                     />
                 )
             case "tenant-info":
@@ -92,7 +87,7 @@ function WizardContent() {
                         </p>
                         <p className="text-gray-600 mb-8">Users can now log in to the WebTrit app with their updated
                             settings.</p>
-                        <Button onClick={() => navigate(`/subtenants/${currentTenant?.tenant_id}`)} className="px-8">
+                        <Button onClick={() => navigate(ROUTES.subtenant(currentTenant?.tenant_id || ''))} className="px-8">
                             Go to Configuration
                         </Button>
                     </div>
@@ -190,7 +185,7 @@ function WizardContent() {
 }
 
 export function PbxSetupWizard() {
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
     if (!currentTenant) {
         return
     }

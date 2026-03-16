@@ -2,10 +2,13 @@ import {useEffect, useRef, useState} from "react"
 import {useMutation, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
+import {formatZodErrors} from "@/lib/validation"
 import {VoipConfig, VoipConfigRef} from "@/components/shared/VoipConfig"
-import {voipConfigSchema, VoipFormData} from "@/pages/SubtenantDetails"
+import {voipConfigSchema, VoipFormData} from "@/lib/schemas"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
+import type {SIPServerInfo, Tenant} from "@/types";
 
 
 export function VoipConfigStep() {
@@ -14,7 +17,8 @@ export function VoipConfigStep() {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const [isValidatingHost, setIsValidatingHost] = useState(false)
     const queryClient = useQueryClient()
-    const {currentTenant, setCurrentTenant} = useAppStore()
+    const {tenantId} = useAuthStore()
+    const {currentTenant, setCurrentTenant} = useTenantStore()
 
     useEffect(() => {
         setVoipFormRef(formRef)
@@ -24,13 +28,11 @@ export function VoipConfigStep() {
     const validateForm = (data: VoipFormData) => {
         const result = voipConfigSchema.safeParse(data)
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {}
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message
-                }
-            })
-            setValidationErrors(formattedErrors)
+            setValidationErrors(formatZodErrors(result.error))
+            return false
+        }
+        if (!data.outbound_proxy_enabled && (!data.host || data.host.trim().length === 0)) {
+            setValidationErrors({host: "SIP Server Hostname / IP is required"})
             return false
         }
         setValidationErrors({})
@@ -42,9 +44,9 @@ export function VoipConfigStep() {
             setIsValidatingHost(true)
             setIsLoading(true)
             const response = await api.post("/info/hostname", {host, port, use_tcp}, {timeout: 30000})
-            toast(response.data.message)
+            toast.info(response.data.message)
             return response.data.status.toLowerCase() === "ok"
-        } catch (error) {
+        } catch {
             return false
         } finally {
             setIsValidatingHost(false)
@@ -53,9 +55,9 @@ export function VoipConfigStep() {
     }
 
     const updateVoipMutation = useMutation({
-        mutationFn: async (updatedData: any) => {
-            if (!tenantData.tenant_id) throw new Error("No tenant ID found")
-            const response = await api.post(`/tenants/${tenantData.tenant_id}/convert-to-pbx`, {
+        mutationFn: async (updatedData: Partial<Tenant>) => {
+            if (!tenantId) throw new Error("No tenant ID found")
+            const response = await api.post(`/tenants/${tenantId}/convert-to-pbx`, {
                 ...currentTenant,
                 ...updatedData,
             })
@@ -63,11 +65,11 @@ export function VoipConfigStep() {
             setCurrentTenant({
                 ...currentTenant,
                 ...updatedData,
-            })
+            } as Tenant)
             return response.data
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["tenant", tenantData.tenant_id]})
+            queryClient.invalidateQueries({queryKey: ["tenant", tenantId]})
             setValidationErrors({})
             toast.success("VoIP settings updated successfully")
             setCurrentStep("users")
@@ -107,25 +109,25 @@ export function VoipConfigStep() {
             }
         }
 
-        const changes: Record<string, any> = {}
+        const changes: Partial<Tenant> = {}
 
         if (tenantData) {
             if (data.voip_system_type !== tenantData.voip_system?.type) {
-                changes.voip_system = {type: data.voip_system_type}
+                changes.voip_system = {type: data.voip_system_type, vendor: null, name: null, url: null}
             }
             if (data.transport_protocol !== tenantData.transport_protocol) {
                 changes.transport_protocol = data.transport_protocol
             }
-            const sipChanges: Record<string, any> = {}
+            const sipChanges: Partial<SIPServerInfo> = {}
             if (data.host !== tenantData.sip?.host) sipChanges.host = data.host
-            if (String(data.port) !== String(tenantData.sip?.port)) sipChanges.port = data.port
+            if (String(data.port) !== String(tenantData.sip?.port)) sipChanges.port = Number(data.port)
 
-            if (Object.keys(sipChanges).length > 0) changes.sip = sipChanges
+            if (Object.keys(sipChanges).length > 0) changes.sip = sipChanges as SIPServerInfo
 
             if (data.outbound_proxy_enabled && data.outbound_proxy_host && data.outbound_proxy_host.trim() !== "") {
                 const outboundProxyPort = data.outbound_proxy_port ? Number.parseInt(data.outbound_proxy_port) : 5060;
                 const useTcp = data.transport_protocol.toLowerCase() === "tcp";
-                const proxyConfig = {
+                const proxyConfig: SIPServerInfo = {
                     host: data.outbound_proxy_host,
                     port: outboundProxyPort,
                     use_tcp: useTcp
@@ -136,14 +138,14 @@ export function VoipConfigStep() {
             }
         }
 
-        const finalData: Record<string, any> = {
-            voip_system: {type: changes.voip_system?.type ?? tenantData.voip_system?.type},
+        const finalData: Partial<Tenant> = {
+            voip_system: {type: changes.voip_system?.type ?? tenantData.voip_system?.type ?? null, vendor: null, name: null, url: null},
             sip: {
-                host: changes.sip?.host ?? tenantData.sip?.host,
-                port: String(changes.sip?.port ?? tenantData.sip?.port),
+                host: changes.sip?.host ?? tenantData.sip?.host ?? '',
+                port: Number(changes.sip?.port ?? tenantData.sip?.port ?? 5060),
                 use_tcp: data.transport_protocol.toLowerCase() === "tcp"
             },
-            transport_protocol: data.transport_protocol ?? tenantData.sip?.transport_protocol,
+            transport_protocol: data.transport_protocol ?? tenantData.transport_protocol,
             basic_demo: false
         }
 

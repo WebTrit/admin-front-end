@@ -3,9 +3,12 @@ import {useForm} from "react-hook-form"
 import {z} from "zod"
 import {toast} from "react-toastify"
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {Loader2} from "lucide-react"
 import api from "@/lib/axios"
-import {useAppStore} from "@/lib/store"
+import axios from "axios"
+import {formatZodErrors} from "@/lib/validation"
+import {useAuthStore} from "@/lib/authStore"
 import Input from "@/components/ui/Input.tsx";
 import Button from "@/components/ui/Button.tsx";
 import {config} from "@/config/runtime";
@@ -24,7 +27,7 @@ const Login = () => {
     const navigate = useNavigate()
     const isSignupLink = config.IS_SIGNUP;
 
-    const {setTenantId, setToken, setIsSuperTenant, setIsAdmin} = useAppStore()
+    const {setToken, login} = useAuthStore()
 
     const {
         register,
@@ -40,13 +43,7 @@ const Login = () => {
     const validateForm = (data: LoginFormData) => {
         const result = loginSchema.safeParse(data)
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {}
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message
-                }
-            })
-            setValidationErrors(formattedErrors)
+            setValidationErrors(formatZodErrors(result.error))
             return false
         }
         setValidationErrors({})
@@ -69,38 +66,37 @@ const Login = () => {
             }
 
             setToken(access_token)
-            setIsAdmin(false)
             toast.success("Login successful!")
 
             if (tenant_id) {
-                setTenantId(tenant_id)
-
                 try {
                     const {data: currentUserData} = await api.get(`/tenants/${tenant_id}`)
-                    console.log("Current user data:", currentUserData)
-                    setIsSuperTenant(currentUserData.is_super_tenant)
+                    login({token: access_token, tenantId: tenant_id, isSuperTenant: !!currentUserData.is_super_tenant, isAdmin: false})
 
                     if (currentUserData.basic_demo) {
-                        navigate('/dashboard', {replace: true})
+                        navigate(ROUTES.DASHBOARD, {replace: true})
                         return
                     }
 
                     if (currentUserData.is_super_tenant) {
-                        navigate("/subtenants", {replace: true})
+                        navigate(ROUTES.SUBTENANTS, {replace: true})
                     } else {
-                        navigate(`/subtenants/${tenant_id}`, {replace: true})
+                        navigate(ROUTES.subtenant(tenant_id), {replace: true})
                     }
-                } catch (err) {
-                    console.error("Failed to fetch tenant details:", err)
+                } catch {
                     toast.error("Failed to verify tenant status.")
-                    navigate(`/subtenants/${tenant_id}`, {replace: true})
+                    login({token: access_token, tenantId: tenant_id, isSuperTenant: false, isAdmin: false})
+                    navigate(ROUTES.DASHBOARD, {replace: true})
                 }
             } else {
-                navigate(`/subtenants/${tenant_id}`, {replace: true})
+                navigate(ROUTES.DASHBOARD, {replace: true})
             }
         } catch (error) {
-            console.error("Login error:", error)
-            toast.error("Invalid login or password. Please try again.")
+            if (axios.isAxiosError(error) && error.response && error.response.status >= 500) {
+                toast.error("Server error. Please try again later.")
+            } else {
+                toast.error("Invalid login or password. Please try again.")
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -120,7 +116,7 @@ const Login = () => {
                 {isSignupLink && <div>
                     <div>If you don't have an account click here to {' '}
                         <span
-                            onClick={() => navigate('/signup', {replace: true})}
+                            onClick={() => navigate(ROUTES.SIGNUP, {replace: true})}
                             className="text-blue-400 underline cursor-pointer"
                         >
                             sign up
@@ -183,7 +179,7 @@ const Login = () => {
                                 className="w-full hover:bg-transparent active:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
                                 onClick={() => {
                                     const email = getValues("login")
-                                    navigate(`/password-reset?email=${encodeURIComponent(email)}`)
+                                    navigate(ROUTES.PASSWORD_RESET, {state: {email}})
                                 }}>
                                 Forgot password? Click here to reset.
                             </Button>

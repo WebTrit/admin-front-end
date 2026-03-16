@@ -1,10 +1,14 @@
 import {Code, Download, ExternalLink, Globe, Loader2, Phone,} from "lucide-react";
 import {DashboardCard} from "@/components/dashboard/DashboardCard.tsx";
-import {useAppStore} from "@/lib/store.ts";
+import {useAuthStore} from "@/lib/authStore";
+import {useTenantStore} from "@/lib/tenantStore";
+import {useTenantQuery} from "@/hooks/useTenantQuery";
 import {toast} from "react-toastify";
 import api from "@/lib/axios.ts";
+import axios from "axios";
 import Button from "@/components/ui/Button.tsx";
 import {useNavigate} from "react-router-dom";
+import {ROUTES} from "@/routes/paths";
 import {useEffect, useState} from "react";
 import {config} from "@/config/runtime";
 import DeveloperAccessDialog from "@/components/ui/DeveloperAccessDialog.tsx";
@@ -20,7 +24,9 @@ const Dashboard = () => {
     const IS_CONNECT_PBX_ENABLED = config.APP_IS_DASHBOARD_CONNECT_PBX;
     const IS_DEVELOPER_ACCESS_ENABLED = config.APP_IS_DASHBOARD_DEVELOPER_ACCESS;
 
-    const {tenantId, currentTenant, isTenantLoading, tenantError} = useAppStore();
+    const {tenantId} = useAuthStore();
+    const {currentTenant} = useTenantStore();
+    const {isLoading: isTenantLoading, error: tenantError} = useTenantQuery();
 
     const [whitelistIps, setWhitelistIps] = useState<string[] | null>(null);
     const [showDevAccessDialog, setShowDevAccessDialog] = useState(false);
@@ -42,7 +48,7 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        const pendingDeveloperAccess = localStorage.getItem('pendingDeveloperAccess');
+        const pendingDeveloperAccess = sessionStorage.getItem('pendingDeveloperAccess');
 
         if (pendingDeveloperAccess === 'true' && !isTenantLoading && currentTenant) {
             const showDialogTimer = setTimeout(() => {
@@ -64,9 +70,12 @@ const Dashboard = () => {
             await api.put(`/tenants/${currentTenant.tenant_id}/developer`, {
                 email: currentTenant.email,
             });
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
-            localStorage.removeItem('pendingDeveloperAccess');
+        } catch (error: unknown) {
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.message
+                : undefined;
+            toast.error(message || `Failed to enable developer access to user with email ${currentTenant?.email}`);
+            sessionStorage.removeItem('pendingDeveloperAccess');
             setShowDevAccessDialog(false);
         } finally {
             setDevAccessProcessing(false);
@@ -74,7 +83,7 @@ const Dashboard = () => {
     };
 
     const handleCloseDeveloperAccessDialog = () => {
-        localStorage.removeItem('pendingDeveloperAccess');
+        sessionStorage.removeItem('pendingDeveloperAccess');
         setShowDevAccessDialog(false);
     };
 
@@ -86,7 +95,7 @@ const Dashboard = () => {
                         <Loader2 size={40} className="mr-2 animate-spin"/>
                     </div>
                 ) : tenantError ? (
-                    <div className="text-red-600 text-center">{tenantError}</div>
+                    <div className="text-red-600 text-center">{tenantError?.message || "Failed to load tenant"}</div>
                 ) : (
                     <div className="space-y-8">
                         <div className="text-center md:text-left">
@@ -145,7 +154,7 @@ const Dashboard = () => {
                                     imageUrl="/images/dashboard/invite.png"
                                     additionalContent={
                                         <Button
-                                            onClick={() => navigate('/invite')}
+                                            onClick={() => navigate(ROUTES.INVITE)}
                                         >
                                             Invite your friends
                                         </Button>}
@@ -174,7 +183,7 @@ const Dashboard = () => {
                                             </div>
                                             {currentTenant?.basic_demo ? (
                                                 <Button
-                                                    onClick={() => navigate('/pbx-setup')}
+                                                    onClick={() => navigate(ROUTES.PBX_SETUP)}
                                                     className="mt-4"
                                                 >
                                                     Connect to your own PBX
@@ -183,8 +192,8 @@ const Dashboard = () => {
                                                 <Button
                                                     className="mt-4"
                                                     onClick={() => currentTenant?.is_super_tenant ?
-                                                        navigate(`/subtenants`) :
-                                                        navigate(`/subtenants/${tenantId}`)}
+                                                        navigate(ROUTES.SUBTENANTS) :
+                                                        navigate(ROUTES.subtenant(tenantId!))}
                                                 >
                                                     To configuration page
                                                 </Button>

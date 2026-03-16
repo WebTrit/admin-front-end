@@ -1,5 +1,6 @@
 import {SignupForm} from "@/components/signup/SignupForm.tsx";
 import {useNavigate, useSearchParams} from "react-router-dom";
+import {ROUTES} from "@/routes/paths";
 import logoImage from "/favicon.png";
 import {useEffect} from "react";
 
@@ -10,7 +11,7 @@ const Signup = () => {
     useEffect(() => {
         const developerParam = searchParams.get('developer')
         if (developerParam === 'true' || developerParam === '1') {
-            localStorage.setItem('pendingDeveloperAccess', 'true')
+            sessionStorage.setItem('pendingDeveloperAccess', 'true')
         }
     }, [searchParams])
 
@@ -26,7 +27,7 @@ const Signup = () => {
                 <div>
                     <div>If you already have an account click here to {' '}
                         <span
-                            onClick={() => navigate('/login', {replace: true})}
+                            onClick={() => navigate(ROUTES.LOGIN, {replace: true})}
                             className="text-primary-500 underline cursor-pointer"
                         >
                             login

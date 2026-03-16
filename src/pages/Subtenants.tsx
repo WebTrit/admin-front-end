@@ -1,31 +1,15 @@
 import type React from "react"
 import {useState} from "react"
 import {useQuery} from "@tanstack/react-query"
+import {toast} from "react-toastify"
 import {Loader2, Plus} from "lucide-react"
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import api from "@/lib/axios"
 import {SubtenantsFilter} from "@/components/subtenants/SubtenantsFilter.tsx"
 import {SubtenantsListMobile} from "@/components/subtenants/SubtenantsListMobile.tsx"
 import {SubtenantsListDesktop} from "@/components/subtenants/SubtenantsListDesktop.tsx"
-
-interface Subtenant {
-    tenant_id: string
-    email: string
-    login: string
-    company_name: string
-    basic_demo: boolean
-    sip: { host: string; port: number } | null
-    registrar_server: string | null
-    transport_protocol: string
-    voip_system?: { type: string }
-}
-
-interface FilterParams {
-    tenant_id?: string
-    email?: string
-    except_tenant_id?: string
-    super_tenant_id?: string
-}
+import type {Subtenant, FilterParams} from "@/types"
 
 const Subtenants = () => {
     const navigate = useNavigate()
@@ -47,7 +31,7 @@ const Subtenants = () => {
         queryFn: async () => {
             const params = new URLSearchParams()
             Object.entries(appliedFilters).forEach(([key, value]) => {
-                if (value) params.append(key, value)
+                if (value !== undefined && value !== '') params.append(key, value)
             })
 
             const queryString = params.toString() ? `?${params.toString()}` : ""
@@ -94,8 +78,8 @@ const Subtenants = () => {
             await api.delete(`/tenants/${tenantId}`)
             setDeletingTenantId(null)
             refetch()
-        } catch (error) {
-            console.error("Error deleting tenant:", error)
+        } catch {
+            toast.error("Failed to delete tenant. Please try again.")
         }
     }
 
@@ -130,7 +114,7 @@ const Subtenants = () => {
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-xl font-bold">Tenants</h1>
                 <button
-                    onClick={() => navigate("/add-subtenant")}
+                    onClick={() => navigate(ROUTES.ADD_SUBTENANT)}
                     className="bg-primary-500 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-primary-600"
                 >
                     <Plus className="w-4 h-4"/>
@@ -158,7 +142,7 @@ const Subtenants = () => {
                         deletingTenantId={deletingTenantId}
                         onDelete={handleDelete}
                         onCancelDelete={() => setDeletingTenantId(null)}
-                        onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
+
                         appliedFilters={appliedFilters}
                         onClearFilters={clearFilters}
                     />
@@ -167,7 +151,7 @@ const Subtenants = () => {
                         deletingTenantId={deletingTenantId}
                         onDelete={handleDelete}
                         onCancelDelete={() => setDeletingTenantId(null)}
-                        onDeleteClick={(tenantId) => setDeletingTenantId(tenantId)}
+
                         appliedFilters={appliedFilters}
                         onClearFilters={clearFilters}
                     />

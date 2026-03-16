@@ -3,12 +3,12 @@ import {useForm} from "react-hook-form"
 import {z} from "zod"
 import {toast} from "react-toastify"
 import {useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {Loader2} from "lucide-react"
-import {useAppStore} from "@/lib/store"
+import {useAuthStore} from "@/lib/authStore"
+import {formatZodErrors} from "@/lib/validation"
 import Input from "@/components/ui/Input.tsx"
-import axios from "axios";
-import {config} from "@/config/runtime";
-import {API_VERSION} from "@/lib/axios.ts";
+import api from "@/lib/axios";
 
 const adminLoginSchema = z.object({
     username: z.string().min(1, "Username is required"),
@@ -22,7 +22,7 @@ const LoginAdmin = () => {
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
     const navigate = useNavigate()
 
-    const {setToken, setIsAdmin} = useAppStore()
+    const {login} = useAuthStore()
 
     const {
         register,
@@ -37,13 +37,7 @@ const LoginAdmin = () => {
     const validateForm = (data: AdminLoginFormData) => {
         const result = adminLoginSchema.safeParse(data)
         if (!result.success) {
-            const formattedErrors: Record<string, string> = {}
-            result.error.errors.forEach((error) => {
-                if (error.path.length > 0) {
-                    formattedErrors[error.path[0].toString()] = error.message
-                }
-            })
-            setValidationErrors(formattedErrors)
+            setValidationErrors(formatZodErrors(result.error))
             return false
         }
         setValidationErrors({})
@@ -53,41 +47,26 @@ const LoginAdmin = () => {
     const onSubmit = async (formData: AdminLoginFormData) => {
         if (!validateForm(formData)) return
 
-        const API_BASE_URL = config.BACKEND_URL;
-
         try {
             setIsSubmitting(true)
-
-            const tokenApi = axios.create({
-                baseURL: `${API_BASE_URL}${API_VERSION}`,
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Accept': 'application/json',
-                },
-                timeout: 20000,
-            });
 
             const data = new URLSearchParams({
                 grant_type: 'password',
                 username: formData.username,
                 password: formData.password,
-                scope: '',
-                client_id: 'string',
-                client_secret: 'string',
             });
 
-            const response = await tokenApi.post("/token", data)
+            const response = await api.post("/token", data, {
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            })
             const {access_token} = response.data
 
             if (!access_token) throw new Error("No access token")
 
-            setToken(access_token)
-            setIsAdmin(true)
-
+            login({token: access_token, tenantId: null, isSuperTenant: false, isAdmin: true})
             toast.success("Admin login successful!")
-            navigate("/subtenants", {replace: true})
-        } catch (error) {
-            console.error("Admin login error:", error)
+            navigate(ROUTES.SUBTENANTS, {replace: true})
+        } catch {
             toast.error("Invalid username or password.")
         } finally {
             setIsSubmitting(false)

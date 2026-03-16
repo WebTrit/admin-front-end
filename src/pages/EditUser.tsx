@@ -1,4 +1,5 @@
 import {useNavigate, useParams} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {toast} from "react-toastify"
 import {Loader2} from "lucide-react"
@@ -39,10 +40,9 @@ const EditUser = () => {
             queryClient.invalidateQueries({queryKey: ["users", tenantId]})
             queryClient.invalidateQueries({queryKey: ["user", tenantId, userId]})
             toast.success("User updated successfully!")
-            navigate(`/subtenants/${tenantId}`)
+            navigate(ROUTES.subtenant(tenantId!))
         },
-        onError: (error) => {
-            console.error("Error updating user:", error)
+        onError: () => {
             toast.error("Failed to update user. Please try again.")
         },
     })
@@ -66,7 +66,7 @@ const EditUser = () => {
                         {error instanceof Error ? error.message : "Failed to load user data. Please try again."}
                     </p>
                     <button
-                        onClick={() => navigate("/users")}
+                        onClick={() => navigate(tenantId ? ROUTES.subtenant(tenantId) : ROUTES.SUBTENANTS)}
                         className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
                     >
                         Back to Users
@@ -79,7 +79,7 @@ const EditUser = () => {
     return (
         <UserForm
             initialData={userData}
-            onSubmit={updateUserMutation.mutate}
+            onSubmit={async (data) => { await updateUserMutation.mutateAsync(data) }}
             isSubmitting={updateUserMutation.isPending}
             title="Edit User"
             submitButtonText="Update User"

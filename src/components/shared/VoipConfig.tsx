@@ -5,7 +5,8 @@ import {TRANSPORT_PROTOCOLS, VOIP_SYSTEM_TYPES} from "@/constants"
 import Button from "@/components/ui/Button"
 import Input from "@/components/ui/Input"
 import Select from "@/components/ui/Select.tsx"
-import type {VoipFormData} from "@/pages/SubtenantDetails"
+import type {VoipFormData} from "@/lib/schemas"
+import type {Tenant} from "@/types"
 
 export interface VoipConfigRef {
     submitForm: () => void
@@ -13,14 +14,14 @@ export interface VoipConfigRef {
 }
 
 interface VoipConfigProps {
-    tenantData: any
+    tenantData: Partial<Tenant> | null
     onSubmit: (data: VoipFormData) => Promise<void>
     isMutationPending: boolean
     isEditing: boolean
     handleEdit: (val: boolean) => void
     isValidatingHost: boolean
-    validationErrors: any
-    setValidationErrors: (errors: any) => void
+    validationErrors: Record<string, string>
+    setValidationErrors: (errors: Record<string, string>) => void
     hideControls?: boolean
 }
 
@@ -46,7 +47,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             reset,
             setError,
             formState: {errors},
-        } = useForm<VoipFormData & { custom_voip_type?: string }>({
+        } = useForm<VoipFormData & {custom_voip_type?: string}>({
             defaultValues: {
                 voip_system_type: "",
                 host: "",
@@ -59,8 +60,6 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 outbound_proxy_port: "5060",
             },
         })
-        //TODO fix schema mismatch
-
         const isOtherVoip = tenantData?.voip_system?.type && !VOIP_SYSTEM_TYPES.includes(tenantData.voip_system.type)
         const voipSystemType = watch("voip_system_type")
         const skipHostnameValidation = watch("skip_hostname_validation")
@@ -93,7 +92,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                 reset({
                     voip_system_type: isOtherVoip ? "Other - not listed here" : tenantData.voip_system?.type || "",
-                    custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
+                    custom_voip_type: isOtherVoip ? (tenantData.voip_system?.type ?? undefined) : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
                     transport_protocol: tenantData?.transport_protocol,
@@ -120,7 +119,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
                 const hasOutboundProxy = tenantData.outbound_proxy_server?.host;
                 reset({
                     voip_system_type: isOtherVoip ? "Other - not listed here" : tenantData.voip_system?.type || "",
-                    custom_voip_type: isOtherVoip ? tenantData.voip_system?.type : "",
+                    custom_voip_type: isOtherVoip ? (tenantData.voip_system?.type ?? undefined) : "",
                     host: tenantData.sip?.host || "",
                     port: String(tenantData.sip?.port || ""),
                     transport_protocol: tenantData?.transport_protocol,
@@ -138,7 +137,7 @@ export const VoipConfig = forwardRef<VoipConfigRef, VoipConfigProps>(
             )
         }
 
-        function handleFormSubmit(data: any) {
+        function handleFormSubmit(data: VoipFormData & {custom_voip_type?: string}) {
             if (data.voip_system_type === "Other - not listed here" && !data.custom_voip_type?.trim()) {
                 setError("custom_voip_type", {
                     type: "manual",

@@ -6,10 +6,11 @@ import {z} from "zod"
 import {zodResolver} from "@hookform/resolvers/zod"
 import {toast} from "react-toastify"
 import {useLocation, useNavigate} from "react-router-dom"
+import {ROUTES} from "@/routes/paths"
 import Input from "@/components/ui/Input"
 import Button from "@/components/ui/Button"
 import api from "@/lib/axios"
-import {useAppStore} from "@/lib/store.ts"
+import {useAuthStore} from "@/lib/authStore"
 
 const emailSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -30,7 +31,7 @@ type EmailFormData = z.infer<typeof emailSchema>
 type ResetFormData = z.infer<typeof resetSchema>
 
 const PasswordReset = () => {
-    const {setTenantId, setToken} = useAppStore()
+    const {login} = useAuthStore()
 
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [step, setStep] = useState<"request" | "verify">("request")
@@ -63,8 +64,7 @@ const PasswordReset = () => {
             setStep("verify")
             toast.success("Reset code sent! Check your email.")
         } catch (err) {
-            toast.success("Failed to send reset code. Please try again.")
-            console.error("Password reset request failed:", err)
+            toast.error("Failed to send reset code. Please try again.")
         } finally {
             setIsSubmitting(false)
         }
@@ -81,23 +81,16 @@ const PasswordReset = () => {
 
             const {access_token, tenant_id} = response.data
 
-            setToken(access_token)
-
-            if (tenant_id) {
-                setTenantId(tenant_id)
-            }
-
+            login({token: access_token, tenantId: tenant_id || null, isSuperTenant: false, isAdmin: false})
             toast.success("Password reset successful!")
-            navigate("/dashboard", {replace: true})
-        } catch (err) {
-            const status = err.response?.status || 'Unknown';
+            navigate(ROUTES.DASHBOARD, {replace: true})
+        } catch (err: unknown) {
+            const status = (err as {response?: {status?: number}})?.response?.status
             if (status === 401) {
                 toast.error("Invalid verification code")
-            } else if (status !== 401 && String(status).startsWith("50")) {
+            } else if (status && status >= 500) {
                 toast.error("Failed to reset password. Please try again.")
             }
-
-            console.error("Password reset verification failed:", err)
         } finally {
             setIsSubmitting(false)
         }
@@ -112,8 +105,7 @@ const PasswordReset = () => {
     useEffect(() => {
         if (hasRunRef.current) return
 
-        const params = new URLSearchParams(location.search)
-        const email = params.get("email")
+        const email = (location.state as {email?: string} | null)?.email
 
         if (email && emailSchema.safeParse({email}).success) {
             hasRunRef.current = true
@@ -126,7 +118,7 @@ const PasswordReset = () => {
                 clearInterval(timer.current)
             }
         }
-    }, [location.search])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleResend = async () => {
         if (!resendDisabled && userEmail) {
@@ -181,7 +173,7 @@ const PasswordReset = () => {
                                 type="button"
                                 variant="ghost"
                                 className="w-full hover:bg-transparent text-sm text-primary-500 hover:underline disabled:text-gray-400 disabled:no-underline"
-                                onClick={() => navigate("/login")}
+                                onClick={() => navigate(ROUTES.LOGIN)}
                             >
                                 To login page
                             </Button>

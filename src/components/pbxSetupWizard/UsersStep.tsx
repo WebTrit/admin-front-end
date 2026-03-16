@@ -3,39 +3,31 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query"
 import {ArrowLeft, ArrowRight, Loader2, Users} from "lucide-react"
 import {toast} from "react-toastify"
 import api from "@/lib/axios"
-import {useAppStore} from "@/lib/store"
+import {useAuthStore} from "@/lib/authStore"
+import {useTenantStore} from "@/lib/tenantStore"
 import Button from "@/components/ui/Button"
-import {UserForm, type UserFormData} from "@/components/shared/UserForm"
+import {UserForm, type UserFormData, type UserFormRef} from "@/components/shared/UserForm"
 import {useWizard} from "@/components/pbxSetupWizard/WizardContext.tsx"
-import type {TenantInfoRef} from "@/components/shared/TenantInfo.tsx"
-import {z} from "zod"
-import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx";
-import {User} from "@/types.ts";
-
-// Add the userSchema definition (copy from UserForm.tsx)
-const userSchema = z.object({
-    first_name: z.string().min(1, "First name is required"),
-    last_name: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    main_number: z.string().min(1, "Main number is required"),
-    password: z.string().min(7, "Password length must be at least 7 characters"),
-    ext_number: z.string().optional(),
-    sip_username: z.string().optional(),
-    sip_password: z.string().min(7, "Password length must be at least 7 characters"),
-    use_phone_as_username: z.boolean().default(true),
-})
+import ConfirmationModal from "@/components/ui/ConfirmationModal.tsx"
+import {useDeleteUser} from "@/hooks/useDeleteUser"
 
 export function UsersStep() {
-    const {tenantId, usersList, currentTenant, setUsersList} = useAppStore()
+    const {tenantId} = useAuthStore()
+    const {usersList, currentTenant, setUsersList} = useTenantStore()
     const {setCurrentStep} = useWizard()
     const [currentUserIndex, setCurrentTenantIndex] = useState(0)
     const queryClient = useQueryClient()
-    const formRef = useRef<TenantInfoRef>(null)
+    const formRef = useRef<UserFormRef>(null)
     const [isUserUpdating, setIsUserUpdating] = useState(false)
 
-    const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-    const [userToDelete, setUserToDelete] = useState<User | null>(null)
-    const [isDeleting, setIsDeleting] = useState(false)
+    const {
+        deleteModalOpen,
+        userToDelete,
+        isDeleting,
+        handleDeleteClick,
+        handleDeleteConfirm,
+        handleCloseDeleteModal,
+    } = useDeleteUser(tenantId)
 
     const {isLoading, error} = useQuery({
         queryKey: ["users", tenantId],
@@ -48,48 +40,12 @@ export function UsersStep() {
         enabled: !!tenantId,
     })
 
-    const deleteMutation = useMutation({
-        mutationFn: async (userId: string) => {
-            if (!tenantId) throw new Error("No tenant ID found")
-            await api.delete(`/tenants/${tenantId}/users/${userId}`)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["users"]})
-            toast.success("User deleted successfully")
-            setDeleteModalOpen(false)
-            setUserToDelete(null)
-        },
-    })
-
-    //TODO refactor duplicated code fragment (create delete user hook)
-
-    const handleDeleteClick = (user: User) => {
-        setUserToDelete(user)
-        setDeleteModalOpen(true)
-    }
-    const handleDeleteConfirm = async () => {
-        if (!userToDelete) return
-        setIsDeleting(true)
-        try {
-            await deleteMutation.mutateAsync(userToDelete.user_id)
-        } catch (e) {
-            toast.error("Failed to delete user")
-        } finally {
-            setIsDeleting(false)
-        }
-    }
-
-
     const updateUserMutation = useMutation({
         mutationFn: async (data: UserFormData) => {
             if (!tenantId) {
                 throw new Error("Tenant ID not found. Please log in again.")
             }
             setIsUserUpdating(true)
-            const result = userSchema.safeParse(data)
-            if (!result.success) {
-                throw new Error("Validation failed")
-            }
 
             const updatedUserList = {
                 ...usersList,
@@ -116,24 +72,16 @@ export function UsersStep() {
 
             setCurrentTenantIndex(currentUserIndex + 1)
         },
-        onError: (error) => {
+        onError: () => {
             setIsUserUpdating(false)
-            console.error("Error updating user:", error)
-            if (error instanceof Error && error.message === "Validation failed") {
-                toast.error("Please fix validation errors before proceeding")
-            } else {
-                toast.error("Failed to update user. Please try again.")
-            }
+            toast.error("Failed to update user. Please try again.")
         },
     })
 
 
     const handleSaveUser = async () => {
         if (usersList.items && currentUserIndex < usersList.items.length) {
-            const isValid = await formRef.current.submitForm()
-            if (!isValid) {
-                toast.error("Please fix validation errors before proceeding")
-            }
+            formRef.current?.submitForm()
         }
     }
 
@@ -212,10 +160,9 @@ export function UsersStep() {
             {usersList.items[currentUserIndex] && (
                 <UserForm
                     ref={formRef}
-                    initialData={usersList.items[currentUserIndex]}
-                    onSubmit={updateUserMutation.mutate}
+                    initialData={{...usersList.items[currentUserIndex], email: usersList.items[currentUserIndex].email || '', use_phone_as_username: true}}
+                    onSubmit={async (data) => { await updateUserMutation.mutateAsync(data) }}
                     isSubmitting={updateUserMutation.isPending}
-                    tenantId={tenantId || ""}
                     hideControls={true}
                 />
             )}
@@ -269,10 +216,7 @@ export function UsersStep() {
                 title="Delete User"
                 description={userToDelete ? `Are you sure you want to delete ${userToDelete.first_name} ${userToDelete.last_name}? This action cannot be undone.` : ""}
                 isOpen={deleteModalOpen}
-                onClose={() => {
-                    setDeleteModalOpen(false)
-                    setUserToDelete(null)
-                }}
+                onClose={handleCloseDeleteModal}
                 onConfirm={handleDeleteConfirm}
                 isProcessing={isDeleting}
                 confirmText="Delete"

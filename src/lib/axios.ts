@@ -1,9 +1,8 @@
 import axios, {AxiosError} from 'axios';
 import {toast} from 'react-toastify';
-import {jwtDecode} from 'jwt-decode';
-import {useAppStore} from './store';
-import {v4 as uuid} from 'uuid';
+import {useAuthStore} from './authStore';
 import {config} from '../config/runtime';
+import {isTokenExpired} from './auth';
 
 const API_BASE_URL = config.BACKEND_URL;
 export const API_VERSION = '/api/v1.0';
@@ -18,54 +17,36 @@ const api = axios.create({
     timeout: 20000
 });
 
-const isTokenExpired = (token: string) => {
-    try {
-        const decoded = jwtDecode(token);
-        if (!decoded.exp) return true;
-        return decoded.exp < Date.now() / 1000;
-    } catch {
-        return true;
-    }
-};
+let sessionExpiredNotified = false;
 
 api.interceptors.request.use((config) => {
-    const token = useAppStore.getState().token;
-
-    const requestId = uuid();
-    config.headers['x-request-id'] = requestId;
+    const token = useAuthStore.getState().token;
 
     if (token) {
-        if (isTokenExpired(token)) {
+        if (isTokenExpired(token) && !sessionExpiredNotified) {
+            sessionExpiredNotified = true;
             toast.error('Session expired. Please log in again.');
-            useAppStore.getState().clearAuth();
+            useAuthStore.getState().clearAuth();
+            // reset flag after a tick so next login cycle works
+            setTimeout(() => { sessionExpiredNotified = false; }, 0);
         }
         config.headers.Authorization = `Bearer ${token}`;
     }
-
-    console.log('🚀 API Request:', {
-        id: requestId,
-        backendURL: API_BASE_URL,
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        headers: {...config.headers},
-        data: config.data
-    });
 
     return config;
 });
 
 api.interceptors.response.use(
-    (response) => {
-        console.log('✅ API Response:', response.status, response.data);
-        return response;
-    },
+    (response) => response,
     (error: AxiosError) => {
-        const status = error.response?.status || 'Unknown';
-        console.error(`❌ API Error ${status}:`, error.message);
+        const status = error.response?.status;
 
         if (status === 401) {
-        } else if (status === 404 || String(status).startsWith("50")) {
-            toast.error('We are having difficulties connecting to WebTrit servers. Try a bit later and if the problem persists - please let us know at contact@webtrit.com')
+            useAuthStore.getState().clearAuth();
+        } else if (status === 404) {
+            toast.error('The requested resource was not found.');
+        } else if (typeof status === 'number' && status >= 500) {
+            toast.error('We are having difficulties connecting to WebTrit servers. Try a bit later and if the problem persists - please let us know at contact@webtrit.com');
         }
 
         return Promise.reject(error);

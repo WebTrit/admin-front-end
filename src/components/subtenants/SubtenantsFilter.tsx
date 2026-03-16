@@ -61,37 +61,6 @@ export const SubtenantsFilter: React.FC<SubtenantsFilterProps> =
                                 />
                             </div>
 
-                            {/*disabled for now
-                            <div>*/}
-                            {/*   <label htmlFor="except_tenant_id"*/}
-                            {/*           className="block text-xs font-medium text-gray-500 mb-1">*/}
-                            {/*        Except Tenant ID*/}
-                            {/*    </label>*/}
-                            {/*    <Input*/}
-                            {/*        type="text"*/}
-                            {/*        id="except_tenant_id"*/}
-                            {/*        name="except_tenant_id"*/}
-                            {/*        value={formValues.except_tenant_id || ""}*/}
-                            {/*        onChange={onFilterChange}*/}
-                            {/*        placeholder="Exclude this tenant ID"*/}
-                            {/*    />*/}
-                            {/*</div>*/}
-
-                            {/*<div>*/}
-                            {/*    <label htmlFor="super_tenant_id"*/}
-                            {/*           className="block text-xs font-medium text-gray-500 mb-1">*/}
-                            {/*        Super Tenant ID*/}
-                            {/*    </label>*/}
-                            {/*    <Input*/}
-                            {/*        type="text"*/}
-                            {/*        id="super_tenant_id"*/}
-                            {/*        name="super_tenant_id"*/}
-                            {/*        value={formValues.super_tenant_id || ""}*/}
-                            {/*        onChange={onFilterChange}*/}
-                            {/*        placeholder="Filter by super tenant ID"*/}
-                            {/*    />*/}
-                            {/*</div>*/}
-
                             <div className="md:col-span-2 lg:col-span-4 flex gap-2">
                                 <Button type="submit" variant="primary">
                                     Apply Filters

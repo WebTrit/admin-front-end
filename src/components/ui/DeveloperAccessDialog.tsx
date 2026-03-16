@@ -1,4 +1,3 @@
-import type React from "react"
 import {Code} from "lucide-react"
 import Button from "@/components/ui/Button.tsx"
 

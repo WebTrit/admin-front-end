@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import {useState} from "react";
 import {ArrowLeft, Loader2} from "lucide-react";
 import {useMutation} from "@tanstack/react-query";
 import api from "@/lib/axios";
@@ -6,26 +6,17 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import {useNavigate} from "react-router-dom";
 import {v4 as uuid} from "uuid";
-import {useAppStore} from "@/lib/store.ts";
-
-interface TenantFormData {
-    company_name: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-    is_super_tenant: boolean;
-}
-
-interface FormErrors {
-    [key: string]: string;
-}
+import {ROUTES} from "@/routes/paths";
+import {useAuthStore} from "@/lib/authStore";
+import {addTenantSchema, type AddTenantFormData} from "@/lib/schemas";
+import {formatZodErrors} from "@/lib/validation";
+import axios from "axios";
 
 export default function AddTenant() {
-    const {tenantId, isAdmin} = useAppStore();
+    const {tenantId, isAdmin} = useAuthStore();
     const navigate = useNavigate();
 
-    const [formData, setFormData] = useState<TenantFormData>({
+    const [formData, setFormData] = useState<AddTenantFormData>({
         company_name: "",
         first_name: "",
         last_name: "",
@@ -34,10 +25,10 @@ export default function AddTenant() {
         is_super_tenant: false,
     });
 
-    const [errors, setErrors] = useState<FormErrors>({});
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const createTenantMutation = useMutation({
-        mutationFn: async (formData: TenantFormData) => {
+        mutationFn: async (formData: AddTenantFormData) => {
             const {is_super_tenant, ...tenantData} = formData;
             const requestData = is_super_tenant ? formData : tenantData
 
@@ -55,11 +46,11 @@ export default function AddTenant() {
             return response.data;
         },
         onSuccess: () => {
-            navigate("/subtenants");
+            navigate(ROUTES.SUBTENANTS);
         },
-        onError: (error: any) => {
-            if (error.response?.data?.errors) {
-                setErrors(error.response.data.errors);
+        onError: (error: unknown) => {
+            if (axios.isAxiosError(error) && error.response?.data?.errors) {
+                setErrors(error.response.data.errors as Record<string, string>);
             } else {
                 setErrors({form: "Failed to create subtenant. Please try again."});
             }
@@ -83,31 +74,13 @@ export default function AddTenant() {
     };
 
     const validateForm = (): boolean => {
-        const newErrors: FormErrors = {};
-        const requiredFields: (keyof TenantFormData)[] = [
-            "company_name",
-            "first_name",
-            "last_name",
-            "email",
-            "password",
-        ];
-
-        requiredFields.forEach((field) => {
-            if (!formData[field]) {
-                newErrors[field] = "This field is required";
-            }
-        });
-
-        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = "Please enter a valid email address";
+        const result = addTenantSchema.safeParse(formData);
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error));
+            return false;
         }
-
-        if (formData.password && formData.password.length < 8) {
-            newErrors.password = "Password must be at least 8 characters";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        setErrors({});
+        return true;
     };
 
     const handleSubmit = (e: React.FormEvent) => {

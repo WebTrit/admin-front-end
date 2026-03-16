@@ -1,6 +1,6 @@
 import {Info, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
-import {useAppStore} from "@/lib/store.ts";
+import {useTenantStore} from "@/lib/tenantStore";
 
 interface PbxSetupIntroProps {
     userData: {
@@ -15,7 +15,7 @@ interface PbxSetupIntroProps {
 }
 
 export function PbxSetupIntro({userData, onProceed, onCancel, isLoading}: PbxSetupIntroProps) {
-    const {currentTenant} = useAppStore()
+    const {currentTenant} = useTenantStore()
     return (
         <div className="bg-white shadow rounded-lg p-6">
             <div className="space-y-6">

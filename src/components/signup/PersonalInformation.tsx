@@ -1,6 +1,6 @@
 import type {UseFormRegister, FieldErrors} from "react-hook-form"
 import Input from "@/components/ui/Input"
-import {SignupFormData} from "@/types.ts"
+import {SignupFormData} from "@/lib/schemas"
 import {config} from "@/config/runtime"
 
 interface PersonalInformationProps {
@@ -74,4 +74,4 @@ export const PersonalInformation = ({register, errors}: PersonalInformationProps
             </div>
         </div>
     )
-}//yk.120301+1234123@gmail.com
+}
