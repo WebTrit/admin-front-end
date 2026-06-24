@@ -30,7 +30,7 @@ RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
     echo 'export VITE_IS_SIGNUP_COMPANY_SITE="${VITE_IS_SIGNUP_COMPANY_SITE:-false}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_IS_SIGNUP_COMPANY_NAME="${VITE_IS_SIGNUP_COMPANY_NAME:-false}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_IS_SIGNUP_PHONE_NUMBER="${VITE_IS_SIGNUP_PHONE_NUMBER:-false}"' >> /docker-entrypoint.sh && \
-    echo 'export VITE_APP_TITLE="${VITE_APP_TITLE:-NovaSys}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_APP_TITLE="${VITE_APP_TITLE:-WebTrit}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_APP_IS_DASHBOARD_INVITE="${VITE_APP_IS_DASHBOARD_INVITE:-false}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_APP_IS_DASHBOARD_DEVELOPER_ACCESS="${VITE_APP_IS_DASHBOARD_DEVELOPER_ACCESS:-false}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_WEBTRIT_DIALER_URL="${VITE_WEBTRIT_DIALER_URL:-https://dialer.etercloud.io}"' >> /docker-entrypoint.sh && \
