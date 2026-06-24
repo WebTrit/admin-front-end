@@ -12,7 +12,6 @@ import {useAuthStore} from "@/lib/authStore"
 import Input from "@/components/ui/Input.tsx";
 import Button from "@/components/ui/Button.tsx";
 import {config} from "@/config/runtime";
-import logoImage from "/favicon.png";
 
 const loginSchema = z.object({
     login: z.string(),
@@ -106,7 +105,7 @@ const Login = () => {
             <div className="max-w-md w-full space-y-6">
                 <div className="hidden lg:block">
                     <div className="flex justify-center">
-                        <img src={logoImage} alt="Logo" className="h-10 w-12"/>
+                        <img src={config.LOGO_URL} alt="Logo" className="h-10 w-12"/>
                     </div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
                 </div>
@@ -117,7 +116,7 @@ const Login = () => {
                     <div>If you don't have an account click here to {' '}
                         <span
                             onClick={() => navigate(ROUTES.SIGNUP, {replace: true})}
-                            className="text-blue-400 underline cursor-pointer"
+                            className="text-brand underline cursor-pointer"
                         >
                             sign up
                         </span>

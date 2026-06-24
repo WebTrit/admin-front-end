@@ -73,8 +73,8 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                 current_user: currentUserData,
                 invited_user: invitedUserData,
                 invite_msg: `Hello ${user.first_name},
-          You've received an invitation from ${fullName} to make free voice and video calls with WebTrit.
-          Don't miss out! Download the WebTrit app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`
+          You've received an invitation from ${fullName} to make free voice and video calls with ${config.BRAND_NAME}.
+          Don't miss out! Download the ${config.BRAND_NAME} app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`
             }
 
             await api.post(`/tenants/${tenantId}/invite`, data)
@@ -270,7 +270,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                         {resendingEmailUserId === user.user_id ? (
                                                             <Loader2 className="h-4 w-4 animate-spin"/>
                                                         ) : (
-                                                            <Mail className="h-4 w-4 text-blue-500"/>
+                                                            <Mail className="h-4 w-4 text-brand"/>
                                                         )}
                                                     </Button>
                                                 )}
@@ -334,7 +334,7 @@ export function UsersTable({maxUsers}: UsersTableProps) {
                                                         {resendingEmailUserId === user.user_id ? (
                                                             <Loader2 className="h-4 w-4 animate-spin"/>
                                                         ) : (
-                                                            <Mail className="h-4 w-4 text-blue-500"/>
+                                                            <Mail className="h-4 w-4 text-brand"/>
                                                         )}
                                                     </Button>
                                                 )}

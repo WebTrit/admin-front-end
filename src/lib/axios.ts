@@ -46,7 +46,7 @@ api.interceptors.response.use(
         } else if (status === 404) {
             toast.error('The requested resource was not found.');
         } else if (typeof status === 'number' && status >= 500) {
-            toast.error('We are having difficulties connecting to WebTrit servers. Try a bit later and if the problem persists - please let us know at contact@webtrit.com');
+            toast.error(`We are having difficulties connecting to ${config.BRAND_NAME} servers. Try a bit later and if the problem persists - please let us know at ${config.SUPPORT_EMAIL}`);
         }
 
         return Promise.reject(error);

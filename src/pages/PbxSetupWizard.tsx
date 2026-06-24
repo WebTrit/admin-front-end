@@ -4,6 +4,7 @@ import {ArrowLeft, ArrowRight, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 
 import {useTenantStore} from "@/lib/tenantStore"
+import {config} from "@/config/runtime"
 import {useWizard, WizardProvider} from "@/components/pbxSetupWizard/WizardContext.tsx";
 import {PbxSetupIntro} from "@/components/pbxSetupWizard/PbxSetupIntro.tsx";
 import {VoipConfigStep} from "@/components/pbxSetupWizard/VoipConfigStep.tsx";
@@ -83,9 +84,9 @@ function WizardContent() {
                     <div className="bg-white shadow rounded-lg p-6 text-center">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Setup Complete!</h2>
                         <p className="text-gray-600 mb-6">
-                            Your WebTrit environment has been successfully configured to connect to your cloud PBX.
+                            Your {config.BRAND_NAME} environment has been successfully configured to connect to your cloud PBX.
                         </p>
-                        <p className="text-gray-600 mb-8">Users can now log in to the WebTrit app with their updated
+                        <p className="text-gray-600 mb-8">Users can now log in to the {config.BRAND_NAME} app with their updated
                             settings.</p>
                         <Button onClick={() => navigate(ROUTES.subtenant(currentTenant?.tenant_id || ''))} className="px-8">
                             Go to Configuration
@@ -118,7 +119,7 @@ function WizardContent() {
                             <div
                                 className={`flex items-center justify-center w-8 h-8 rounded-full ${
                                     currentStep === step.id
-                                        ? "bg-blue-500 text-white"
+                                        ? "bg-brand text-white"
                                         : index < currentIndex
                                             ? "bg-green-500 text-white"
                                             : "bg-gray-200 text-gray-600"
@@ -127,7 +128,7 @@ function WizardContent() {
                                 {index < currentIndex ? "✓" : index + 1}
                             </div>
                             <span
-                                className={`ml-2 text-sm ${currentStep === step.id ? "font-medium text-blue-500" : "text-gray-500"}`}
+                                className={`ml-2 text-sm ${currentStep === step.id ? "font-medium text-brand" : "text-gray-500"}`}
                             >
                 {step.label}
               </span>
@@ -174,7 +175,7 @@ function WizardContent() {
     return (
         <div className="container mx-auto">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Connect WebTrit to your own cloud PBX</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Connect {config.BRAND_NAME} to your own cloud PBX</h1>
             </div>
 
             {renderStepIndicator()}

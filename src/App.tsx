@@ -7,6 +7,14 @@ import {useAuthStore} from "./lib/authStore"
 import routes from "@/routes";
 import {config} from "@/config/runtime";
 
+// Convert "#5CACE3" -> "92 172 227" for Tailwind's rgb(var(--x) / <alpha-value>) colors
+function hexToChannels(hex: string): string | null {
+    const m = /^#?([0-9a-fA-F]{6})$/.exec(hex.trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`;
+}
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -57,6 +65,19 @@ function App() {
                 favicon.href = config.FAVICON_URL;
             }
         }
+
+        // Override brand colors from runtime config (empty value -> keep :root default)
+        const brandVars: [string, string][] = [
+            ['--brand', config.BRAND_COLOR],
+            ['--brand-strong', config.BRAND_COLOR_STRONG],
+            ['--brand-subtle', config.BRAND_COLOR_SUBTLE],
+        ];
+        brandVars.forEach(([name, hex]) => {
+            const channels = hex && hexToChannels(hex);
+            if (channels) {
+                document.documentElement.style.setProperty(name, channels);
+            }
+        });
     }, [])
 
     return (

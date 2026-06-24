@@ -82,7 +82,7 @@ export const SubtenantsListDesktop: React.FC<SubtenantsListDesktopProps> = (
                                 <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
                                     <p>No subtenants found</p>
                                     {Object.values(appliedFilters).some((value) => value) && (
-                                        <button onClick={onClearFilters} className="mt-2 text-blue-600 text-sm">
+                                        <button onClick={onClearFilters} className="mt-2 text-brand text-sm">
                                             Clear filters
                                         </button>
                                     )}

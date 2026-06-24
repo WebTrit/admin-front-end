@@ -39,7 +39,7 @@ export function LinkActions({url, label}: LinkActionsProps) {
                 className="p-1 rounded hover:bg-gray-100 transition-colors"
                 title="Open in new tab"
             >
-                <ExternalLink className="w-4 h-4 text-gray-500 hover:text-blue-500"/>
+                <ExternalLink className="w-4 h-4 text-gray-500 hover:text-brand"/>
             </button>
             <button
                 onClick={handleCopy}
@@ -49,7 +49,7 @@ export function LinkActions({url, label}: LinkActionsProps) {
                 {showCopied ? (
                     <CheckCircle2 className="w-4 h-4 text-green-500"/>
                 ) : (
-                    <Copy className="w-4 h-4 text-gray-500 hover:text-blue-500"/>
+                    <Copy className="w-4 h-4 text-gray-500 hover:text-brand"/>
                 )}
             </button>
         </div>
