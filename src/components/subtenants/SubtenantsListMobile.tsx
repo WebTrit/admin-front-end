@@ -50,7 +50,7 @@ export const SubtenantsListMobile: React.FC<SubtenantsListMobileProps> =
                     <div className="bg-white p-6 rounded-lg shadow-md text-center">
                         <p className="text-gray-500">No subtenants found</p>
                         {Object.values(appliedFilters).some((value) => value) && (
-                            <button onClick={onClearFilters} className="mt-2 text-blue-600 text-sm">
+                            <button onClick={onClearFilters} className="mt-2 text-brand text-sm">
                                 Clear filters
                             </button>
                         )}

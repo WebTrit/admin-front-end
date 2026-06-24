@@ -152,7 +152,7 @@ export function UsersStep() {
 
             {usersList.items.length !== 1 && <div className="mb-6 w-full bg-gray-200 rounded-full h-2.5">
                 <div
-                    className="bg-blue-600 h-2.5 rounded-full"
+                    className="bg-brand h-2.5 rounded-full"
                     style={{width: `${((currentUserIndex + 1) / usersList.items.length) * 100}%`}}
                 ></div>
             </div>

@@ -8,6 +8,7 @@ import {useAuthStore} from "@/lib/authStore";
 import {useTenantStore} from "@/lib/tenantStore";
 import {useNavigate} from "react-router-dom";
 import {ROUTES} from "@/routes/paths";
+import {config} from "@/config/runtime";
 
 type UserDetails = {
     first_name: string;
@@ -76,8 +77,8 @@ function Invite() {
                 current_user: currentUser,
                 invited_user: invitedUser,
                 invite_msg: `Hello ${invitedUser.first_name},
-          You've received an invitation from ${fullName} to make free voice and video calls with WebTrit.
-          Don't miss out! Download the WebTrit app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`
+          You've received an invitation from ${fullName} to make free voice and video calls with ${config.BRAND_NAME}.
+          Don't miss out! Download the ${config.BRAND_NAME} app for Android or iOS and start calling. Your friends and colleagues, including ${fullName}, are excited to hear from you, so don't keep them waiting.`
             };
 
             try {
@@ -88,7 +89,7 @@ function Invite() {
                 const axiosError = error as { response?: { status?: number } };
                 const status = axiosError?.response?.status;
                 if (status === 409) {
-                    toast.info(`The user with email ${invitedUser.email} already uses WebTrit.`);
+                    toast.info(`The user with email ${invitedUser.email} already uses ${config.BRAND_NAME}.`);
                 } else if (typeof status === 'number' && status >= 500) {
                     toast.error("Server error. Please try again later.");
                 } else {
@@ -102,19 +103,19 @@ function Invite() {
         <div className="flex items-center justify-center mb-8">
             <div className="flex items-center">
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    step >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    step >= 1 ? 'bg-brand text-white' : 'bg-gray-200'
                 }`}>
                     <User className="w-4 h-4"/>
                 </div>
-                <div className={`w-20 h-1 ${step >= 2 ? 'bg-blue-500' : 'bg-gray-200'}`}/>
+                <div className={`w-20 h-1 ${step >= 2 ? 'bg-brand' : 'bg-gray-200'}`}/>
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    step >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    step >= 2 ? 'bg-brand text-white' : 'bg-gray-200'
                 }`}>
                     <UserPlus className="w-4 h-4"/>
                 </div>
-                <div className={`w-20 h-1 ${step === 3 ? 'bg-blue-500' : 'bg-gray-200'}`}/>
+                <div className={`w-20 h-1 ${step === 3 ? 'bg-brand' : 'bg-gray-200'}`}/>
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    step === 3 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                    step === 3 ? 'bg-brand text-white' : 'bg-gray-200'
                 }`}>
                     <Check className="w-4 h-4"/>
                 </div>
@@ -242,7 +243,7 @@ function Invite() {
                             that the recipient knows it is authentic.</p>}
                     {step === 2 &&
                         <p className="text-gray-600 text-center">Your contact will receive an email with the link to
-                            download & install the WebTrit app.
+                            download & install the {config.BRAND_NAME} app.
 
                             To prevent spam and ensure proper addressing, please include their name.</p>}
                 </div>

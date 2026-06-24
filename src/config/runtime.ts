@@ -18,6 +18,13 @@ declare global {
             VITE_APP_KEYWORDS?: string;
             VITE_FAVICON_URL?: string;
             VITE_SHARE_IMAGE_URL?: string;
+            VITE_BRAND_NAME?: string;
+            VITE_LOGO_URL?: string;
+            VITE_TERMS_URL?: string;
+            VITE_SUPPORT_EMAIL?: string;
+            VITE_BRAND_COLOR?: string;
+            VITE_BRAND_COLOR_STRONG?: string;
+            VITE_BRAND_COLOR_SUBTLE?: string;
         };
     }
 }
@@ -64,4 +71,11 @@ export const config = {
     APP_KEYWORDS: getConfig('VITE_APP_KEYWORDS'),
     FAVICON_URL: getConfig('VITE_FAVICON_URL'),
     SHARE_IMAGE_URL: getConfig('VITE_SHARE_IMAGE_URL'),
+    BRAND_NAME: getConfig('VITE_BRAND_NAME') || 'WebTrit',
+    LOGO_URL: getConfig('VITE_LOGO_URL') || '/favicon.png',
+    TERMS_URL: getConfig('VITE_TERMS_URL') || 'https://webtrit.com/legal/terms-of-use/',
+    SUPPORT_EMAIL: getConfig('VITE_SUPPORT_EMAIL') || 'contact@webtrit.com',
+    BRAND_COLOR: getConfig('VITE_BRAND_COLOR'),
+    BRAND_COLOR_STRONG: getConfig('VITE_BRAND_COLOR_STRONG'),
+    BRAND_COLOR_SUBTLE: getConfig('VITE_BRAND_COLOR_SUBTLE'),
 };

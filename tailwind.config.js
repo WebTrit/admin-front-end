@@ -6,17 +6,20 @@ export default {
         extend: {
             colors: {
                 primary: {
-                    50: '#EBF5FF',
-                    100: '#D6EBFF',
+                    50: 'rgb(var(--brand-subtle) / <alpha-value>)',
+                    100: 'rgb(var(--brand-subtle) / <alpha-value>)',
                     200: '#ADD6FF',
                     300: '#85C2FF',
                     400: '#5CADFF',
-                    500: '#5CACE3',
-                    600: '#6BB4FD',
-                    700: '#1F4799',
+                    500: 'rgb(var(--brand) / <alpha-value>)',
+                    600: 'rgb(var(--brand) / <alpha-value>)',
+                    700: 'rgb(var(--brand-strong) / <alpha-value>)',
                     800: '#142F66',
                     900: '#0A1733',
                 },
+                brand: 'rgb(var(--brand) / <alpha-value>)',
+                'brand-strong': 'rgb(var(--brand-strong) / <alpha-value>)',
+                'brand-subtle': 'rgb(var(--brand-subtle) / <alpha-value>)',
                 gray: {
                     50: '#F9FAFB',
                     100: '#F3F4F6',

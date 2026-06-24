@@ -16,6 +16,7 @@ import DeveloperAccessDialog from "@/components/ui/DeveloperAccessDialog.tsx";
 const Dashboard = () => {
     const navigate = useNavigate();
 
+    const BRAND_NAME = config.BRAND_NAME;
     const WEBTRIT_URL = config.WEBTRIT_DIALER_URL;
     const WEBTRIT_GOOGLE_PLAY_URL = config.WEBTRIT_GOOGLE_PLAY_URL;
     const WEBTRIT_APP_STORE_URL = config.WEBTRIT_APP_STORE_URL;
@@ -100,17 +101,17 @@ const Dashboard = () => {
                     <div className="space-y-8">
                         <div className="text-center md:text-left">
                             <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                                Start your WebTrit journey now!
+                                Start your {BRAND_NAME} journey now!
                             </h1>
                             <p className="mt-3 text-xl text-gray-600">
-                                Hi {currentTenant?.first_name}, how would you like to use WebTrit today?
+                                Hi {currentTenant?.first_name}, how would you like to use {BRAND_NAME} today?
                             </p>
                         </div>
 
                         <div className="grid gap-8">
                             <DashboardCard
                                 title="Useful links"
-                                description="Use email address as username to get started with WebTrit"
+                                description={`Use email address as username to get started with ${BRAND_NAME}`}
                                 icon={Globe}
                                 imageUrl="/images/dashboard/usefulLinks.png"
                                 additionalContent={
@@ -148,7 +149,7 @@ const Dashboard = () => {
                             {IS_INVITE_ENABLED && (
                                 <DashboardCard
                                     title="Simple Demo: App to App calling"
-                                    description="Make voice or video calls to other people that also have the WebTrit App or WebTrit web-dialer installed."
+                                    description={`Make voice or video calls to other people that also have the ${BRAND_NAME} App or ${BRAND_NAME} web-dialer installed.`}
                                     icon={Phone}
                                     linkUrl="#"
                                     imageUrl="/images/dashboard/invite.png"
@@ -163,13 +164,13 @@ const Dashboard = () => {
 
                             {IS_CONNECT_PBX_ENABLED && (
                                 <DashboardCard
-                                    title="Connect WebTrit to your own PBX"
-                                    description="Make and receive calls on WebTrit via your own PBX. You can add up to five users (SIP accounts) for free."
+                                    title={`Connect ${BRAND_NAME} to your own PBX`}
+                                    description={`Make and receive calls on ${BRAND_NAME} via your own PBX. You can add up to five users (SIP accounts) for free.`}
                                     icon={Globe}
                                     imageUrl="/images/dashboard/PBX.png"
                                     additionalContent={
                                         <div>
-                                            <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
+                                            <div className="mt-4 p-4 bg-brand-subtle rounded-lg text-sm text-brand-strong">
                                                 <p>
                                                     To ensure calls go through - if you have a firewall on your PBX,
                                                     please add the following IP addresses to the allowed list for SIP &
@@ -212,7 +213,7 @@ const Dashboard = () => {
                                     imageUrl="/images/dashboard/developerAccess.png"
                                     additionalContent={
                                         <div className="mt-4 space-y-4">
-                                            <p className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-500">
+                                            <p className="mt-4 p-4 bg-brand-subtle rounded-lg text-sm text-brand-strong">
                                                 This will enable API access for your account and send you an email with
                                                 required credentials and detailed instructions.
                                             </p>

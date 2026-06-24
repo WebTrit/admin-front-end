@@ -40,6 +40,13 @@ RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
     echo 'export VITE_APP_KEYWORDS="${VITE_APP_KEYWORDS:-}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_FAVICON_URL="${VITE_FAVICON_URL:-}"' >> /docker-entrypoint.sh && \
     echo 'export VITE_SHARE_IMAGE_URL="${VITE_SHARE_IMAGE_URL:-}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_BRAND_NAME="${VITE_BRAND_NAME:-WebTrit}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_LOGO_URL="${VITE_LOGO_URL:-/favicon.png}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_TERMS_URL="${VITE_TERMS_URL:-https://webtrit.com/legal/terms-of-use/}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_SUPPORT_EMAIL="${VITE_SUPPORT_EMAIL:-contact@webtrit.com}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_BRAND_COLOR="${VITE_BRAND_COLOR:-#5CACE3}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_BRAND_COLOR_STRONG="${VITE_BRAND_COLOR_STRONG:-#1F4799}"' >> /docker-entrypoint.sh && \
+    echo 'export VITE_BRAND_COLOR_SUBTLE="${VITE_BRAND_COLOR_SUBTLE:-#EBF5FF}"' >> /docker-entrypoint.sh && \
     echo '# Generate config.js from template' >> /docker-entrypoint.sh && \
     echo 'echo "Generating config.js..."' >> /docker-entrypoint.sh && \
     echo 'envsubst < /usr/share/nginx/html/config.js.template > /usr/share/nginx/html/config.js' >> /docker-entrypoint.sh && \

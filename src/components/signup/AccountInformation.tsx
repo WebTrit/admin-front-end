@@ -3,6 +3,7 @@ import {Link} from "react-router-dom";
 import Input from "@/components/ui/Input";
 import {SignupFormData} from "@/lib/schemas";
 import {ROUTES} from "@/routes/paths";
+import {config} from "@/config/runtime";
 
 interface AccountInformationProps {
     register: UseFormRegister<SignupFormData>;
@@ -95,7 +96,7 @@ export const AccountInformation = ({register, errors, emailAlreadyRegistered}: A
                         <input
                             id="terms"
                             type="checkbox"
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-4 w-4 rounded border-gray-300 text-brand focus:ring-brand"
                             {...register("acceptTerms", {
                                 required: "You must accept the Terms and Conditions"
                             })}
@@ -103,12 +104,12 @@ export const AccountInformation = ({register, errors, emailAlreadyRegistered}: A
                     </div>
                     <div className="ml-3">
                         <label htmlFor="terms" className="text-sm text-gray-700">
-                            I accept WebTrit's{" "}
+                            I accept {config.BRAND_NAME}'s{" "}
                             <a
-                                href="https://webtrit.com/legal/terms-of-use/"
+                                href={config.TERMS_URL}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-indigo-600 hover:text-indigo-500 underline"
+                                className="text-brand hover:text-brand-strong underline"
                             >
                                 Terms and Conditions
                             </a>

@@ -219,7 +219,7 @@ export const CallLogsTable = ({calls, onViewCallFlow, onLoadMore, hasMore, isLoa
                                                 e.stopPropagation();
                                                 onViewCallFlow(call);
                                             }}
-                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded transition-colors"
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-brand-strong bg-brand-subtle hover:bg-brand-subtle rounded transition-colors"
                                             title="View SIP flow diagram for this call"
                                         >
                                             <GitBranch className="w-4 h-4" />

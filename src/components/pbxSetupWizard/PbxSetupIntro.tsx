@@ -1,6 +1,7 @@
 import {Info, Loader2} from "lucide-react"
 import Button from "@/components/ui/Button"
 import {useTenantStore} from "@/lib/tenantStore";
+import {config} from "@/config/runtime";
 
 interface PbxSetupIntroProps {
     userData: {
@@ -20,14 +21,14 @@ export function PbxSetupIntro({userData, onProceed, onCancel, isLoading}: PbxSet
         <div className="bg-white shadow rounded-lg p-6">
             <div className="space-y-6">
                 <p className="text-lg font-medium text-gray-800">
-                    You are about to start the process of re-configuring your WebTrit environment to connect to your own
+                    You are about to start the process of re-configuring your {config.BRAND_NAME} environment to connect to your own
                     cloud
                     PBX.
                 </p>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="bg-brand-subtle p-4 rounded-lg">
                     <div className="flex items-start">
-                        <Info className="h-5 w-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0"/>
+                        <Info className="h-5 w-5 text-brand-strong mt-0.5 mr-2 flex-shrink-0"/>
                         <div>
                             <p className="text-sm text-gray-700">
                                 You are allowed to have <span
@@ -59,7 +60,7 @@ export function PbxSetupIntro({userData, onProceed, onCancel, isLoading}: PbxSet
                 <div className="bg-red-50 p-4 rounded-lg border border-red-100 mt-6">
                     <p className="text-red-600 font-medium">
                         Once you start the process, users will no longer be able to use the service until you complete
-                        re-configuration of their settings and they re-login into WebTrit app.
+                        re-configuration of their settings and they re-login into {config.BRAND_NAME} app.
                     </p>
                 </div>
 

@@ -1,7 +1,7 @@
 import {SignupForm} from "@/components/signup/SignupForm.tsx";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {ROUTES} from "@/routes/paths";
-import logoImage from "/favicon.png";
+import {config} from "@/config/runtime";
 import {useEffect} from "react";
 
 const Signup = () => {
@@ -20,7 +20,7 @@ const Signup = () => {
             <div className="max-w-md w-full space-y-6">
                 <div className="hidden lg:block">
                     <div className="flex justify-center">
-                        <img src={logoImage} alt="Logo" className="h-10 w-12"/>
+                        <img src={config.LOGO_URL} alt="Logo" className="h-10 w-12"/>
                     </div>
                     <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
                 </div>

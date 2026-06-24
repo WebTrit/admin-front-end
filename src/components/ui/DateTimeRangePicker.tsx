@@ -439,11 +439,11 @@ export const DateTimeRangePicker = ({
                 disabled={future}
                 className={`w-8 h-8 text-xs flex items-center justify-center transition-colors ${
                     selected || end
-                        ? 'bg-blue-500 text-white rounded-full'
+                        ? 'bg-brand text-white rounded-full'
                         : inRange
-                            ? 'bg-blue-50 text-blue-800'
+                            ? 'bg-brand-subtle text-brand-strong'
                             : today
-                                ? 'text-blue-500 font-semibold'
+                                ? 'text-brand font-semibold'
                                 : future
                                     ? 'text-gray-300 cursor-not-allowed'
                                     : 'text-gray-700 hover:bg-gray-100 rounded-full'
@@ -504,8 +504,8 @@ export const DateTimeRangePicker = ({
                                 onClick={() => handlePresetClick(key)}
                                 className={`px-3 py-1.5 text-xs rounded-full whitespace-nowrap border transition-colors ${
                                     selectedPreset === key
-                                        ? 'bg-blue-500 text-white border-blue-500'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'
+                                        ? 'bg-brand text-white border-brand'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:border-brand'
                                 }`}
                             >
                                 {PRESETS[key].label}
@@ -521,12 +521,12 @@ export const DateTimeRangePicker = ({
                                     key={key}
                                     onClick={() => handlePresetClick(key)}
                                     className={`w-full px-3 py-1.5 text-sm text-left flex items-center justify-between hover:bg-gray-50 whitespace-nowrap ${
-                                        selectedPreset === key ? 'text-blue-500' : 'text-gray-700'
+                                        selectedPreset === key ? 'text-brand' : 'text-gray-700'
                                     }`}
                                 >
                                     <span>{PRESETS[key].label}</span>
                                     {selectedPreset === key && (
-                                        <Check className="w-3 h-3 text-blue-500 shrink-0 ml-2" />
+                                        <Check className="w-3 h-3 text-brand shrink-0 ml-2" />
                                     )}
                                 </button>
                             ))}
@@ -554,7 +554,7 @@ export const DateTimeRangePicker = ({
                                                 setShowYearDropdown(!showYearDropdown);
                                                 setShowMonthDropdown(false);
                                             }}
-                                            className="flex items-center gap-0.5 px-1 py-0.5 text-xs text-blue-500 hover:bg-gray-50 rounded"
+                                            className="flex items-center gap-0.5 px-1 py-0.5 text-xs text-brand hover:bg-gray-50 rounded"
                                         >
                                             <span>{viewDate.getFullYear()}</span>
                                             <ChevronDown className="w-2.5 h-2.5" />
@@ -569,7 +569,7 @@ export const DateTimeRangePicker = ({
                                                             setShowYearDropdown(false);
                                                         }}
                                                         className={`w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50 ${
-                                                            year === viewDate.getFullYear() ? 'bg-blue-50 text-blue-500' : 'text-gray-700'
+                                                            year === viewDate.getFullYear() ? 'bg-brand-subtle text-brand' : 'text-gray-700'
                                                         }`}
                                                     >
                                                         {year}
@@ -600,7 +600,7 @@ export const DateTimeRangePicker = ({
                                                 setShowMonthDropdown(!showMonthDropdown);
                                                 setShowYearDropdown(false);
                                             }}
-                                            className="flex items-center gap-0.5 px-1 py-0.5 text-xs text-blue-500 hover:bg-gray-50 rounded"
+                                            className="flex items-center gap-0.5 px-1 py-0.5 text-xs text-brand hover:bg-gray-50 rounded"
                                         >
                                             <span>{monthNames[viewDate.getMonth()]}</span>
                                             <ChevronDown className="w-2.5 h-2.5" />
@@ -615,7 +615,7 @@ export const DateTimeRangePicker = ({
                                                             setShowMonthDropdown(false);
                                                         }}
                                                         className={`w-full px-3 py-1.5 text-xs text-left hover:bg-gray-50 ${
-                                                            index === viewDate.getMonth() ? 'bg-blue-50 text-blue-500' : 'text-gray-700'
+                                                            index === viewDate.getMonth() ? 'bg-brand-subtle text-brand' : 'text-gray-700'
                                                         }`}
                                                     >
                                                         {month}
@@ -654,7 +654,7 @@ export const DateTimeRangePicker = ({
                                 {/* Start date and time */}
                                 <div
                                     className={`flex-1 sm:mb-3 p-2 rounded cursor-pointer transition-colors ${
-                                        activeField === 'start' ? 'bg-blue-50 ring-1 ring-blue-500' : 'hover:bg-gray-50'
+                                        activeField === 'start' ? 'bg-brand-subtle ring-1 ring-brand' : 'hover:bg-gray-50'
                                     }`}
                                     onClick={() => setActiveField('start')}
                                 >
@@ -665,14 +665,14 @@ export const DateTimeRangePicker = ({
                                         onChange={(e) => handleStartInputChange(e.target.value)}
                                         onFocus={() => setActiveField('start')}
                                         placeholder="DD.MM.YYYY HH:MM:SS"
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand bg-white"
                                     />
                                 </div>
 
                                 {/* End date and time */}
                                 <div
                                     className={`flex-1 p-2 rounded cursor-pointer transition-colors ${
-                                        activeField === 'end' ? 'bg-blue-50 ring-1 ring-blue-500' : 'hover:bg-gray-50'
+                                        activeField === 'end' ? 'bg-brand-subtle ring-1 ring-brand' : 'hover:bg-gray-50'
                                     }`}
                                     onClick={() => setActiveField('end')}
                                 >
@@ -683,7 +683,7 @@ export const DateTimeRangePicker = ({
                                         onChange={(e) => handleEndInputChange(e.target.value)}
                                         onFocus={() => setActiveField('end')}
                                         placeholder="DD.MM.YYYY HH:MM:SS"
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-brand focus:border-brand bg-white"
                                     />
                                 </div>
                             </div>
@@ -694,13 +694,13 @@ export const DateTimeRangePicker = ({
                     <div className="flex justify-end gap-2 px-3 py-2 border-t border-gray-200">
                         <button
                             onClick={handleReset}
-                            className="px-3 py-1.5 text-xs text-blue-500 hover:bg-gray-50 rounded transition-colors"
+                            className="px-3 py-1.5 text-xs text-brand hover:bg-gray-50 rounded transition-colors"
                         >
                             RESET
                         </button>
                         <button
                             onClick={handleApply}
-                            className="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                            className="px-3 py-1.5 text-xs bg-brand text-white rounded hover:bg-brand-strong transition-colors"
                         >
                             APPLY
                         </button>

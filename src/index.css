@@ -33,6 +33,12 @@
         --ring: 222.2 84% 4.9%;
 
         --radius: 0.5rem;
+
+        /* Brand colors (white-label). Values are "R G B" channels for Tailwind's <alpha-value>.
+           Defaults = WebTrit brand; overridden at runtime from config in App.tsx. */
+        --brand: 92 172 227;          /* #5CACE3 — mid accent: links, buttons, focus */
+        --brand-strong: 31 71 153;    /* #1F4799 — dark anchor: hover/active, text on light tint */
+        --brand-subtle: 235 245 255;  /* #EBF5FF — light backgrounds: info boxes, highlights */
     }
 
     .dark {
