@@ -22,6 +22,9 @@ Options:
                                Defaults to environment variable CLOUD_REGION
     --project-id <id>           GCP project ID. If not supplied, then env var PROJECT_ID
                                is used and if not set, then the default value multi-tenant-demo is used.
+    --service-account <name>    Cloud Run runtime service account (short name), e.g.
+                               demo-backend (test instance) or bss-adapter (prod).
+                               If not supplied, uses SERVICE_ACCOUNT env var, then defaults to bss-adapter.
     --back-end-api <url>        URL of the backend API service.
                                If not supplied, uses BACK_END_API environment variable.
 
@@ -30,6 +33,7 @@ Environment variables:
                               otherwise updates the code but keeps all the configuration variables
     CLOUD_REGION              Default region if not specified as argument
     PROJECT_ID                Default project ID if not specified as argument
+    SERVICE_ACCOUNT           Default Cloud Run service account if not specified as argument
     BACK_END_API             Default backend API URL if not specified as argument
 "@
     exit 0
@@ -38,6 +42,7 @@ Environment variables:
 # Parse remaining arguments
 $region = ""
 $projectId = ""
+$serviceAccount = ""
 
 for ($i = 0; $i -lt $remainingArgs.Count; $i++) {
     switch ($remainingArgs[$i])
@@ -48,6 +53,10 @@ for ($i = 0; $i -lt $remainingArgs.Count; $i++) {
         }
         "--project-id" {
             $projectId = $remainingArgs[$i + 1]
+            $i++
+        }
+        "--service-account" {
+            $serviceAccount = $remainingArgs[$i + 1]
             $i++
         }
     }
@@ -70,7 +79,13 @@ else
     "multi-tenant-demo"
 }
 
-$service_account = "demo-backend"
+$service_account = if ($serviceAccount) {
+    $serviceAccount
+} elseif ([System.Environment]::GetEnvironmentVariable("SERVICE_ACCOUNT")) {
+    [System.Environment]::GetEnvironmentVariable("SERVICE_ACCOUNT")
+} else {
+    "bss-adapter"
+}
 $service_account_full = "$service_account@$projectId.iam.gserviceaccount.com"
 
 $region = if ($region)
@@ -101,6 +116,15 @@ $cloudRunServiceName = $serviceName
 # Perform operations in the new directory
 $currentDirectory = $PWD.Path
 Write-Host "Current Directory: $currentDirectory"
+
+# Show the resolved deploy target so a wrong instance/account is caught before building
+$deployMode = if ([System.Environment]::GetEnvironmentVariable("INITIAL_DEPLOY")) { "INITIAL (env vars from YAML)" } else { "UPDATE (keep existing env vars)" }
+Write-Host "=== Deploy target ==="
+Write-Host "  Service:         $cloudRunServiceName"
+Write-Host "  Project:         $projectId"
+Write-Host "  Region:          $region"
+Write-Host "  Service account: $service_account_full"
+Write-Host "  Mode:            $deployMode"
 
 if (-not $repo_region)
 {
